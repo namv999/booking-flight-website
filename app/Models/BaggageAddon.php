@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class BaggageAddon extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'weight_kg',
+        'price',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'weight_kg' => 'integer',
+            'price' => 'decimal:2',
+        ];
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+}
