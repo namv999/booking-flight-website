@@ -22,7 +22,7 @@ class PaymentSeeder extends Seeder
                 'booking_id' => $bookings[1]->id,
             ],
             [
-                'amount' => 5000000,
+                'amount' => $bookings[1]->total_amount,
                 'method' => 'bank_transfer',
                 'status' => 'success',
                 'transaction_code' => 'TXN-20260826-000001',
@@ -36,7 +36,7 @@ class PaymentSeeder extends Seeder
                 'booking_id' => $bookings[0]->id,
             ],
             [
-                'amount' => 2680000,
+                'amount' => $bookings[0]->total_amount,
                 'method' => 'credit_card',
                 'status' => 'failed',
                 'transaction_code' => 'TXN-20260826-000002',
