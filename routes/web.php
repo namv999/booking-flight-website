@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BaggageAddonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SavedPassengerController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard', function () {
         return view('admin.dashboard');
     })->name('dashboard');
+    
+    Route::resource('baggage-addons', BaggageAddonController::class)->except('show');
 });
 
 require __DIR__.'/auth.php';
