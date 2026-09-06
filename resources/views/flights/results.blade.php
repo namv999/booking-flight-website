@@ -1,7 +1,21 @@
 {{-- TEMP LAYOUT --}}
+@if (session('error'))
+    <div class="alert-error">{{ session('error') }}</div>
+@endif
+
+@if (session('status'))
+    <div class="alert-status">{{ session('status') }}</div>
+@endif
 
 <div class="container py-4">
     <a href="{{ route('flights.search.form') }}" class="btn btn-outline-secondary btn-sm mb-3">&laquo; Tìm lại</a>
+    @if (session('error'))
+        <div class="alert-error">{{ session('error') }}</div>
+    @endif
+
+    @if (session('status'))
+        <div class="alert-status">{{ session('status') }}</div>
+    @endif
 
     <h4 class="mb-1">{{ $departureAirport->city }} ({{ $departureAirport->iata_code }}) &rarr; {{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</h4>
     <p class="text-muted mb-4">

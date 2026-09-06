@@ -33,4 +33,4 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking/hold', [SeatSelectionController::class, 'hold'])->name('booking.hold');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__.'/auth.php'; 

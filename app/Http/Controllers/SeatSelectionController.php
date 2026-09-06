@@ -21,7 +21,20 @@ class SeatSelectionController extends Controller
         $seatsNeeded = $data['adults'] + ($data['children'] ?? 0); // infant không tính ghế riêng
 
         try {
-            $heldSeatIds = DB::transaction(function () use ($data, $seatsNeeded) {
+            $heldSeatIds = DB::transaction(function () use ($request, $data, $seatsNeeded) {
+                // Hủy hold cũ nếu còn sống, thuộc đúng user này
+                $oldHold = session('pending_hold');
+                if ($oldHold && isset($oldHold['flight_seat_ids'])) {
+                    FlightSeat::where('held_by', auth()->id())
+                        ->whereIn('id', $oldHold['flight_seat_ids'])
+                        ->where('status', 'held')
+                        ->update([
+                            'status' => 'available',
+                            'held_by' => null,
+                            'held_until' => null,
+                        ]);
+                }
+                
                 $candidates = FlightSeat::where('flight_id', $data['flight_id'])
                     ->where('fare_class_id', $data['fare_class_id'])
                     ->where(function ($q) {

@@ -1,5 +1,13 @@
 {{-- TEMP LAYOUT --}}
 
+@if (session('error'))
+    <div class="alert-error">{{ session('error') }}</div>
+@endif
+
+@if (session('status'))
+    <div class="alert-status">{{ session('status') }}</div>
+@endif
+
 <div class="container py-4">
     <h3 class="mb-3">Tìm chuyến bay</h3>
 
