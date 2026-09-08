@@ -12,7 +12,8 @@ use Illuminate\Support\Str;
 
 class PaymentController extends Controller
 {
-    const PAYMENT_EXPIRE_MINUTES = 15;
+    // const PAYMENT_EXPIRE_MINUTES = 15;
+    public function __construct(private \App\Services\BookingExpiryService $expiryService) {}
 
     public function show(Booking $booking)
     {
@@ -20,7 +21,7 @@ class PaymentController extends Controller
             abort(403);
         }
 
-        $this->cancelExpiredBooking($booking);
+        $this->expiryService->cancelIfExpired($booking);
         $booking->refresh();
 
         if ($booking->status === 'cancelled') {
@@ -28,13 +29,13 @@ class PaymentController extends Controller
                 ->with('error', 'Booking đã hết hạn thanh toán và đã bị hủy.');
         }
 
+        // TODO: đổi sang route('booking.history') khi B làm xong
         if ($booking->status === 'paid') {
-            // TODO: đổi sang route('booking.history') khi B làm xong
             return redirect()->route('flights.search.form')
                 ->with('status', 'Booking này đã thanh toán rồi.');
         }
 
-        $expiresAt = Carbon::parse($booking->created_at)->addMinutes(self::PAYMENT_EXPIRE_MINUTES);
+        $expiresAt = $booking->created_at->addMinutes(config('booking.payment_expire_minutes'));
 
         return view('payment.show', [
             'booking' => $booking->load('bookingFlights.flight', 'bookingFlights.tickets'),
@@ -48,7 +49,7 @@ class PaymentController extends Controller
             abort(403);
         }
 
-        $this->cancelExpiredBooking($booking);
+        $this->expiryService->cancelIfExpired($booking);
         $booking->refresh();
 
         if ($booking->status !== 'pending') {
@@ -88,37 +89,37 @@ class PaymentController extends Controller
             ->with('error', 'Thanh toán thất bại, vui lòng thử lại.');
     }
 
-    private function cancelExpiredBooking(Booking $booking): void
-    {
-        if ($booking->status !== 'pending') {
-            return;
-        }
+    // private function cancelExpiredBooking(Booking $booking): void
+    // {
+    //     if ($booking->status !== 'pending') {
+    //         return;
+    //     }
 
-        $expiresAt = Carbon::parse($booking->created_at)->addMinutes(self::PAYMENT_EXPIRE_MINUTES);
-        if (! now()->greaterThan($expiresAt)) {
-            return;
-        }
+    //     $expiresAt = Carbon::parse($booking->created_at)->addMinutes(self::PAYMENT_EXPIRE_MINUTES);
+    //     if (! now()->greaterThan($expiresAt)) {
+    //         return;
+    //     }
 
-        DB::transaction(function () use ($booking) {
-            $flightSeatIds = $booking->bookingFlights()
-                ->with('tickets')
-                ->get()
-                ->pluck('tickets')
-                ->flatten()
-                ->pluck('flight_seat_id')
-                ->filter()
-                ->values();
+    //     DB::transaction(function () use ($booking) {
+    //         $flightSeatIds = $booking->bookingFlights()
+    //             ->with('tickets')
+    //             ->get()
+    //             ->pluck('tickets')
+    //             ->flatten()
+    //             ->pluck('flight_seat_id')
+    //             ->filter()
+    //             ->values();
 
-            if ($flightSeatIds->isNotEmpty()) {
-                FlightSeat::whereIn('id', $flightSeatIds)
-                    ->update([
-                        'status' => 'available',
-                        'held_by' => null,
-                        'held_until' => null,
-                    ]);
-            }
+    //         if ($flightSeatIds->isNotEmpty()) {
+    //             FlightSeat::whereIn('id', $flightSeatIds)
+    //                 ->update([
+    //                     'status' => 'available',
+    //                     'held_by' => null,
+    //                     'held_until' => null,
+    //                 ]);
+    //         }
 
-            $booking->update(['status' => 'cancelled']);
-        });
-    }
+    //         $booking->update(['status' => 'cancelled']);
+    //     });
+    // }
 }

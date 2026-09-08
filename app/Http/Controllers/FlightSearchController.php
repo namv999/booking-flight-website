@@ -9,6 +9,7 @@ use App\Models\Flight;
 
 class FlightSearchController extends Controller
 {
+    public function __construct(private \App\Services\BookingExpiryService $expiryService) {}
     public function form()
     {
         $airports = Airport::orderBy('city')->get();
@@ -19,6 +20,7 @@ class FlightSearchController extends Controller
 
     public function results(FlightSearchRequest $request)
     {
+        $this->expiryService->cancelAllExpired();
         $data = $request->validated();
 
         $seatStats = \App\Models\FlightSeat::query()
