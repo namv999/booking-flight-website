@@ -175,7 +175,8 @@ class BookingController extends Controller
 
         session()->forget('pending_hold');
 
-        return redirect()->route('flights.search.form')
-            ->with('status', 'Đặt vé thành công! Mã booking #' . $booking->id);
+        // return redirect()->route('flights.search.form')
+        //     ->with('status', 'Đặt vé thành công! Mã booking #' . $booking->id);
+        return redirect()->route('payment.show', $booking)->with('status', 'Đặt vé thành công, tiến hành thanh toán.');
     }
 }

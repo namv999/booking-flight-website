@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FlightSearchController;
 use App\Http\Controllers\SeatSelectionController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -36,5 +37,8 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/booking/passengers', [BookingController::class, 'create'])->name('booking.passengers.form');
 Route::post('/booking/passengers', [BookingController::class, 'store'])->name('booking.passengers.store');
+
+Route::get('/payment/{booking}', [PaymentController::class, 'show'])->name('payment.show');
+Route::post('/payment/{booking}', [PaymentController::class, 'store'])->name('payment.store');
 
 require __DIR__.'/auth.php'; 
