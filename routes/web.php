@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FlightSearchController;
 use App\Http\Controllers\SeatSelectionController;
+use App\Http\Controllers\BookingController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -32,5 +33,8 @@ Route::get('/flights/results', [FlightSearchController::class, 'results'])->name
 Route::middleware('auth')->group(function () {
     Route::post('/booking/hold', [SeatSelectionController::class, 'hold'])->name('booking.hold');
 });
+
+Route::get('/booking/passengers', [BookingController::class, 'create'])->name('booking.passengers.form');
+Route::post('/booking/passengers', [BookingController::class, 'store'])->name('booking.passengers.store');
 
 require __DIR__.'/auth.php'; 
