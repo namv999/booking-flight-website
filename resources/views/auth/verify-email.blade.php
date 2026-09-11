@@ -1,31 +1,24 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
+@extends('layouts.app')
 
-    @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </div>
-    @endif
+@section('title', 'Xác thực email - Jet Charter Flights')
 
-    <div class="mt-4 flex items-center justify-between">
-        <form method="POST" action="{{ route('verification.send') }}">
-            @csrf
-
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
+@section('content')
+<section class="bf-auth bf-auth--compact">
+    <div class="bf-container bf-auth__shell">
+        <aside class="bf-auth__visual"><img src="{{ asset('images/destination-ha-noi.jpg') }}" alt="Hà Nội nhìn từ trên cao"><span class="bf-auth__shade"></span><div><span class="bf-eyebrow bf-eyebrow--light">Gần hoàn tất</span><h1>Xác thực email để sẵn sàng cất cánh.</h1></div></aside>
+        <div class="bf-auth__card">
+            <div class="bf-auth__badge" aria-hidden="true">@</div>
+            <div class="bf-auth__heading"><span class="bf-eyebrow">Kiểm tra hộp thư</span><h2>Xác thực email</h2><p>Chúng tôi đã gửi một liên kết xác thực. Hãy mở email và chọn liên kết để kích hoạt tài khoản.</p></div>
+            @if (session('status') == 'verification-link-sent')<div class="bf-alert bf-alert--success">Một liên kết xác thực mới đã được gửi tới email của bạn.</div>@endif
+            <div class="bf-auth__actions">
+                <form method="POST" action="{{ route('verification.send') }}">@csrf<button class="bf-button bf-button--primary bf-button--block" type="submit">Gửi lại email xác thực</button></form>
+                <form method="POST" action="{{ route('logout') }}">@csrf<button class="bf-button bf-button--ghost bf-button--block" type="submit">Đăng xuất</button></form>
             </div>
-        </form>
-
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {{ __('Log Out') }}
-            </button>
-        </form>
+        </div>
     </div>
-</x-guest-layout>
+</section>
+@endsection
+
+@section('scripts')
+    <script src="{{ asset('js/auth.js') }}"></script>
+@endsection

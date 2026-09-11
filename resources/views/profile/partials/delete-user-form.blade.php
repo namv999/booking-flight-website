@@ -1,55 +1,13 @@
-<section class="space-y-6">
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Delete Account') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
-        </p>
-    </header>
-
-    <x-danger-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    >{{ __('Delete Account') }}</x-danger-button>
-
+<section>
+    <header class="bf-form-section-heading"><span class="bf-eyebrow">Vùng nguy hiểm</span><h2>Xóa tài khoản</h2><p>Sau khi xóa, toàn bộ dữ liệu tài khoản sẽ bị loại bỏ vĩnh viễn.</p></header>
+    <button class="bf-button bf-button--danger" type="button" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')">Xóa tài khoản</button>
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
+        <form method="post" action="{{ route('profile.destroy') }}" class="bf-modal-form">
             @csrf
             @method('delete')
-
-            <h2 class="text-lg font-medium text-gray-900">
-                {{ __('Are you sure you want to delete your account?') }}
-            </h2>
-
-            <p class="mt-1 text-sm text-gray-600">
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
-            </p>
-
-            <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
-
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
-
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('Cancel') }}
-                </x-secondary-button>
-
-                <x-danger-button class="ms-3">
-                    {{ __('Delete Account') }}
-                </x-danger-button>
-            </div>
+            <span class="bf-eyebrow">Xác nhận thao tác</span><h2>Bạn chắc chắn muốn xóa tài khoản?</h2><p>Thao tác này không thể hoàn tác. Hãy nhập mật khẩu để xác nhận.</p>
+            <label class="bf-field"><span>Mật khẩu</span><input id="delete-account-password" name="password" type="password" placeholder="Nhập mật khẩu"><x-input-error :messages="$errors->userDeletion->get('password')" class="bf-field__error" /></label>
+            <div class="bf-modal-form__actions"><button class="bf-button bf-button--ghost" type="button" x-on:click="$dispatch('close')">Hủy</button><button class="bf-button bf-button--danger" type="submit">Xóa vĩnh viễn</button></div>
         </form>
     </x-modal>
 </section>

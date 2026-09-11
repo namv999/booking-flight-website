@@ -1,9 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', 'Chuyến đi của tôi - Jet Charter Flights')
+@section('title', 'Tổng quan quản trị - Jet Charter Flights')
 
 @section('content')
-    @include('dashboard.user')
+    @include('dashboard.admin')
 @endsection
 
 @section('scripts')

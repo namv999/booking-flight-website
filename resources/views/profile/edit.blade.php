@@ -1,29 +1,29 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
+@section('title', 'Hồ sơ cá nhân - Jet Charter Flights')
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
-        </div>
+@section('content')
+<section class="bf-page-hero bf-page-hero--profile">
+    <div class="bf-container bf-page-hero__inner">
+        <div><span class="bf-eyebrow bf-eyebrow--light">Tài khoản cá nhân</span><h1>Thông tin của bạn</h1><p>Cập nhật hồ sơ và cài đặt bảo mật cho những hành trình tiếp theo.</p></div>
+        <form method="POST" action="{{ route('logout') }}">@csrf<button class="bf-button bf-button--light" type="submit">Đăng xuất</button></form>
     </div>
-</x-app-layout>
+</section>
+<section class="bf-profile bf-container">
+    <aside class="bf-profile-nav" aria-label="Điều hướng hồ sơ">
+        <a class="bf-profile-nav__link--active" href="#profile-information">Thông tin cá nhân</a>
+        <a href="#profile-password">Mật khẩu</a>
+        <a href="#profile-danger">Quản lý tài khoản</a>
+        <a href="{{ route('dashboard') }}">Quay lại chuyến đi</a>
+    </aside>
+    <div class="bf-profile__content">
+        <div class="bf-profile-card" id="profile-information">@include('profile.partials.update-profile-information-form')</div>
+        <div class="bf-profile-card" id="profile-password">@include('profile.partials.update-password-form')</div>
+        <div class="bf-profile-card bf-profile-card--danger" id="profile-danger">@include('profile.partials.delete-user-form')</div>
+    </div>
+</section>
+@endsection
+
+@section('scripts')
+    <script src="{{ asset('js/auth.js') }}"></script>
+@endsection
