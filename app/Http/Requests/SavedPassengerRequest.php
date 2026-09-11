@@ -22,7 +22,7 @@ class SavedPassengerRequest extends FormRequest
                     ->where('user_id', auth()->id())
                     ->ignore($this->route('saved_passenger')),
             ],
-            'date_of_birth' => ['nullable', 'date'],
+            'date_of_birth' => ['nullable', 'date','before_or_equal:today'],
             'passenger_type_default' => ['required', 'in:adult,child,infant'],
             'relationship' => ['nullable', 'string', 'max:30'],
         ];
