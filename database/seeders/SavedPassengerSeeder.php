@@ -16,6 +16,7 @@ class SavedPassengerSeeder extends Seeder
         $savedPassengers = [
             [
                 'full_name' => 'Nguyen Van An',
+                'document_type' => 'national_id',
                 'document_number' => '079201000001',
                 'date_of_birth' => '1998-05-12',
                 'passenger_type_default' => 'adult',
@@ -23,6 +24,7 @@ class SavedPassengerSeeder extends Seeder
             ],
             [
                 'full_name' => 'Tran Thi Binh',
+                'document_type' => 'national_id',
                 'document_number' => '079201000002',
                 'date_of_birth' => '1995-09-20',
                 'passenger_type_default' => 'adult',
@@ -30,6 +32,7 @@ class SavedPassengerSeeder extends Seeder
             ],
             [
                 'full_name' => 'Tran Minh Khang',
+                'document_type' => 'national_id',
                 'document_number' => '079201000003',
                 'date_of_birth' => '2018-03-15',
                 'passenger_type_default' => 'child',

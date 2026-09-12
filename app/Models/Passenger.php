@@ -15,6 +15,10 @@ class Passenger extends Model
         'passenger_type',
         'document_number',
         'date_of_birth',
+        'document_type',
+        'nationality',
+        'document_issued_country',
+        'document_expiry_date',
     ];
 
     protected function casts(): array

@@ -16,6 +16,10 @@ class SavedPassenger extends Model
         'date_of_birth',
         'passenger_type_default',
         'relationship',
+        'document_type',
+        'nationality',
+        'document_issued_country',
+        'document_expiry_date',
     ];
 
     protected function casts(): array
