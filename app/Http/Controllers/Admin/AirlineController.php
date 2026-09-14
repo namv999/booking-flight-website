@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Airline;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\StoreAirlineRequest;
+use App\Http\Requests\Admin\UpdateAirlineRequest;
 
 class AirlineController extends Controller
 {
@@ -28,20 +30,9 @@ class AirlineController extends Controller
         return view('admin.airlines.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreAirlineRequest $request)
     {
-        $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'code'     => ['required', 'string', 'max:10', 'unique:airlines,code'],
-            'country'  => ['nullable', 'string', 'max:100'],
-            'logo_url' => ['nullable', 'string', 'max:255'],
-        ], [
-            'name.required' => 'Vui lòng nhập tên hãng hàng không.',
-            'code.required' => 'Vui lòng nhập mã hãng code.',
-            'code.unique'   => 'Mã hãng này đã tồn tại trong hệ thống.',
-        ]);
-
-        Airline::create($validated);
+        Airline::create($request->validated());
 
         return redirect()->route('admin.airlines.index')
             ->with('success', 'Thêm hãng hàng không thành công.');
@@ -52,20 +43,9 @@ class AirlineController extends Controller
         return view('admin.airlines.edit', compact('airline'));
     }
 
-    public function update(Request $request, Airline $airline)
+    public function update(UpdateAirlineRequest $request, Airline $airline)
     {
-        $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'code'     => ['required', 'string', 'max:10', 'unique:airlines,code,' . $airline->id],
-            'country'  => ['nullable', 'string', 'max:100'],
-            'logo_url' => ['nullable', 'string', 'max:255'],
-        ], [
-            'name.required' => 'Vui lòng nhập tên hãng hàng không.',
-            'code.required' => 'Vui lòng nhập mã hãng code.',
-            'code.unique'   => 'Mã hãng này đã tồn tại trong hệ thống.',
-        ]);
-
-        $airline->update($validated);
+        $airline->update($request->validated());
 
         return redirect()->route('admin.airlines.index')
             ->with('success', 'Cập nhật hãng hàng không thành công.');
@@ -77,5 +57,9 @@ class AirlineController extends Controller
 
         return redirect()->route('admin.airlines.index')
             ->with('success', 'Xóa hãng hàng không thành công.');
+    }
+    public function show(Airline $airline)
+    {
+        return view('admin.airlines.show', compact('airline'));
     }
 }

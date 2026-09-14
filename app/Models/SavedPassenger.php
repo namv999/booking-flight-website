@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 class SavedPassenger extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'user_id',
@@ -16,6 +15,10 @@ class SavedPassenger extends Model
         'date_of_birth',
         'passenger_type_default',
         'relationship',
+        'document_type',
+        'nationality',
+        'document_issued_country',
+        'document_expiry_date',
     ];
 
     protected function casts(): array

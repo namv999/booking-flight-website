@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 class Passenger extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'booking_id',
@@ -15,6 +14,10 @@ class Passenger extends Model
         'passenger_type',
         'document_number',
         'date_of_birth',
+        'document_type',
+        'nationality',
+        'document_issued_country',
+        'document_expiry_date',
     ];
 
     protected function casts(): array

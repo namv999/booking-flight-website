@@ -7,6 +7,8 @@ use App\Models\Flight;
 use App\Models\Aircraft;
 use App\Models\Airport;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\StoreFlightRequest;
+use App\Http\Requests\Admin\UpdateFlightRequest;
 
 class FlightController extends Controller
 {
@@ -36,28 +38,9 @@ class FlightController extends Controller
         return view('admin.flights.create', compact('aircrafts', 'airports'));
     }
 
-    public function store(Request $request)
+    public function store(StoreFlightRequest $request)
     {
-        $validated = $request->validate([
-            'aircraft_id'          => ['required', 'exists:aircrafts,id'],
-            'departure_airport_id' => ['required', 'exists:airports,id', 'different:arrival_airport_id'],
-            'arrival_airport_id'   => ['required', 'exists:airports,id'],
-            'departure_time'       => ['required', 'date', 'after:now'],
-            'arrival_time'         => ['required', 'date', 'after:departure_time'],
-            'status'               => ['required', 'string', 'max:50'],
-        ], [
-            'aircraft_id.required'          => 'Vui lòng chọn máy bay.',
-            'departure_airport_id.required' => 'Vui lòng chọn sân bay xuất phát.',
-            'arrival_airport_id.required'   => 'Vui lòng chọn sân bay đến.',
-            'departure_airport_id.different'=> 'Sân bay đi và sân bay đến phải khác nhau.',
-            'departure_time.required'       => 'Vui lòng chọn thời gian đi.',
-            'departure_time.after'          => 'Thời gian đi phải lớn hơn thời điểm hiện tại.',
-            'arrival_time.required'         => 'Vui lòng chọn thời gian đến.',
-            'arrival_time.after'            => 'Thời gian đến phải sau thời gian đi.',
-            'status.required'               => 'Vui lòng chọn trạng thái chuyến bay.',
-        ]);
-
-        Flight::create($validated);
+        Flight::create($request->validated());
 
         return redirect()->route('admin.flights.index')
             ->with('success', 'Thêm chuyến bay thành công.');
@@ -70,27 +53,9 @@ class FlightController extends Controller
         return view('admin.flights.edit', compact('flight', 'aircrafts', 'airports'));
     }
 
-    public function update(Request $request, Flight $flight)
+    public function update(UpdateFlightRequest $request, Flight $flight)
     {
-        $validated = $request->validate([
-            'aircraft_id'          => ['required', 'exists:aircrafts,id'],
-            'departure_airport_id' => ['required', 'exists:airports,id', 'different:arrival_airport_id'],
-            'arrival_airport_id'   => ['required', 'exists:airports,id'],
-            'departure_time'       => ['required', 'date'],
-            'arrival_time'         => ['required', 'date', 'after:departure_time'],
-            'status'               => ['required', 'string', 'max:50'],
-        ], [
-            'aircraft_id.required'          => 'Vui lòng chọn máy bay.',
-            'departure_airport_id.required' => 'Vui lòng chọn sân bay xuất phát.',
-            'arrival_airport_id.required'   => 'Vui lòng chọn sân bay đến.',
-            'departure_airport_id.different'=> 'Sân bay đi và sân bay đến phải khác nhau.',
-            'departure_time.required'       => 'Vui lòng chọn thời gian đi.',
-            'arrival_time.required'         => 'Vui lòng chọn thời gian đến.',
-            'arrival_time.after'            => 'Thời gian đến phải sau thời gian đi.',
-            'status.required'               => 'Vui lòng chọn trạng thái chuyến bay.',
-        ]);
-
-        $flight->update($validated);
+        $flight->update($request->validated());
 
         return redirect()->route('admin.flights.index')
             ->with('success', 'Cập nhật chuyến bay thành công.');
@@ -102,5 +67,10 @@ class FlightController extends Controller
 
         return redirect()->route('admin.flights.index')
             ->with('success', 'Xóa chuyến bay thành công.');
+    }
+    public function show(Flight $flight)
+    {
+        $flight->load(['aircraft.airline', 'departureAirport', 'arrivalAirport']);
+        return view('admin.flights.show', compact('flight'));
     }
 }
