@@ -2,10 +2,14 @@
 
 @section('title', 'Chuyến đi của tôi - Jet Charter Flights')
 
+@section('styles')
+    @vite(['resources/css/account.css'])
+@endsection
+
 @section('content')
     @include('dashboard.user')
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/dashboard.js') }}"></script>
+    @vite(['resources/js/dashboard.js'])
 @endsection

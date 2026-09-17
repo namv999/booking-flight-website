@@ -1,3 +1,8 @@
+<style>
+    :root {
+        --hero-banner-url: url('{{ asset('images/hero-banner.jpg') }}');
+    }
+</style>
 <section class="bf-hero">
     <div class="bf-hero__image" aria-hidden="true"></div>
     <div class="bf-hero__shade" aria-hidden="true"></div>

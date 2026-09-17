@@ -2,6 +2,10 @@
 
 @section('title', 'Xác thực email - Jet Charter Flights')
 
+@section('styles')
+    @vite(['resources/css/account.css'])
+@endsection
+
 @section('content')
 <section class="bf-auth bf-auth--compact">
     <div class="bf-container bf-auth__shell">
@@ -20,5 +24,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/auth.js') }}"></script>
+    @vite(['resources/js/auth.js'])
 @endsection

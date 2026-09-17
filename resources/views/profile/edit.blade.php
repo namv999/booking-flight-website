@@ -2,6 +2,10 @@
 
 @section('title', 'Hồ sơ cá nhân - Jet Charter Flights')
 
+@section('styles')
+    @vite(['resources/css/account.css'])
+@endsection
+
 @section('content')
 <section class="bf-page-hero bf-page-hero--profile">
     <div class="bf-container bf-page-hero__inner">
@@ -25,5 +29,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/auth.js') }}"></script>
+    @vite(['resources/js/dashboard.js'])
 @endsection

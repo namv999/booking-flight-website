@@ -2,10 +2,14 @@
 
 @section('title', 'Jet Charter Flights - Đặt vé máy bay')
 
+@section('styles')
+    @vite(['resources/css/home.css'])
+@endsection
+
 @section('content')
     @include('home')
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/home.js') }}"></script>
+    @vite(['resources/js/home.js'])
 @endsection

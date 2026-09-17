@@ -3,6 +3,10 @@
 
 @section('title', 'Tài khoản - Jet Charter Flights')
 
+@section('styles')
+    @vite(['resources/css/home.css'])
+@endsection
+
 @section('content')
     <section class="bf-auth">
         <div class="bf-container bf-auth__shell">
@@ -14,5 +18,6 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/auth.js') }}"></script>
+    @vite(['resources/js/home.js'])
 @endsection
+

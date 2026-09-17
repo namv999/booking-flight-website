@@ -7,8 +7,10 @@
     <title>@yield('title', 'Quản trị - Jet Charter Flights')</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=be-vietnam-pro:400,500,600,700,800&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}"> -->
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/css/admin.css'])
 </head>
 <body class="bf-body bf-admin-body">
     <div class="bf-admin-shell">
@@ -54,7 +56,8 @@
             </main>
         </div>
     </div>
-    <script src="{{ asset('js/layout.js') }}"></script>
+    <!-- <script src="{{ asset('js/layout.js') }}"></script> -->
+    @vite(['resources/js/layout.js'])
     @yield('scripts')
 </body>
 </html>

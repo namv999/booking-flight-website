@@ -1,3 +1,5 @@
+@import "./base.css";
+
 .bf-hero {
     position: relative;
     min-height: 610px;
@@ -10,7 +12,8 @@
     inset: 0;
 }
 .bf-hero__image {
-    background: url("../images/hero-banner.jpg") center 54% / cover no-repeat;
+    /* background: url("/images/hero-banner.jpg") center 54% / cover no-repeat; */
+    background: var(--hero-banner-url) center 54% / cover no-repeat;
     filter: saturate(1.05);
     transform: scale(1.015);
 }
