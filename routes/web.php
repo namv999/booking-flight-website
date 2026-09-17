@@ -12,10 +12,12 @@ use App\Http\Controllers\SeatSelectionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', function () {
-    return view('home');
-});
+// Route::get('/', function () {
+//     return view('home');
+// });
+Route::get('/', [HomeController::class, 'index']);
 
 Route::get('/dashboard', function () {
     if (Auth::user()->role === 'admin') {

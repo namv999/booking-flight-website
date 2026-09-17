@@ -676,3 +676,158 @@
         grid-template-columns: 1fr;
     }
 }
+/* Card bao bên ngoài box tìm kiếm */
+.bf-search-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+/* Tabs chọn kiểu chuyến bay */
+.bf-trip-tabs {
+    background-color: #f1f3f5;
+    padding: 4px;
+    border-radius: 10px;
+    display: inline-flex;
+}
+
+.bf-tab-btn {
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 0;
+}
+
+.btn-check:checked + .bf-tab-btn {
+    background-color: #ffffff;
+    color: #0b5ed7;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    font-weight: 600;
+}
+
+/* Các dropdown chọn khách & hạng ghế */
+.bf-dropdown-btn {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    color: #333;
+}
+
+.bf-dropdown-btn:hover,
+.bf-dropdown-btn:focus {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+/* Input chính (Điểm đi, Đến, Ngày) */
+.bf-input {
+    border-radius: 12px;
+    border: 1px solid #ced4da;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #212529;
+    background-color: #ffffff;
+}
+
+.bf-input:focus {
+    border-color: #ff9800;
+    box-shadow: 0 0 0 0.25rem rgba(255, 152, 0, 0.15);
+}
+
+.bf-input:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.7;
+}
+
+/* Nút đổi điểm đi/đến (Swap button) */
+.bf-swap-wrapper {
+    margin-top: 1.5rem;
+}
+
+.bf-swap-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #dee2e6;
+    background-color: #ffffff;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bf-swap-btn:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.bf-swap-btn::before {
+    content: "⇄";
+    font-size: 18px;
+    font-weight: bold;
+    color: #6c757d;
+}
+
+/* Nút tìm kiếm chuyến bay */
+.bf-search-btn {
+    background-color: #ffa726;
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.bf-search-btn:hover {
+    background-color: #f57c00;
+    color: #ffffff;
+}
+
+.bf-search-card select[name="fare_class_id"] {
+    min-width: 130px; /* Tăng chiều dài ô */
+    padding-left: 14px;
+    padding-right: 32px; /* Tạo khoảng trống bên phải để mũi tên không đè chữ */
+    background-position: right 10px center; /* Đưa icon mũi tên về sát mép phải */
+}
+
+/* Căn chỉnh dropdown hành khách & hạng ghế đồng nhất height/line-height */
+#passenger-toggle,
+.bf-search-card select[name="fare_class_id"] {
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    font-size: 14px;
+}
+
+#passenger-toggle {
+    min-width: 230px; /* Tăng chiều dài ô */
+    justify-content: space-between;
+    padding: 6px 14px;
+}
+
+.bf-search-card input[type="number"]::-webkit-inner-spin-button,
+.bf-search-card input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.bf-search-card input[type="number"] {
+    -moz-appearance: textfield; /* Cho Firefox */
+}

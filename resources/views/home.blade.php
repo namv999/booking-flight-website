@@ -34,60 +34,131 @@
 
 <section class="bf-container bf-search-wrap" aria-label="Tìm kiếm chuyến bay">
     {{-- NOTE(C): cần FlightSearchController cung cấp danh sách sân bay và xử lý tìm kiếm; hiện form dùng dữ liệu nhập tĩnh và JS minh họa. --}}
-    <form class="bf-flight-search" id="search-box" action="#" novalidate>
-        <div class="bf-flight-search__head">
-            <div>
-                <span class="bf-eyebrow">Tìm chuyến bay</span>
-                <h2>Lịch trình của bạn</h2>
+    <form class="bf-search-card" id="search-box" action="{{ route('flights.search.results') }}" method="GET">
+        @if ($errors->any())
+            <div class="alert alert-danger py-2 small mb-3">
+                <ul class="mb-0 ps-3">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-            <div class="bf-segmented" role="radiogroup" aria-label="Loại hành trình">
-                <label><input type="radio" name="trip_type" value="round-trip" checked><span>Khứ hồi</span></label>
-                <label><input type="radio" name="trip_type" value="one-way"><span>Một chiều</span></label>
-                <label><input type="radio" name="trip_type" value="multi-city"><span>Đa chặng</span></label>
+        @endif
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div class="bf-trip-tabs">
+                <input type="radio" class="btn-check" name="trip_type" id="trip-oneway" value="one-way" checked>
+                <label class="bf-tab-btn" for="trip-oneway">Một chiều</label>
+
+                <input type="radio" class="btn-check" name="trip_type" id="trip-roundtrip" value="round-trip">
+                <label class="bf-tab-btn" for="trip-roundtrip">Khứ hồi</label>
+
+                <input type="radio" class="btn-check" name="trip_type" id="trip-multicity" value="multi-city">
+                <label class="bf-tab-btn" for="trip-multicity">Đa chặng</label>
+            </div>
+
+            <div class="d-flex gap-2">
+                <div class="dropdown">
+                    <button type="button" class="btn bf-dropdown-btn dropdown-toggle" id="passenger-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                        <i class="bi bi-people me-1"></i>
+                        <span id="passenger-summary">1 Người lớn, 0 Trẻ em, 0 Em bé</span>
+                    </button>
+                    <div class="dropdown-menu p-3 shadow-sm border-0" style="width: 280px; border-radius: 12px;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <div class="fw-semibold small">Người lớn</div>
+                                <div class="small text-muted">Từ 12 tuổi</div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="adults" data-step="-1">−</button>
+                                <input type="number" class="form-control form-control-sm text-center" style="width:52px" name="adults" id="adults-input" value="1" min="1" max="9">
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="adults" data-step="1">+</button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <div class="fw-semibold small">Trẻ em</div>
+                                <div class="small text-muted">Từ 2 - 11 tuổi</div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="children" data-step="-1">−</button>
+                                <input type="number" class="form-control form-control-sm text-center" style="width:52px" name="children" id="children-input" value="0" min="0" max="9">
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="children" data-step="1">+</button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <div class="fw-semibold small">Em bé</div>
+                                <div class="small text-muted">Dưới 2 tuổi</div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="infants" data-step="-1">−</button>
+                                <input type="number" class="form-control form-control-sm text-center" style="width:52px" name="infants" id="infants-input" value="0" min="0" max="9">
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="infants" data-step="1">+</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm w-100 rounded-3" id="passenger-done">Xong</button>
+                    </div>
+                </div>
+
+                <div class="position-relative">
+                    <i class="bi bi-journal-bookmark position-absolute top-50 start-0 translate-middle-y ms-2 text-muted" style="z-index: 5;"></i>
+                    <select class="form-select bf-dropdown-btn ps-4" name="fare_class_id" required>
+                        @foreach ($fareClasses as $fareClass)
+                            <option value="{{ $fareClass->id }}" {{ old('fare_class_id') == $fareClass->id ? 'selected' : '' }}>
+                                {{ $fareClass->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div class="bf-search-grid">
-            <label class="bf-field bf-field--route">
-                <span>Từ</span>
-                <input id="departure-airport" type="text" placeholder="TP. Hồ Chí Minh (SGN)">
-                <small>Chọn sân bay khởi hành</small>
-            </label>
-            <button class="bf-swap-button" id="swap-airports" type="button" aria-label="Đổi điểm đi và điểm đến">⇄</button>
-            <label class="bf-field bf-field--route">
-                <span>Đến</span>
-                <input id="arrival-airport" type="text" placeholder="Hà Nội (HAN)">
-                <small>Chọn sân bay đến</small>
-            </label>
-            <label class="bf-field">
-                <span>Ngày đi</span>
-                <input id="departure-date" type="date">
-            </label>
-            <label class="bf-field" id="return-date-field">
-                <span>Ngày về</span>
-                <input id="return-date" type="date">
-            </label>
-            <label class="bf-field">
-                <span>Hành khách</span>
-                <select id="passenger-count">
-                    <option>1 người lớn</option>
-                    <option>2 người lớn</option>
-                    <option>Gia đình (2 + 1)</option>
-                    <option>Nhóm 4 người</option>
+        <div class="row g-2 align-items-center mb-3 position-relative">
+            <div class="col-12 col-md-5">
+                <label class="form-label text-muted small mb-1 ms-1">Từ</label>
+                <select class="form-select bf-input" name="departure_airport_id" id="departure-airport" required>
+                    <option value="">-- Chọn --</option>
+                    @foreach ($airports as $airport)
+                        <option value="{{ $airport->id }}" {{ old('departure_airport_id') == $airport->id ? 'selected' : '' }}>
+                            {{ $airport->city }} ({{ $airport->iata_code }})
+                        </option>
+                    @endforeach
                 </select>
-            </label>
-            <label class="bf-field">
-                <span>Hạng ghế</span>
-                <select id="seat-class">
-                    <option>Phổ thông</option>
-                    <option>Phổ thông đặc biệt</option>
-                    <option>Thương gia</option>
-                    <option>Hạng nhất</option>
+            </div>
+
+            <div class="col-12 col-md-2 d-flex justify-content-center align-items-end bf-swap-wrapper">
+                <button class="bf-swap-btn" id="swap-airports" type="button" aria-label="Đổi điểm đi và điểm đến">
+                    <i class="bi bi-arrow-left-right"></i>
+                </button>
+            </div>
+
+            <div class="col-12 col-md-5">
+                <label class="form-label text-muted small mb-1 ms-1">Đến</label>
+                <select class="form-select bf-input" name="arrival_airport_id" id="arrival-airport" required>
+                    <option value="">-- Chọn --</option>
+                    @foreach ($airports as $airport)
+                        <option value="{{ $airport->id }}" {{ old('arrival_airport_id') == $airport->id ? 'selected' : '' }}>
+                            {{ $airport->city }} ({{ $airport->iata_code }})
+                        </option>
+                    @endforeach
                 </select>
-            </label>
-            <button class="bf-button bf-button--accent bf-search-submit" type="submit">Tìm chuyến bay</button>
+            </div>
+
+            <div class="col-6 col-md-6 mt-2">
+                <label class="form-label text-muted small mb-1 ms-1">Ngày đi</label>
+                <input type="date" class="form-control bf-input" name="departure_date" id="departure-date" value="{{ old('departure_date') }}" required>
+            </div>
+
+            <div class="col-6 col-md-6 mt-2">
+                <label class="form-label text-muted small mb-1 ms-1">Ngày về</label>
+                <input type="date" class="form-control bf-input" id="return-date" disabled>
+            </div>
         </div>
-        <p class="bf-form-message" id="flight-search-message" role="status" aria-live="polite"></p>
+
+        <button class="btn bf-search-btn w-100" type="submit">
+            <i class="bi bi-search me-2"></i>Tìm chuyến bay
+        </button>
     </form>
 </section>
 
