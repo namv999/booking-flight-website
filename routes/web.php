@@ -11,13 +11,17 @@ use App\Http\Controllers\FlightSearchController;
 use App\Http\Controllers\SeatSelectionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PaymentController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    if (Auth::user()->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+    return view('dashboard.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

@@ -1,4 +1,6 @@
-{{-- TEMP LAYOUT --}}
+{{-- resources/views/layouts/app.blade.php --}}
+{{-- LAYOUT: dùng chung cho MỌI trang user-facing (khách + user đã login) - navbar, footer, @yield('styles'/'content'/'scripts') --}}
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>

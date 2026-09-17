@@ -1,3 +1,6 @@
+{{-- resources/views/profile/edit.blade.php --}}
+{{-- Trang PROFILE của user đang login — gồm 3 form con: update info / update password / delete account --}}
+
 @extends('layouts.app')
 
 @section('title', 'Hồ sơ cá nhân - Jet Charter Flights')

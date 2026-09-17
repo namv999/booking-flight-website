@@ -1,3 +1,6 @@
+{{-- resources/views/dashboard/user.blade.php --}}
+{{-- NỘI DUNG dashboard USER - stat cards, danh sách chuyến bay, tab lọc trạng thái (data mẫu, chờ Controller) --}}
+
 <section class="bf-page-hero bf-page-hero--dashboard">
     <div class="bf-container bf-page-hero__inner">
         <div>

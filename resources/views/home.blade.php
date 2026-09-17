@@ -1,3 +1,15 @@
+{{-- resources/views/home.blade.php --}}
+{{-- TRANG CHỦ (route '/') - hero, search box tĩnh, destinations/offers/newsletter/stories (data mẫu, chờ Controller) --}}
+
+@extends('layouts.app')
+
+@section('title', 'Jet Charter Flights - Đặt vé máy bay')
+
+@section('styles')
+    @vite(['resources/css/home.css'])
+@endsection
+
+@section('content')
 <style>
     :root {
         --hero-banner-url: url('{{ asset('images/hero-banner.jpg') }}');
@@ -167,3 +179,8 @@
         </div>
     </div>
 </section>
+@endsection
+
+@section('scripts')
+    @vite(['resources/js/home.js'])
+@endsection

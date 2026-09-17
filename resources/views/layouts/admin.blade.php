@@ -1,3 +1,6 @@
+{{-- resources/views/layouts/admin.blade.php --}}
+{{-- LAYOUT: dùng chung cho MỌI trang admin - sidebar + topbar, load sẵn admin.css + layout.js, @yield('content'/'scripts') --}}
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
