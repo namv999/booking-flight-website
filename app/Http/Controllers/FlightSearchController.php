@@ -10,13 +10,14 @@ use App\Models\Flight;
 class FlightSearchController extends Controller
 {
     public function __construct(private \App\Services\BookingExpiryService $expiryService) {}
-    public function form()
-    {
-        $airports = Airport::orderBy('city')->get();
-        $fareClasses = FareClass::orderBy('base_price')->get(); // rẻ nhất trước -> default option đầu = "Phổ thông"
+    // Ẩn đi vì form tìm kiếm chuyến bay đã được tích hợp vào trang chủ
+    // public function form()
+    // {
+    //     $airports = Airport::orderBy('city')->get();
+    //     $fareClasses = FareClass::orderBy('base_price')->get(); // rẻ nhất trước -> default option đầu = "Phổ thông"
 
-        return view('flights.search', compact('airports', 'fareClasses'));
-    }
+    //     return view('flights.search', compact('airports', 'fareClasses'));
+    // } 
 
     public function results(FlightSearchRequest $request)
     {

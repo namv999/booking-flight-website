@@ -33,7 +33,6 @@
 </section>
 
 <section class="bf-container bf-search-wrap" aria-label="Tìm kiếm chuyến bay">
-    {{-- NOTE(C): cần FlightSearchController cung cấp danh sách sân bay và xử lý tìm kiếm; hiện form dùng dữ liệu nhập tĩnh và JS minh họa. --}}
     <form class="bf-search-card" id="search-box" action="{{ route('flights.search.results') }}" method="GET">
         @if ($errors->any())
             <div class="alert alert-danger py-2 small mb-3">
@@ -115,44 +114,91 @@
         </div>
 
         <div class="row g-2 align-items-center mb-3 position-relative">
-            <div class="col-12 col-md-5">
+            <!-- Từ (Điểm đi) -->
+            <div class="col-12 col-md-5 position-relative">
                 <label class="form-label text-muted small mb-1 ms-1">Từ</label>
-                <select class="form-select bf-input" name="departure_airport_id" id="departure-airport" required>
-                    <option value="">-- Chọn --</option>
-                    @foreach ($airports as $airport)
-                        <option value="{{ $airport->id }}" {{ old('departure_airport_id') == $airport->id ? 'selected' : '' }}>
-                            {{ $airport->city }} ({{ $airport->iata_code }})
-                        </option>
-                    @endforeach
-                </select>
+                <div class="dropdown">
+                    <input type="text" class="form-control bf-input dropdown-toggle" id="departure-display" data-bs-toggle="dropdown" placeholder="Chọn điểm đi" readonly autocomplete="off" required>
+                    <input type="hidden" name="departure_airport_id" id="departure-airport" value="{{ old('departure_airport_id') }}">
+                    
+                    <!-- Popup gợi ý danh sách kiểu VNA -->
+                    <div class="dropdown-menu p-3 shadow-lg border-0 rounded-4" id="departure-dropdown-menu" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control bg-light border-0" id="departure-search-input" placeholder="Tìm kiếm...">
+                        </div>
+                        <div class="airport-list">
+                            @foreach ($airports as $airport)
+                                <div class="departure-airport-option d-flex justify-content-between align-items-center p-2 rounded-3 cursor-pointer hover-bg-light" 
+                                    data-id="{{ $airport->id }}" 
+                                    data-code="{{ $airport->iata_code }}" 
+                                    data-city="{{ $airport->city }}">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ $airport->city }}</div>
+                                        <div class="small text-muted">{{ $airport->country ?? 'Việt Nam' }}</div>
+                                    </div>
+                                    <span class="badge bg-light text-dark border">{{ $airport->iata_code }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <!-- Nút Swap -->
             <div class="col-12 col-md-2 d-flex justify-content-center align-items-end bf-swap-wrapper">
                 <button class="bf-swap-btn" id="swap-airports" type="button" aria-label="Đổi điểm đi và điểm đến">
                     <i class="bi bi-arrow-left-right"></i>
                 </button>
             </div>
 
-            <div class="col-12 col-md-5">
+            <!-- Đến (Điểm đến) -->
+            <div class="col-12 col-md-5 position-relative">
                 <label class="form-label text-muted small mb-1 ms-1">Đến</label>
-                <select class="form-select bf-input" name="arrival_airport_id" id="arrival-airport" required>
-                    <option value="">-- Chọn --</option>
-                    @foreach ($airports as $airport)
-                        <option value="{{ $airport->id }}" {{ old('arrival_airport_id') == $airport->id ? 'selected' : '' }}>
-                            {{ $airport->city }} ({{ $airport->iata_code }})
-                        </option>
-                    @endforeach
-                </select>
+                <div class="dropdown">
+                    <input type="text" class="form-control bf-input dropdown-toggle" id="arrival-display" data-bs-toggle="dropdown" placeholder="Chọn điểm đến" readonly autocomplete="off" required>
+                    <input type="hidden" name="arrival_airport_id" id="arrival-airport" value="{{ old('arrival_airport_id') }}">
+                    
+                    <!-- Popup gợi ý danh sách kiểu VNA -->
+                    <div class="dropdown-menu p-3 shadow-lg border-0 rounded-4" id="arrival-dropdown-menu" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control bg-light border-0" id="arrival-search-input" placeholder="Tìm kiếm...">
+                        </div>
+                        <div class="airport-list">
+                            @foreach ($airports as $airport)
+                                <div class="arrival-airport-option d-flex justify-content-between align-items-center p-2 rounded-3 cursor-pointer hover-bg-light" 
+                                    data-id="{{ $airport->id }}" 
+                                    data-code="{{ $airport->iata_code }}" 
+                                    data-city="{{ $airport->city }}">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ $airport->city }}</div>
+                                        <div class="small text-muted">{{ $airport->country ?? 'Việt Nam' }}</div>
+                                    </div>
+                                    <span class="badge bg-light text-dark border">{{ $airport->iata_code }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <!-- Ngày đi -->
             <div class="col-6 col-md-6 mt-2">
                 <label class="form-label text-muted small mb-1 ms-1">Ngày đi</label>
-                <input type="date" class="form-control bf-input" name="departure_date" id="departure-date" value="{{ old('departure_date') }}" required>
+                <div class="position-relative">
+                    <i class="bi bi-calendar3 bf-date-icon"></i>
+                    <input type="date" class="form-control bf-input bf-date-input" name="departure_date" id="departure-date" value="{{ old('departure_date') }}" required>
+                </div>
             </div>
 
+            <!-- Ngày về -->
             <div class="col-6 col-md-6 mt-2">
                 <label class="form-label text-muted small mb-1 ms-1">Ngày về</label>
-                <input type="date" class="form-control bf-input" id="return-date" disabled>
+                <div class="position-relative">
+                    <i class="bi bi-calendar3 bf-date-icon"></i>
+                    <input type="date" class="form-control bf-input bf-date-input" id="return-date" disabled>
+                </div>
             </div>
         </div>
 

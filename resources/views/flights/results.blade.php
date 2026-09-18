@@ -8,7 +8,7 @@
 @endif
 
 <div class="container py-4">
-    <a href="{{ route('flights.search.form') }}" class="btn btn-outline-secondary btn-sm mb-3">&laquo; Tìm lại</a>
+    <a href="{{ url('/') }}" class="btn btn-outline-secondary btn-sm mb-3">&laquo; Tìm lại</a>
     @if (session('error'))
         <div class="alert-error">{{ session('error') }}</div>
     @endif

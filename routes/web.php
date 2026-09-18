@@ -17,7 +17,7 @@ use App\Http\Controllers\HomeController;
 // Route::get('/', function () {
 //     return view('home');
 // });
-Route::get('/', [HomeController::class, 'index']);
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/dashboard', function () {
     if (Auth::user()->role === 'admin') {
@@ -44,7 +44,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 // ROUTE MODULE LUỒNG ĐẶT VÉ - TÌM KIẾM CHUYẾN BAY
-Route::get('/flights/search', [FlightSearchController::class, 'form'])->name('flights.search.form');
+// Route::get('/flights/search', [FlightSearchController::class, 'form'])->name('flights.search.form'); Ẩn đi vì form tìm kiếm chuyến bay đã được tích hợp vào trang chủ
 Route::get('/flights/results', [FlightSearchController::class, 'results'])->name('flights.search.results');
 
 Route::middleware('auth')->group(function () {

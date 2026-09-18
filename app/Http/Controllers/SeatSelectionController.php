@@ -81,6 +81,6 @@ class SeatSelectionController extends Controller
         ]]);
 
         // NOTE(Namv): route booking.create chưa build, tạm redirect về results
-        return redirect()->route('flights.search.form')->with('status', 'Đã giữ ghế 10 phút, tiếp tục nhập thông tin hành khách.');
+        return redirect()->route('home')->with('status', 'Đã giữ ghế 10 phút, tiếp tục nhập thông tin hành khách.');
     }
 }
