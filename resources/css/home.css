@@ -91,98 +91,6 @@
     z-index: 4;
     margin-top: -76px;
 }
-.bf-flight-search {
-    padding: 24px;
-    border: 1px solid rgba(18, 54, 90, 0.08);
-    border-top: 5px solid var(--bf-yellow);
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 22px 60px rgba(18, 54, 90, 0.18);
-}
-.bf-flight-search__head {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 22px;
-    margin-bottom: 22px;
-}
-.bf-flight-search__head h2 {
-    margin: 4px 0 0;
-    color: var(--bf-navy);
-    font-size: 1.35rem;
-    line-height: 1.2;
-}
-.bf-segmented {
-    display: inline-flex;
-    gap: 4px;
-    padding: 4px;
-    border-radius: 6px;
-    background: #edf3f7;
-}
-.bf-segmented input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-.bf-segmented span {
-    display: block;
-    border-radius: 4px;
-    padding: 7px 14px;
-    color: var(--bf-muted);
-    font-size: 0.82rem;
-    font-weight: 800;
-    cursor: pointer;
-    white-space: nowrap;
-}
-.bf-segmented input:checked + span {
-    background: #fff;
-    color: var(--bf-blue-dark);
-    box-shadow: 0 2px 10px rgba(18, 54, 90, 0.11);
-}
-.bf-search-grid {
-    display: grid;
-    grid-template-columns: 1.18fr 38px 1.18fr 0.88fr 0.88fr 0.9fr 0.82fr auto;
-    align-items: start;
-    gap: 12px;
-}
-.bf-flight-search .bf-field {
-    gap: 7px;
-}
-.bf-flight-search .bf-field input,
-.bf-flight-search .bf-field select {
-    height: 50px;
-    border-color: #c6d5e0;
-    background: #fbfdff;
-}
-.bf-flight-search .bf-field input:focus,
-.bf-flight-search .bf-field select:focus {
-    background: #fff;
-}
-.bf-search-submit {
-    min-height: 50px;
-    margin-top: 28px;
-    padding-inline: 22px;
-    white-space: nowrap;
-}
-.bf-swap-button {
-    width: 38px;
-    height: 38px;
-    margin-top: 34px;
-    border: 1px solid var(--bf-line);
-    border-radius: 50%;
-    background: #fff;
-    color: var(--bf-blue);
-    font-size: 1.15rem;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 8px 18px rgba(18, 54, 90, 0.1);
-    transition: 0.2s ease;
-}
-.bf-swap-button:hover {
-    border-color: var(--bf-blue);
-    background: var(--bf-sky);
-    transform: rotate(180deg);
-}
 .bf-form-message {
     min-height: 20px;
     margin: 12px 0 0;
@@ -487,12 +395,6 @@
     .bf-hero__metrics {
         min-width: 320px;
     }
-    .bf-search-grid {
-        grid-template-columns: 1fr 38px 1fr 1fr 1fr;
-    }
-    .bf-search-submit {
-        grid-column: span 2;
-    }
     .bf-benefit-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -522,19 +424,6 @@
     }
     .bf-search-wrap {
         margin-top: -68px;
-    }
-    .bf-flight-search__head {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-    .bf-search-grid {
-        grid-template-columns: 1fr 38px 1fr;
-    }
-    .bf-search-grid .bf-field:not(.bf-field--route) {
-        grid-column: span 1;
-    }
-    .bf-search-submit {
-        grid-column: span 1;
     }
     .bf-destination-grid {
         grid-template-columns: 1fr 1fr;
@@ -597,38 +486,6 @@
     }
     .bf-search-wrap {
         margin-top: -58px;
-    }
-    .bf-flight-search {
-        padding: 16px;
-    }
-    .bf-segmented {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        width: 100%;
-    }
-    .bf-segmented span {
-        padding-inline: 6px;
-        text-align: center;
-    }
-    .bf-search-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-    .bf-field--route {
-        grid-column: 1/-1;
-    }
-    .bf-swap-button {
-        grid-column: 1/-1;
-        justify-self: center;
-        margin: -4px 0;
-        transform: rotate(90deg);
-    }
-    .bf-swap-button:hover {
-        transform: rotate(270deg);
-    }
-    .bf-search-submit {
-        grid-column: 1/-1;
-        margin-top: 0;
     }
     .bf-benefit-band {
         padding-top: 48px;
@@ -831,5 +688,3 @@
 .bf-search-card input[type="number"] {
     -moz-appearance: textfield; /* Cho Firefox */
 }
-
-/* Customize Input Ngày đi/Ngày về */

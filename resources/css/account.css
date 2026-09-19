@@ -639,7 +639,3 @@
         overflow-x: auto;
     }
 }
-.bf-profile-nav a.bf-profile-nav__link--active {
-    border-color: var(--bf-blue);
-    color: var(--bf-blue);
-}
