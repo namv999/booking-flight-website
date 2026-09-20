@@ -17,11 +17,11 @@ class BookingController extends Controller
 {
     public function create()
     {
-        $pending = session('pending_hold');
+        $pending = session('pending_selection');
 
-        if (!$pending || now()->greaterThan(Carbon::parse($pending['expires_at']))) {
+        if (!$pending) {
             return redirect()->route('home')
-                ->with('error', 'Phiên giữ ghế đã hết hạn, vui lòng tìm lại chuyến bay.');
+                ->with('error', 'Vui lòng chọn chuyến bay trước khi nhập thông tin hành khách.');
         }
 
         $flight = Flight::with(['departureAirport', 'arrivalAirport', 'aircraft.airline'])
@@ -35,36 +35,44 @@ class BookingController extends Controller
 
     public function store(PassengerBookingRequest $request)
     {
-        $pending = session('pending_hold');
+        $pending = session('pending_selection');
 
-        if (!$pending || now()->greaterThan(Carbon::parse($pending['expires_at']))) {
+        if (!$pending) {
             return redirect()->route('home')
-                ->with('error', 'Phiên giữ ghế đã hết hạn, vui lòng tìm lại chuyến bay.');
+                ->with('error', 'Vui lòng chọn chuyến bay trước khi nhập thông tin hành khách.');
         }
 
         $data = $request->validated();
+        $seatsNeeded = $pending['adults'] + $pending['children'];
 
         try {
-            $booking = DB::transaction(function () use ($pending, $data) {
-                $seatIds = $pending['flight_seat_ids'];
-
-                // re-check hold còn sống tại thời điểm submit
-                $heldSeats = FlightSeat::whereIn('id', $seatIds)
-                    ->where('status', 'held')
-                    ->where('held_by', auth()->id())
+            $booking = DB::transaction(function () use ($pending, $data, $seatsNeeded) {
+                // FINAL check + ATOMIC hold — gộp từ SeatSelectionController::hold() cũ
+                $candidates = FlightSeat::where('flight_id', $pending['flight_id'])
+                    ->where('fare_class_id', $pending['fare_class_id'])
+                    ->where(function ($q) {
+                        $q->where('status', 'available')
+                        ->orWhere(function ($q2) {
+                            $q2->where('status', 'held')
+                                ->where('held_until', '<', now());
+                        });
+                    })
                     ->lockForUpdate()
-                    ->get()
-                    ->sortBy('id')
-                    ->values();
+                    ->inRandomOrder()
+                    ->limit($seatsNeeded)
+                    ->get();
 
-                if ($heldSeats->count() !== count($seatIds)) {
-                    throw new \RuntimeException('HOLD_EXPIRED');
+                if ($candidates->count() < $seatsNeeded) {
+                    throw new \RuntimeException('NOT_ENOUGH_SEATS');
                 }
-                foreach ($heldSeats as $seat) {
-                    if (!$seat->held_until || $seat->held_until->isPast()) {
-                        throw new \RuntimeException('HOLD_EXPIRED');
-                    }
-                }
+
+                $heldSeats = $candidates->sortBy('id')->values();
+
+                FlightSeat::whereIn('id', $heldSeats->pluck('id'))->update([
+                    'status'     => 'held',
+                    'held_by'    => auth()->id(),
+                    'held_until' => now()->addMinutes(config('booking.seat_hold_minutes')),
+                ]);
 
                 $booking = Booking::create([
                     'user_id' => auth()->id(),
@@ -82,7 +90,6 @@ class BookingController extends Controller
                 $adultPassengerIds = [];
                 $adultTicketPrices = [];
 
-                // adult trước
                 foreach ($data['adults'] as $adultData) {
                     $passenger = Passenger::create([
                         'booking_id' => $booking->id,
@@ -106,7 +113,6 @@ class BookingController extends Controller
                     $seatIndex++;
                 }
 
-                // child sau
                 foreach ($data['children'] ?? [] as $childData) {
                     $passenger = Passenger::create([
                         'booking_id' => $booking->id,
@@ -128,7 +134,6 @@ class BookingController extends Controller
                     $seatIndex++;
                 }
 
-                // infant cuối cùng, cần adultPassengerIds đã có
                 foreach ($data['infants'] ?? [] as $infantData) {
                     $companionAdultId = $adultPassengerIds[$infantData['companion_adult_index']];
                     $companionPrice = $adultTicketPrices[$companionAdultId];
@@ -154,29 +159,21 @@ class BookingController extends Controller
                     $totalAmount += $ticket->price;
                 }
 
-                FlightSeat::whereIn('id', $seatIds)->update([
-                    'status' => 'booked',
-                    'held_by' => null,
-                    'held_until' => null,
-                ]);
-
                 $booking->update(['total_amount' => $totalAmount]);
 
                 return $booking;
             });
         } catch (\RuntimeException $e) {
-            if ($e->getMessage() === 'HOLD_EXPIRED') {
-                session()->forget('pending_hold');
-                return redirect()->route('home')
-                    ->with('error', 'Ghế giữ đã hết hạn, vui lòng đặt lại.');
+            if ($e->getMessage() === 'NOT_ENOUGH_SEATS') {
+                return back()->withInput()
+                    ->with('error', 'Rất tiếc, ghế vừa hết trong lúc bạn điền thông tin. Vui lòng thử lại.');
             }
             throw $e;
         }
 
-        session()->forget('pending_hold');
+        session()->forget('pending_selection');
 
-        // return redirect()->route('flights.search.form')
-        //     ->with('status', 'Đặt vé thành công! Mã booking #' . $booking->id);
-        return redirect()->route('payment.show', $booking)->with('status', 'Đặt vé thành công, tiến hành thanh toán.');
+        return redirect()->route('payment.show', $booking)
+            ->with('status', 'Đặt vé thành công, tiến hành thanh toán.');
     }
 }

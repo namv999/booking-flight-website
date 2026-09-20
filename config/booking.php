@@ -11,6 +11,5 @@
 */
 
 return [
-    'seat_hold_minutes' => 10,
-    'payment_expire_minutes' => 15,
+    'seat_hold_minutes' => 20,
 ];

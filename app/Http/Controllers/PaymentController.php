@@ -25,7 +25,7 @@ class PaymentController extends Controller
         $booking->refresh();
 
         if ($booking->status === 'cancelled') {
-            return redirect()->route('flights.search.form')
+            return redirect()->route('home')
                 ->with('error', 'Booking đã hết hạn thanh toán và đã bị hủy.');
         }
 
@@ -35,7 +35,7 @@ class PaymentController extends Controller
                 ->with('status', 'Booking này đã thanh toán rồi.');
         }
 
-        $expiresAt = $booking->created_at->addMinutes(config('booking.payment_expire_minutes'));
+        $expiresAt = $booking->created_at->addMinutes(config('booking.seat_hold_minutes'));
 
         return view('payment.show', [
             'booking' => $booking->load('bookingFlights.flight', 'bookingFlights.tickets'),

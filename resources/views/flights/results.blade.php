@@ -323,7 +323,7 @@
                                         </div>
                                     @endif
 
-                                    <form action="{{ route('booking.hold') }}" method="POST" class="w-100">
+                                    <form action="{{ route('booking.precheck') }}" method="POST" class="w-100">
                                         @csrf
                                         <input type="hidden" name="flight_id" value="{{ $flight->id }}">
                                         <input type="hidden" name="fare_class_id" value="{{ $fareClass->id }}">

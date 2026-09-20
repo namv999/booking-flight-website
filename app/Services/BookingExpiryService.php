@@ -22,7 +22,7 @@ class BookingExpiryService
                 return false;
             }
 
-            $expiresAt = $locked->created_at->addMinutes(config('booking.payment_expire_minutes'));
+            $expiresAt = $locked->created_at->addMinutes(config('booking.seat_hold_minutes'));
             if (now()->lessThan($expiresAt)) {
                 return false;
             }
@@ -41,7 +41,7 @@ class BookingExpiryService
      */
     public function cancelAllExpired(): int
     {
-        $expireMinutes = config('booking.payment_expire_minutes');
+        $expireMinutes = config('booking.seat_hold_minutes');
 
         $expiredIds = Booking::where('status', 'pending')
             ->where('created_at', '<', now()->subMinutes($expireMinutes))

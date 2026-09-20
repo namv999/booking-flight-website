@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class SeatSelectionController extends Controller
 {
-    public function hold(Request $request)
+    public function precheck(Request $request)
     {
         $data = $request->validate([
             'flight_id'     => ['required', 'exists:flights,id'],
@@ -18,68 +18,31 @@ class SeatSelectionController extends Controller
             'infants'       => ['nullable', 'integer', 'min:0'],
         ]);
 
-        $seatsNeeded = $data['adults'] + ($data['children'] ?? 0); // infant không tính ghế riêng
+        $seatsNeeded = $data['adults'] + ($data['children'] ?? 0);
 
-        try {
-            $heldSeatIds = DB::transaction(function () use ($request, $data, $seatsNeeded) {
-                // Hủy hold cũ nếu còn sống, thuộc đúng user này
-                $oldHold = session('pending_hold');
-                if ($oldHold && isset($oldHold['flight_seat_ids'])) {
-                    FlightSeat::where('held_by', auth()->id())
-                        ->whereIn('id', $oldHold['flight_seat_ids'])
-                        ->where('status', 'held')
-                        ->update([
-                            'status' => 'available',
-                            'held_by' => null,
-                            'held_until' => null,
-                        ]);
-                }
-                
-                $candidates = FlightSeat::where('flight_id', $data['flight_id'])
-                    ->where('fare_class_id', $data['fare_class_id'])
-                    ->where(function ($q) {
-                        $q->where('status', 'available')
-                          ->orWhere(function ($q2) {
-                              $q2->where('status', 'held')
-                                 ->where('held_until', '<', now());
-                          });
-                    })
-                    ->lockForUpdate()
-                    ->inRandomOrder()
-                    ->limit($seatsNeeded)
-                    ->get();
+        $availableCount = FlightSeat::where('flight_id', $data['flight_id'])
+            ->where('fare_class_id', $data['fare_class_id'])
+            ->where(function ($q) {
+                $q->where('status', 'available')
+                ->orWhere(function ($q2) {
+                    $q2->where('status', 'held')
+                        ->where('held_until', '<', now());
+                });
+            })
+            ->count();
 
-                if ($candidates->count() < $seatsNeeded) {
-                    throw new \RuntimeException('NOT_ENOUGH_SEATS');
-                }
-
-                $ids = $candidates->pluck('id');
-
-                FlightSeat::whereIn('id', $ids)->update([
-                    'status'     => 'held',
-                    'held_by'    => auth()->id(),
-                    'held_until' => now()->addMinutes(10),
-                ]);
-
-                return $ids;
-            });
-        } catch (\RuntimeException $e) {
-            if ($e->getMessage() === 'NOT_ENOUGH_SEATS') {
-                return back()->with('error', 'Không đủ ghế trống cho hạng vé này, vui lòng thử lại hoặc chọn chuyến khác.');
-            }
-            throw $e;
+        if ($availableCount < $seatsNeeded) {
+            return back()->with('error', 'Không đủ ghế trống cho hạng vé này, vui lòng thử lại hoặc chọn chuyến khác.');
         }
 
-        session(['pending_hold' => [
-            'flight_id'       => $data['flight_id'],
-            'fare_class_id'   => $data['fare_class_id'],
-            'flight_seat_ids' => $heldSeatIds->toArray(),
-            'adults'          => $data['adults'],
-            'children'        => $data['children'] ?? 0,
-            'infants'         => $data['infants'] ?? 0,
-            'expires_at'      => now()->addMinutes(10)->toDateTimeString(),
+        session(['pending_selection' => [
+            'flight_id'     => $data['flight_id'],
+            'fare_class_id' => $data['fare_class_id'],
+            'adults'        => $data['adults'],
+            'children'      => $data['children'] ?? 0,
+            'infants'       => $data['infants'] ?? 0,
         ]]);
 
-        return redirect()->route('booking.passengers.form')->with('status', 'Đã giữ ghế 10 phút, tiếp tục nhập thông tin hành khách.');
+        return redirect()->route('booking.passengers.form');
     }
 }

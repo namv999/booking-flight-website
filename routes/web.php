@@ -51,7 +51,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::get('/flights/results', [FlightSearchController::class, 'results'])->name('flights.search.results');
 
 Route::middleware('auth')->group(function () {
-    Route::post('/booking/hold', [SeatSelectionController::class, 'hold'])->name('booking.hold');
+    Route::post('/booking/precheck', [SeatSelectionController::class, 'precheck'])->name('booking.precheck');
     Route::get('/booking/passengers', [BookingController::class, 'create'])->name('booking.passengers.form');
     Route::post('/booking/passengers', [BookingController::class, 'store'])->name('booking.passengers.store');
     Route::get('/payment/{booking}', [PaymentController::class, 'show'])->name('payment.show');
