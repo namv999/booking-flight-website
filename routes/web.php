@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SavedPassengerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AirlineController;
 use App\Http\Controllers\Admin\AircraftController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\BookingHistoryController;
 
 // Route::get('/', function () {
 //     return view('home');
@@ -30,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::resource('saved-passengers', SavedPassengerController::class)->except('show');
 });
 
 // Nhóm Route Quản trị Admin - khôi phục middleware 'admin'
@@ -53,6 +56,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking/passengers', [BookingController::class, 'store'])->name('booking.passengers.store');
     Route::get('/payment/{booking}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/{booking}', [PaymentController::class, 'store'])->name('payment.store');
+    Route::get('/booking-history', [BookingHistoryController::class, 'index'])->name('booking-history.index');
+    Route::get('/booking-history/{id}', [BookingHistoryController::class, 'show'])->name('booking-history.show');
 });
 
 require __DIR__.'/auth.php';
