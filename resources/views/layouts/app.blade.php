@@ -10,6 +10,7 @@
     <title>@yield('title', 'Jet Charter Flights')</title>
     <meta name="description" content="Đặt vé máy bay nội địa và quốc tế thuận tiện cùng Jet Charter Flights.">
     <!-- CSS Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- JS Flatpickr + Tiếng Việt -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

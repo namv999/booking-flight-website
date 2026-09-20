@@ -80,7 +80,6 @@ class SeatSelectionController extends Controller
             'expires_at'      => now()->addMinutes(10)->toDateTimeString(),
         ]]);
 
-        // NOTE(Namv): route booking.create chưa build, tạm redirect về results
-        return redirect()->route('home')->with('status', 'Đã giữ ghế 10 phút, tiếp tục nhập thông tin hành khách.');
+        return redirect()->route('booking.passengers.form')->with('status', 'Đã giữ ghế 10 phút, tiếp tục nhập thông tin hành khách.');
     }
 }

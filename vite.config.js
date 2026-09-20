@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/css/home.css',
                 'resources/css/account.css',
                 'resources/css/admin.css',
+                'resources/css/flights.css',
                 'resources/js/layout.js',
                 'resources/js/home.js',
                 'resources/js/auth.js',

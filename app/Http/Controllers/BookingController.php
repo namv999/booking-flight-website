@@ -20,7 +20,7 @@ class BookingController extends Controller
         $pending = session('pending_hold');
 
         if (!$pending || now()->greaterThan(Carbon::parse($pending['expires_at']))) {
-            return redirect()->route('flights.search.form')
+            return redirect()->route('home')
                 ->with('error', 'Phiên giữ ghế đã hết hạn, vui lòng tìm lại chuyến bay.');
         }
 
@@ -38,7 +38,7 @@ class BookingController extends Controller
         $pending = session('pending_hold');
 
         if (!$pending || now()->greaterThan(Carbon::parse($pending['expires_at']))) {
-            return redirect()->route('flights.search.form')
+            return redirect()->route('home')
                 ->with('error', 'Phiên giữ ghế đã hết hạn, vui lòng tìm lại chuyến bay.');
         }
 
@@ -167,7 +167,7 @@ class BookingController extends Controller
         } catch (\RuntimeException $e) {
             if ($e->getMessage() === 'HOLD_EXPIRED') {
                 session()->forget('pending_hold');
-                return redirect()->route('flights.search.form')
+                return redirect()->route('home')
                     ->with('error', 'Ghế giữ đã hết hạn, vui lòng đặt lại.');
             }
             throw $e;

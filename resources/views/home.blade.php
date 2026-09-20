@@ -101,8 +101,8 @@
                 </div>
 
                 <div class="position-relative">
-                    <i class="bi bi-journal-bookmark position-absolute top-50 start-0 translate-middle-y ms-2 text-muted" style="z-index: 5;"></i>
-                    <select class="form-select bf-dropdown-btn ps-4" name="fare_class_id" required>
+                    <i class="bi bi-journal-bookmark position-absolute top-50 start-0 translate-middle-y ms-2 text-muted" style="z-index: 5; pointer-events: none;"></i>
+                    <select class="form-select bf-dropdown-btn" name="fare_class_id" required>
                         @foreach ($fareClasses as $fareClass)
                             <option value="{{ $fareClass->id }}" {{ old('fare_class_id') == $fareClass->id ? 'selected' : '' }}>
                                 {{ $fareClass->name }}
@@ -186,19 +186,13 @@
             <!-- Ngày đi -->
             <div class="col-6 col-md-6 mt-2">
                 <label class="form-label text-muted small mb-1 ms-1">Ngày đi</label>
-                <div class="position-relative">
-                    <i class="bi bi-calendar3 bf-date-icon"></i>
-                    <input type="date" class="form-control bf-input bf-date-input" name="departure_date" id="departure-date" value="{{ old('departure_date') }}" required>
-                </div>
+                <input type="date" class="form-control bf-input bf-date-input" name="departure_date" id="departure-date" value="{{ old('departure_date') }}" required>
             </div>
 
             <!-- Ngày về -->
             <div class="col-6 col-md-6 mt-2">
                 <label class="form-label text-muted small mb-1 ms-1">Ngày về</label>
-                <div class="position-relative">
-                    <i class="bi bi-calendar3 bf-date-icon"></i>
-                    <input type="date" class="form-control bf-input bf-date-input" id="return-date" disabled>
-                </div>
+                <input type="date" class="form-control bf-input bf-date-input" id="return-date" disabled>
             </div>
         </div>
 

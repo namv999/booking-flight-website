@@ -613,30 +613,24 @@
 }
 
 .bf-swap-btn {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     border: 1px solid #dee2e6;
     background-color: #ffffff;
-    color: #6c757d;
+    color: #495057;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-size: 15px;
 }
 
 .bf-swap-btn:hover {
-    background-color: #f8f9fa;
+    background-color: #f0f7ff;
     color: #0d6efd;
     border-color: #0d6efd;
-}
-
-.bf-swap-btn::before {
-    content: "⇄";
-    font-size: 18px;
-    font-weight: bold;
-    color: #6c757d;
 }
 
 /* Nút tìm kiếm chuyến bay */
@@ -657,8 +651,8 @@
 }
 
 .bf-search-card select[name="fare_class_id"] {
-    min-width: 130px; /* Tăng chiều dài ô */
-    padding-left: 14px;
+    min-width: 140px;
+    padding-left: 34px !important; /* Đảm bảo khoảng trống cho icon bên trái không đè chữ */
     padding-right: 32px; /* Tạo khoảng trống bên phải để mũi tên không đè chữ */
     background-position: right 10px center; /* Đưa icon mũi tên về sát mép phải */
 }
