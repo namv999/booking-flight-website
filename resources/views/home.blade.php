@@ -34,6 +34,22 @@
 
 <section class="bf-container bf-search-wrap" aria-label="Tìm kiếm chuyến bay">
     <form class="bf-search-card" id="search-box" action="{{ route('flights.search.results') }}" method="GET">
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill flex-shrink-0 fs-5"></i>
+                <div>{{ session('error') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+            </div>
+        @endif
+
+        @if (session('status'))
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+                <i class="bi bi-check-circle-fill flex-shrink-0 fs-5"></i>
+                <div>{{ session('status') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+            </div>
+        @endif
+
         @if ($errors->any())
             <div class="alert alert-danger py-2 small mb-3">
                 <ul class="mb-0 ps-3">

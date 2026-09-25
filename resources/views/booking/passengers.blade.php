@@ -80,7 +80,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('booking.passengers.store') }}">
+                <form method="POST" action="{{ route('booking.passengers.store') }}" id="bf-passenger-form">
                     @csrf
 
                     {{-- 1. DANH SÁCH NGƯỜI LỚN --}}
@@ -288,7 +288,7 @@
 
                     {{-- NÚT SUBMIT FORM --}}
                     <div class="mt-4 mb-5">
-                        <button type="submit" class="bf-btn-submit-passengers">
+                        <button type="submit" class="bf-btn-submit-passengers" id="bf-btn-submit-passengers">
                             <span>Tiếp tục thanh toán</span>
                             <i class="bi bi-arrow-right" aria-hidden="true"></i>
                         </button>
@@ -312,7 +312,7 @@
                     $durationText = ($hours > 0 ? "{$hours}h " : "") . ($mins > 0 ? "{$mins}m" : "00m");
                     $airlineName = $flight->aircraft->airline->name ?? 'Hãng hàng không';
                     $aircraftModel = $flight->aircraft->model ?? 'Aircraft';
-                    $seatsHeld = $pending['adults'] + ($pending['children'] ?? 0);
+                    $seatsNeeded = $pending['adults'] + ($pending['children'] ?? 0);
                 @endphp
 
                 <div class="bf-booking-sidebar">
@@ -366,17 +366,46 @@
                     </div>
 
                     <div class="bf-sidebar-meta-row">
-                        <span>Số ghế tạm giữ:</span>
-                        <strong class="text-success">{{ $seatsHeld }} ghế riêng</strong>
+                        <span>Số ghế cần đặt:</span>
+                        <strong class="text-primary">{{ $seatsNeeded }} ghế riêng</strong>
                     </div>
 
                     <div class="bf-sidebar-security-badge">
-                        <i class="bi bi-clock-history text-warning" aria-hidden="true"></i>
-                        <span>Ghế đã được tạm giữ trong phiên đặt vé. Vui lòng hoàn tất trong vòng 10 phút.</span>
+                        <i class="bi bi-shield-check text-success" aria-hidden="true"></i>
+                        <span>Ghế sẽ được hệ thống giữ tự động ngay sau khi bạn xác nhận thông tin hành khách.</span>
                     </div>
                 </div>
             </aside>
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('bf-passenger-form');
+        const submitBtn = document.getElementById('bf-btn-submit-passengers');
+
+        if (form && submitBtn) {
+            form.addEventListener('submit', function (e) {
+                if (!form.checkValidity()) {
+                    return;
+                }
+
+                // Ngăn chặn double-click / double-submit trong lúc Backend thực hiện Atomic Hold Transaction
+                submitBtn.style.pointerEvents = 'none';
+                submitBtn.style.opacity = '0.85';
+                submitBtn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span>Đang xử lý & giữ chỗ...</span>
+                `;
+
+                setTimeout(function () {
+                    submitBtn.disabled = true;
+                }, 0);
+            });
+        }
+    });
+</script>
 @endsection

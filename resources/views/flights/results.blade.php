@@ -300,7 +300,7 @@
                                 </div>
                             </div>
 
-                            {{-- Cột phải: Giá tiền, số ghế và Action POST booking.hold --}}
+                            {{-- Cột phải: Giá tiền, số ghế và Action POST booking.precheck --}}
                             <div class="col-lg-4">
                                 <div class="bf-flight-pricing-block">
                                     <span class="bf-fare-badge">Hạng {{ $fareClass->name }}</span>

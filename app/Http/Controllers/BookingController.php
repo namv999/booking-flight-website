@@ -68,6 +68,10 @@ class BookingController extends Controller
 
                 $heldSeats = $candidates->sortBy('id')->values();
 
+                // Nullify ticket cũ (nếu ghế vừa reclaim từ booking hết hạn khác) —
+                // tránh đụng uq_tickets_flightseat, cùng pattern với BookingExpiryService
+                Ticket::whereIn('flight_seat_id', $heldSeats->pluck('id'))->update(['flight_seat_id' => null]);
+
                 FlightSeat::whereIn('id', $heldSeats->pluck('id'))->update([
                     'status'     => 'held',
                     'held_by'    => auth()->id(),

@@ -25,20 +25,25 @@ class PaymentController extends Controller
         $booking->refresh();
 
         if ($booking->status === 'cancelled') {
-            return redirect()->route('home')
-                ->with('error', 'Booking đã hết hạn thanh toán và đã bị hủy.');
+            return redirect()->route('booking-history.show', $booking)
+                ->with('error', 'Phiên đặt vé của bạn đã hết hạn. Ghế đã được giải phóng, vui lòng đặt lại.');
         }
 
-        // TODO: đổi sang route('booking.history') khi B làm xong
         if ($booking->status === 'paid') {
-            return redirect()->route('flights.search.form')
+            return redirect()->route('booking-history.show', $booking)
                 ->with('status', 'Booking này đã thanh toán rồi.');
         }
 
         $expiresAt = $booking->created_at->addMinutes(config('booking.seat_hold_minutes'));
 
         return view('payment.show', [
-            'booking' => $booking->load('bookingFlights.flight', 'bookingFlights.tickets'),
+            'booking' => $booking->load([
+                'bookingFlights.flight.departureAirport',
+                'bookingFlights.flight.arrivalAirport',
+                'bookingFlights.flight.aircraft.airline',
+                'bookingFlights.tickets.passenger',
+                'bookingFlights.tickets.flightSeat.seat',
+            ]),
             'expiresAt' => $expiresAt,
         ]);
     }
@@ -53,8 +58,14 @@ class PaymentController extends Controller
         $booking->refresh();
 
         if ($booking->status !== 'pending') {
-            return redirect()->route('payment.show', $booking)
-                ->with('error', 'Booking không còn ở trạng thái chờ thanh toán.');
+            return match ($booking->status) {
+                'cancelled' => redirect()->route('booking-history.show', $booking)
+                    ->with('error', 'Phiên đặt vé của bạn đã hết hạn. Ghế đã được giải phóng, vui lòng đặt lại.'),
+                'paid' => redirect()->route('booking-history.show', $booking)
+                    ->with('status', 'Booking này đã thanh toán rồi.'),
+                default => redirect()->route('payment.show', $booking)
+                    ->with('error', 'Booking không còn ở trạng thái chờ thanh toán.'),
+            };
         }
 
         $validated = $request->validate([
@@ -80,8 +91,7 @@ class PaymentController extends Controller
         });
 
         if ($validated['simulate_result'] === 'success') {
-            // TODO: đổi sang route('booking.history') khi B làm xong
-            return redirect()->route('flights.search.form')
+            return redirect()->route('booking-history.show', $booking)
                 ->with('status', 'Thanh toán thành công! Mã booking #' . $booking->id);
         }
 

@@ -15,6 +15,7 @@ export default defineConfig({
                 'resources/js/home.js',
                 'resources/js/auth.js',
                 'resources/js/dashboard.js',
+                'resources/js/payment.js',
             ],
             refresh: true,
         }),

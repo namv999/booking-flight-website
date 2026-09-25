@@ -875,3 +875,464 @@
     transform: translateY(-1px);
 }
 
+/* ============================================================
+   5. PAYMENT PAGE (Giao diện thanh toán)
+   ============================================================ */
+.bf-payment-card {
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(18, 54, 90, 0.05);
+    margin-bottom: 24px;
+}
+.bf-payment-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #edf2f7;
+}
+.bf-payment-card__title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Expiry Banner */
+.bf-payment-expiry-banner {
+    background: linear-gradient(135deg, #fff9ee 0%, #fff4db 100%);
+    border: 1px solid #f6d289;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+.bf-payment-expiry-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #fedf9e;
+    color: #b56a12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.bf-payment-expiry-content {
+    flex: 1;
+}
+.bf-payment-expiry-title {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #855302;
+    margin-bottom: 4px;
+}
+.bf-payment-expiry-desc {
+    font-size: 0.8rem;
+    color: #795548;
+    margin: 0;
+    line-height: 1.5;
+}
+.bf-payment-countdown-badge {
+    display: inline-block;
+    background: #b56a12;
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+/* Payment Method Cards */
+.bf-payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.bf-payment-method-item {
+    position: relative;
+    border: 1.5px solid #e2edf6;
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: #ffffff;
+}
+.bf-payment-method-item:hover {
+    border-color: #cbdbe9;
+    background: #fbfdff;
+}
+.bf-payment-method-item.active,
+.bf-payment-method-item:has(input:checked) {
+    border-color: var(--bf-blue);
+    background: #f4f9fd;
+    box-shadow: 0 4px 14px rgba(18, 104, 179, 0.08);
+}
+.bf-payment-method-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+}
+.bf-payment-method-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.bf-payment-method-info strong {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--bf-navy);
+}
+.bf-payment-method-info small {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--bf-muted);
+    margin-top: 2px;
+}
+.bf-payment-method-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.bf-payment-brand-badge {
+    background: #eef3f8;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #4b6072;
+}
+
+/* Simulation Section (Testing Mode) */
+.bf-simulation-box {
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+}
+.bf-simulation-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+}
+.bf-simulation-desc {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+.bf-simulation-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+@media (max-width: 576px) {
+    .bf-simulation-actions {
+        grid-template-columns: 1fr;
+    }
+}
+.bf-btn-pay-success {
+    min-height: 48px;
+    background: #16805f;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(22, 128, 95, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 10px 16px;
+    text-align: center;
+}
+.bf-btn-pay-success:hover {
+    background: #11674d;
+    box-shadow: 0 6px 18px rgba(22, 128, 95, 0.35);
+    transform: translateY(-1px);
+}
+.bf-btn-pay-failed {
+    min-height: 48px;
+    background: #ffffff;
+    color: #dc3545 !important;
+    border: 1.5px solid #dc3545;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 10px 16px;
+    text-align: center;
+}
+.bf-btn-pay-failed:hover {
+    background: #dc3545;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(220, 53, 69, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Sidebar Ticket Breakdown */
+.bf-ticket-breakdown-list {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed #e2edf6;
+}
+.bf-ticket-breakdown-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+.bf-ticket-row {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+}
+.bf-ticket-row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.bf-ticket-row-name {
+    font-weight: 700;
+    color: var(--bf-navy);
+}
+.bf-ticket-row-type {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+.bf-ticket-row-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #64748b;
+    font-size: 0.76rem;
+}
+.bf-ticket-row-price {
+    font-weight: 700;
+    color: var(--bf-blue);
+}
+.bf-sidebar-total-box {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 2px solid #e2edf6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.bf-sidebar-total-label {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+}
+.bf-sidebar-total-amount {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--bf-blue);
+}
+
+/* Modal Hết hạn & Trạng thái khóa form */
+.bf-expired-modal {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 15px 40px rgba(18, 54, 90, 0.18);
+    overflow: hidden;
+}
+.bf-btn-modal-home {
+    background: var(--bf-blue);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+.bf-btn-modal-home:hover {
+    background: var(--bf-blue-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(18, 104, 179, 0.3);
+}
+.bf-payment-expired {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(0.2);
+}
+
+/* ============================================================
+   6. BOOKING CONFIRMATION & HISTORY (Xác nhận đặt vé & Lịch sử)
+   ============================================================ */
+.bf-success-hero {
+    background: linear-gradient(135deg, #eefbf4 0%, #e0f6eb 100%);
+    border: 1.5px solid #a3e9c6;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.bf-success-hero-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #16805f;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(22, 128, 95, 0.25);
+}
+.bf-success-hero-content h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0b533b;
+    margin-bottom: 4px;
+}
+.bf-success-hero-content p {
+    font-size: 0.88rem;
+    color: #1f6b50;
+    margin: 0;
+}
+
+/* Status Badges */
+.bf-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.bf-status-badge--paid {
+    background: #eaf7f2;
+    color: #16805f;
+    border: 1px solid #b7ebd5;
+}
+.bf-status-badge--cancelled {
+    background: #fdf2f2;
+    color: #dc3545;
+    border: 1px solid #f9c9cb;
+}
+.bf-status-badge--pending {
+    background: #fff8eb;
+    color: #b56a12;
+    border: 1px solid #fedf9e;
+}
+
+/* E-Ticket Voucher Card */
+.bf-eticket-card {
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 14px rgba(18, 54, 90, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+.bf-eticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #e2edf6;
+    margin-bottom: 14px;
+}
+.bf-eticket-code {
+    font-family: monospace, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--bf-blue);
+    background: #edf5fc;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+.bf-eticket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+}
+.bf-eticket-field label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.bf-eticket-field span {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--bf-navy);
+}
+
+/* Print Styles */
+@media print {
+    .bf-navbar,
+    .bf-footer,
+    .bf-step-wizard,
+    .bf-print-hide,
+    .alert,
+    .btn,
+    aside {
+        display: none !important;
+    }
+    body, .bf-results-page {
+        background: #ffffff !important;
+        padding: 0 !important;
+    }
+    .col-lg-8 {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+    .bf-payment-card, .bf-eticket-card {
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+}
+
+
+
