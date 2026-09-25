@@ -1,5 +1,4 @@
-{{-- TEMP LAYOUT: đang dùng layout tạm để test, sẽ đổi sang layouts.admin khi Tuyết hoàn thành --}}
-@extends('layouts.temp')
+@extends('layouts.admin')
 
 @section('title', 'Sửa gói hành lý')
 

@@ -6,15 +6,10 @@
 @section('title', 'Jet Charter Flights - Đặt vé máy bay')
 
 @section('styles')
-    @vite(['resources/css/home.css'])
+@vite(['resources/css/home.css'])
 @endsection
 
 @section('content')
-<style>
-    :root {
-        --hero-banner-url: url('{{ asset('images/hero-banner.jpg') }}');
-    }
-</style>
 <section class="bf-hero">
     <div class="bf-hero__image" aria-hidden="true"></div>
     <div class="bf-hero__shade" aria-hidden="true"></div>
@@ -35,29 +30,29 @@
 <section class="bf-container bf-search-wrap" aria-label="Tìm kiếm chuyến bay">
     <form class="bf-search-card" id="search-box" action="{{ route('flights.search.results') }}" method="GET">
         @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
-                <i class="bi bi-exclamation-triangle-fill flex-shrink-0 fs-5"></i>
-                <div>{{ session('error') }}</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
-            </div>
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill flex-shrink-0 fs-5"></i>
+            <div>{{ session('error') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        </div>
         @endif
 
         @if (session('status'))
-            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
-                <i class="bi bi-check-circle-fill flex-shrink-0 fs-5"></i>
-                <div>{{ session('status') }}</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
-            </div>
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+            <i class="bi bi-check-circle-fill flex-shrink-0 fs-5"></i>
+            <div>{{ session('status') }}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        </div>
         @endif
 
         @if ($errors->any())
-            <div class="alert alert-danger py-2 small mb-3">
-                <ul class="mb-0 ps-3">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+        <div class="alert alert-danger py-2 small mb-3">
+            <ul class="mb-0 ps-3">
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
         @endif
 
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -120,9 +115,9 @@
                     <i class="bi bi-journal-bookmark position-absolute top-50 start-0 translate-middle-y ms-2 text-muted" style="z-index: 5; pointer-events: none;"></i>
                     <select class="form-select bf-dropdown-btn" name="fare_class_id" required>
                         @foreach ($fareClasses as $fareClass)
-                            <option value="{{ $fareClass->id }}" {{ old('fare_class_id') == $fareClass->id ? 'selected' : '' }}>
-                                {{ $fareClass->name }}
-                            </option>
+                        <option value="{{ $fareClass->id }}" {{ old('fare_class_id') == $fareClass->id ? 'selected' : '' }}>
+                            {{ $fareClass->name }}
+                        </option>
                         @endforeach
                     </select>
                 </div>
@@ -136,7 +131,7 @@
                 <div class="dropdown">
                     <input type="text" class="form-control bf-input dropdown-toggle" id="departure-display" data-bs-toggle="dropdown" placeholder="Chọn điểm đi" readonly autocomplete="off" required>
                     <input type="hidden" name="departure_airport_id" id="departure-airport" value="{{ old('departure_airport_id') }}">
-                    
+
                     <!-- Popup gợi ý danh sách kiểu VNA -->
                     <div class="dropdown-menu p-3 shadow-lg border-0 rounded-4" id="departure-dropdown-menu" style="width: 320px; max-height: 400px; overflow-y: auto;">
                         <div class="input-group mb-3">
@@ -145,16 +140,16 @@
                         </div>
                         <div class="airport-list">
                             @foreach ($airports as $airport)
-                                <div class="departure-airport-option d-flex justify-content-between align-items-center p-2 rounded-3 cursor-pointer hover-bg-light" 
-                                    data-id="{{ $airport->id }}" 
-                                    data-code="{{ $airport->iata_code }}" 
-                                    data-city="{{ $airport->city }}">
-                                    <div>
-                                        <div class="fw-bold text-dark">{{ $airport->city }}</div>
-                                        <div class="small text-muted">{{ $airport->country ?? 'Việt Nam' }}</div>
-                                    </div>
-                                    <span class="badge bg-light text-dark border">{{ $airport->iata_code }}</span>
+                            <div class="departure-airport-option d-flex justify-content-between align-items-center p-2 rounded-3 cursor-pointer hover-bg-light"
+                                data-id="{{ $airport->id }}"
+                                data-code="{{ $airport->iata_code }}"
+                                data-city="{{ $airport->city }}">
+                                <div>
+                                    <div class="fw-bold text-dark">{{ $airport->city }}</div>
+                                    <div class="small text-muted">{{ $airport->country ?? 'Việt Nam' }}</div>
                                 </div>
+                                <span class="badge bg-light text-dark border">{{ $airport->iata_code }}</span>
+                            </div>
                             @endforeach
                         </div>
                     </div>
@@ -174,7 +169,7 @@
                 <div class="dropdown">
                     <input type="text" class="form-control bf-input dropdown-toggle" id="arrival-display" data-bs-toggle="dropdown" placeholder="Chọn điểm đến" readonly autocomplete="off" required>
                     <input type="hidden" name="arrival_airport_id" id="arrival-airport" value="{{ old('arrival_airport_id') }}">
-                    
+
                     <!-- Popup gợi ý danh sách kiểu VNA -->
                     <div class="dropdown-menu p-3 shadow-lg border-0 rounded-4" id="arrival-dropdown-menu" style="width: 320px; max-height: 400px; overflow-y: auto;">
                         <div class="input-group mb-3">
@@ -183,16 +178,16 @@
                         </div>
                         <div class="airport-list">
                             @foreach ($airports as $airport)
-                                <div class="arrival-airport-option d-flex justify-content-between align-items-center p-2 rounded-3 cursor-pointer hover-bg-light" 
-                                    data-id="{{ $airport->id }}" 
-                                    data-code="{{ $airport->iata_code }}" 
-                                    data-city="{{ $airport->city }}">
-                                    <div>
-                                        <div class="fw-bold text-dark">{{ $airport->city }}</div>
-                                        <div class="small text-muted">{{ $airport->country ?? 'Việt Nam' }}</div>
-                                    </div>
-                                    <span class="badge bg-light text-dark border">{{ $airport->iata_code }}</span>
+                            <div class="arrival-airport-option d-flex justify-content-between align-items-center p-2 rounded-3 cursor-pointer hover-bg-light"
+                                data-id="{{ $airport->id }}"
+                                data-code="{{ $airport->iata_code }}"
+                                data-city="{{ $airport->city }}">
+                                <div>
+                                    <div class="fw-bold text-dark">{{ $airport->city }}</div>
+                                    <div class="small text-muted">{{ $airport->country ?? 'Việt Nam' }}</div>
                                 </div>
+                                <span class="badge bg-light text-dark border">{{ $airport->iata_code }}</span>
+                            </div>
                             @endforeach
                         </div>
                     </div>
@@ -220,17 +215,35 @@
 
 <section class="bf-section bf-benefit-band">
     <div class="bf-container bf-benefit-grid">
-        <article class="bf-benefit-item"><span>01</span><div><strong>Giá minh bạch</strong><p>Hiển thị rõ chi phí ngay từ đầu.</p></div></article>
-        <article class="bf-benefit-item"><span>02</span><div><strong>Đặt vé nhanh</strong><p>Quy trình gọn trong vài bước.</p></div></article>
-        <article class="bf-benefit-item"><span>03</span><div><strong>Hỗ trợ 24/7</strong><p>Luôn sẵn sàng khi bạn cần.</p></div></article>
-        <article class="bf-benefit-item"><span>04</span><div><strong>Đối tác tin cậy</strong><p>Nhiều hãng bay để lựa chọn.</p></div></article>
+        <article class="bf-benefit-item"><span>01</span>
+            <div><strong>Giá minh bạch</strong>
+                <p>Hiển thị rõ chi phí ngay từ đầu.</p>
+            </div>
+        </article>
+        <article class="bf-benefit-item"><span>02</span>
+            <div><strong>Đặt vé nhanh</strong>
+                <p>Quy trình gọn trong vài bước.</p>
+            </div>
+        </article>
+        <article class="bf-benefit-item"><span>03</span>
+            <div><strong>Hỗ trợ 24/7</strong>
+                <p>Luôn sẵn sàng khi bạn cần.</p>
+            </div>
+        </article>
+        <article class="bf-benefit-item"><span>04</span>
+            <div><strong>Đối tác tin cậy</strong>
+                <p>Nhiều hãng bay để lựa chọn.</p>
+            </div>
+        </article>
     </div>
 </section>
 
 <section class="bf-section bf-destinations">
     <div class="bf-container">
         <div class="bf-section-heading">
-            <div><span class="bf-eyebrow">Điểm đến nổi bật</span><h2>Chạm tới những nơi đáng nhớ</h2></div>
+            <div><span class="bf-eyebrow">Điểm đến nổi bật</span>
+                <h2>Chạm tới những nơi đáng nhớ</h2>
+            </div>
             <a class="bf-text-link" href="#">Xem tất cả <span aria-hidden="true">→</span></a>
         </div>
         {{-- NOTE(C): cần Controller truyền $destinations (Collection); hiện đang dùng 5 điểm đến mẫu viết cứng. --}}
@@ -291,17 +304,23 @@
 <section class="bf-section bf-stories">
     <div class="bf-container">
         <div class="bf-section-heading">
-            <div><span class="bf-eyebrow">Cẩm nang hành trình</span><h2>Bay thông minh, trải nghiệm nhiều hơn</h2></div>
+            <div><span class="bf-eyebrow">Cẩm nang hành trình</span>
+                <h2>Bay thông minh, trải nghiệm nhiều hơn</h2>
+            </div>
         </div>
         {{-- NOTE(C): cần Controller truyền $articles (Collection); hiện đang dùng 2 bài viết mẫu viết cứng. --}}
         <div class="bf-story-grid">
             <article class="bf-story-card">
                 <img src="{{ asset('images/article-charter-flight.avif') }}" alt="Máy bay trên bầu trời">
-                <div><small>Kinh nghiệm bay</small><h3>Chuẩn bị gì cho một chuyến bay thật nhẹ nhàng?</h3><a href="#">Đọc bài viết <span aria-hidden="true">→</span></a></div>
+                <div><small>Kinh nghiệm bay</small>
+                    <h3>Chuẩn bị gì cho một chuyến bay thật nhẹ nhàng?</h3><a href="#">Đọc bài viết <span aria-hidden="true">→</span></a>
+                </div>
             </article>
             <article class="bf-story-card">
                 <img src="{{ asset('images/article-travel-guide.png') }}" alt="Hành trình khám phá điểm đến mới">
-                <div><small>Gợi ý điểm đến</small><h3>5 hành trình đáng để lên kế hoạch trong mùa hè này</h3><a href="#">Đọc bài viết <span aria-hidden="true">→</span></a></div>
+                <div><small>Gợi ý điểm đến</small>
+                    <h3>5 hành trình đáng để lên kế hoạch trong mùa hè này</h3><a href="#">Đọc bài viết <span aria-hidden="true">→</span></a>
+                </div>
             </article>
         </div>
     </div>
@@ -309,5 +328,5 @@
 @endsection
 
 @section('scripts')
-    @vite(['resources/js/home.js'])
+@vite(['resources/js/home.js'])
 @endsection

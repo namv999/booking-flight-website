@@ -47,7 +47,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 // ROUTE MODULE LUỒNG ĐẶT VÉ - TÌM KIẾM CHUYẾN BAY
-// Route::get('/flights/search', [FlightSearchController::class, 'form'])->name('flights.search.form'); Ẩn đi vì form tìm kiếm chuyến bay đã được tích hợp vào trang chủ
 Route::get('/flights/results', [FlightSearchController::class, 'results'])->name('flights.search.results');
 
 Route::middleware('auth')->group(function () {

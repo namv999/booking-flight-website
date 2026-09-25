@@ -1,9 +1,12 @@
-{{-- TEMP LAYOUT: đang dùng layout tạm để test, sẽ đổi sang layouts.admin khi Tuyết hoàn thành --}}
-@extends('layouts.temp')
+@extends('layouts.admin')
 
 @section('title', 'Quản lý gói hành lý')
 
 @section('content')
+    @if (session('success'))
+        <div class="alert alert-success" role="status">{{ session('success') }}</div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Quản lý gói hành lý</h1>
         <a href="{{ route('admin.baggage-addons.create') }}" class="btn btn-primary">+ Thêm gói</a>

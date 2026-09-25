@@ -1,5 +1,4 @@
-{{-- TEMP LAYOUT: đang dùng layout tạm để test, sẽ đổi sang layouts.app khi C hoàn thành --}}
-@extends('layouts.temp')
+@extends('layouts.app')
 
 @section('title', 'Sửa hồ sơ hành khách')
 
