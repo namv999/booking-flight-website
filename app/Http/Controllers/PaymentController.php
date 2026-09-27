@@ -87,6 +87,26 @@ class PaymentController extends Controller
 
             if ($validated['simulate_result'] === 'success') {
                 $booking->update(['status' => 'paid']);
+
+                // Ghế đã thanh toán -> chuyển hẳn sang booked, không còn "held" nữa
+                // (held_by/held_until không còn ý nghĩa với ghế đã bán, xóa theo)
+                $flightSeatIds = $booking->bookingFlights()
+                    ->with('tickets')
+                    ->get()
+                    ->pluck('tickets')
+                    ->flatten()
+                    ->pluck('flight_seat_id')
+                    ->filter()
+                    ->values();
+
+                if ($flightSeatIds->isNotEmpty()) {
+                    FlightSeat::whereIn('id', $flightSeatIds)
+                        ->update([
+                            'status' => 'booked',
+                            'held_by' => null,
+                            'held_until' => null,
+                        ]);
+                }
             }
         });
 
@@ -98,38 +118,4 @@ class PaymentController extends Controller
         return redirect()->route('payment.show', $booking)
             ->with('error', 'Thanh toán thất bại, vui lòng thử lại.');
     }
-
-    // private function cancelExpiredBooking(Booking $booking): void
-    // {
-    //     if ($booking->status !== 'pending') {
-    //         return;
-    //     }
-
-    //     $expiresAt = Carbon::parse($booking->created_at)->addMinutes(self::PAYMENT_EXPIRE_MINUTES);
-    //     if (! now()->greaterThan($expiresAt)) {
-    //         return;
-    //     }
-
-    //     DB::transaction(function () use ($booking) {
-    //         $flightSeatIds = $booking->bookingFlights()
-    //             ->with('tickets')
-    //             ->get()
-    //             ->pluck('tickets')
-    //             ->flatten()
-    //             ->pluck('flight_seat_id')
-    //             ->filter()
-    //             ->values();
-
-    //         if ($flightSeatIds->isNotEmpty()) {
-    //             FlightSeat::whereIn('id', $flightSeatIds)
-    //                 ->update([
-    //                     'status' => 'available',
-    //                     'held_by' => null,
-    //                     'held_until' => null,
-    //                 ]);
-    //         }
-
-    //         $booking->update(['status' => 'cancelled']);
-    //     });
-    // }
 }

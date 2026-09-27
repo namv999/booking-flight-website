@@ -15,6 +15,17 @@ class FlightSearchController extends Controller
         $this->expiryService->cancelAllExpired();
         $data = $request->validated();
 
+        $departureAirport = Airport::findOrFail($data['departure_airport_id']);
+        $arrivalAirport   = Airport::findOrFail($data['arrival_airport_id']);
+        $fareClass        = FareClass::findOrFail($data['fare_class_id']);
+
+        // Convert ngày local (theo timezone sân bay đi) sang khoảng UTC để query đúng
+        // Cột departure_time (lưu UTC) — tránh lệch ngày ở các chuyến khởi hành sớm
+        $localStart = \Carbon\Carbon::parse($data['departure_date'], $departureAirport->timezone)->startOfDay();
+        $localEnd   = \Carbon\Carbon::parse($data['departure_date'], $departureAirport->timezone)->endOfDay();
+        $startUtc = $localStart->clone()->setTimezone('UTC');
+        $endUtc   = $localEnd->clone()->setTimezone('UTC');
+
         $seatStats = \App\Models\FlightSeat::query()
             ->select('flight_id')
             ->selectRaw('MIN(price) as min_price')
@@ -22,10 +33,10 @@ class FlightSearchController extends Controller
             ->where('fare_class_id', $data['fare_class_id'])
             ->where(function ($q) {
                 $q->where('status', 'available')
-                ->orWhere(function ($q2) {
-                    $q2->where('status', 'held')
-                        ->where('held_until', '<', now());
-                });
+                    ->orWhere(function ($q2) {
+                        $q2->where('status', 'held')
+                            ->where('held_until', '<', now());
+                    });
             })
             ->groupBy('flight_id')
             ->having('available_seats', '>', 0);
@@ -36,17 +47,13 @@ class FlightSearchController extends Controller
             })
             ->where('flights.departure_airport_id', $data['departure_airport_id'])
             ->where('flights.arrival_airport_id', $data['arrival_airport_id'])
-            ->whereDate('flights.departure_time', $data['departure_date'])
+            ->whereBetween('flights.departure_time', [$startUtc, $endUtc]) // thay whereDate
             ->whereIn('flights.status', ['scheduled', 'delayed'])
             ->with(['aircraft.airline', 'departureAirport', 'arrivalAirport'])
             ->select('flights.*', 'seat_stats.min_price', 'seat_stats.available_seats')
             ->orderBy('seat_stats.min_price', 'asc')
             ->paginate(10)
             ->withQueryString();
-
-        $departureAirport = Airport::findOrFail($data['departure_airport_id']);
-        $arrivalAirport   = Airport::findOrFail($data['arrival_airport_id']);
-        $fareClass        = FareClass::findOrFail($data['fare_class_id']);
 
         return view('flights.results', [
             'flights'          => $flights,

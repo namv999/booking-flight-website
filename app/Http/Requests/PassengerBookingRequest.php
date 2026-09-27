@@ -28,7 +28,18 @@ class PassengerBookingRequest extends FormRequest
             'infants.*.full_name' => ['required', 'string', 'max:150'],
             'infants.*.document_number' => ['nullable', 'string', 'max:30'],
             'infants.*.date_of_birth' => ['nullable', 'date'],
-            'infants.*.companion_adult_index' => ['required', 'integer', 'min:0'],
+            'infants.*.companion_adult_index' => [
+                'required',
+                'integer',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    $adultCount = count($this->input('adults', []));
+
+                    if ($value >= $adultCount) {
+                        $fail('Người đi cùng của em bé không hợp lệ.');
+                    }
+                },
+            ],
         ];
     }
 }
