@@ -15,9 +15,11 @@ class FareClassController extends Controller
         $search = $request->input('search');
 
         $fareClasses = FareClass::when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
-            })
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        })
             ->latest()
             ->paginate(10)
             ->withQueryString();

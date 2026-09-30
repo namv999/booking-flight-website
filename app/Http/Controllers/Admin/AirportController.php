@@ -12,8 +12,20 @@ class AirportController extends Controller
 {
     public function index(Request $request)
     {
-        $airports = Airport::latest()->paginate(10);
-        return view('admin.airports.index', compact('airports'));
+        $search = $request->input('search');
+
+        $airports = Airport::when($search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('iata_code', 'like', "%{$search}%");
+            });
+        })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.airports.index', compact('airports', 'search'));
     }
 
     public function create()

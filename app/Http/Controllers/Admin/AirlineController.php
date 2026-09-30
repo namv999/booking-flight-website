@@ -15,9 +15,11 @@ class AirlineController extends Controller
         $search = $request->input('search');
 
         $airlines = Airline::when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('code', 'like', "%{$search}%");
-            })
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%");
+            });
+        })
             ->latest()
             ->paginate(10)
             ->withQueryString();

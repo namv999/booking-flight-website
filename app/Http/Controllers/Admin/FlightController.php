@@ -18,10 +18,12 @@ class FlightController extends Controller
 
         $flights = Flight::with(['aircraft', 'departureAirport', 'arrivalAirport'])
             ->when($search, function ($query, $search) {
-                $query->whereHas('departureAirport', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")->orWhere('code', 'like', "%{$search}%");
-                })->orWhereHas('arrivalAirport', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")->orWhere('code', 'like', "%{$search}%");
+                $query->where(function ($q) use ($search) {
+                    $q->whereHas('departureAirport', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%")->orWhere('iata_code', 'like', "%{$search}%");
+                    })->orWhereHas('arrivalAirport', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%{$search}%")->orWhere('iata_code', 'like', "%{$search}%");
+                    });
                 });
             })
             ->latest()
@@ -63,7 +65,12 @@ class FlightController extends Controller
 
     public function destroy(Flight $flight)
     {
-        $flight->delete();
+        try {
+            $flight->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('admin.flights.index')
+                ->with('error', 'Không thể xóa chuyến bay này vì đã có người đặt vé.');
+        }
 
         return redirect()->route('admin.flights.index')
             ->with('success', 'Xóa chuyến bay thành công.');

@@ -26,10 +26,10 @@ class AircraftController extends Controller
         return view('admin.aircrafts.index', compact('aircrafts', 'search'));
     }
     public function create()
-{
-    $airlines = Airline::all();
-    return view('admin.aircrafts.create', compact('airlines'));
-}
+    {
+        $airlines = Airline::all();
+        return view('admin.aircrafts.create', compact('airlines'));
+    }
 
     public function store(StoreAircraftRequest $request)
     {
@@ -54,7 +54,12 @@ class AircraftController extends Controller
     }
     public function destroy(Aircraft $aircraft)
     {
-        $aircraft->delete();
+        try {
+            $aircraft->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('admin.aircrafts.index')
+                ->with('error', 'Không thể xóa máy bay này vì đã có chuyến bay liên quan.');
+        }
 
         return redirect()->route('admin.aircrafts.index')
             ->with('success', 'Xóa máy bay thành công.');

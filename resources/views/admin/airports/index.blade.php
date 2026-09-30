@@ -8,11 +8,23 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+    <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     <div class="card">
         <div class="card-body">
+            <form action="{{ route('admin.airports.index') }}" method="GET" class="mb-3">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        name="search"
+                        class="form-control"
+                        placeholder="Tìm kiếm tên sân bay, thành phố hoặc mã IATA..."
+                        value="{{ $search }}">
+                    <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                </div>
+            </form>
+
             <table class="table table-bordered">
                 <thead>
                     <tr>
