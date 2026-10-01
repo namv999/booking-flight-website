@@ -130,6 +130,12 @@ class FareClassControllerTest extends TestCase
 
     public function test_show_returns_fare_class(): void
     {
-        $this->markTestIncomplete('admin/fare-classes/show.blade.php chưa tồn tại — routes/controller đã sẵn sàng, chỉ thiếu view.');
+        $admin = $this->admin();
+        $fareClass = FareClass::factory()->create();
+
+        $response = $this->actingAs($admin)->get(route('admin.fare-classes.show', $fareClass));
+
+        $response->assertOk();
+        $this->assertEquals($fareClass->id, $response->viewData('fareClass')->id);
     }
 }

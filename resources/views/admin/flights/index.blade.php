@@ -36,10 +36,14 @@
                 <tbody>
                     @forelse($flights as $flight)
                         <tr>
-                            <td>{{ $flight->id }}</td>
+                            <td>
+                                <a href="{{ route('admin.flights.show', $flight) }}" class="text-primary fw-semibold text-decoration-none">
+                                    #{{ $flight->id }}
+                                </a>
+                            </td>
                             <td>{{ optional($flight->aircraft)->model }} ({{ optional($flight->aircraft)->registration_number }})</td>
-                            <td>{{ optional($flight->departureAirport)->name }} ({{ optional($flight->departureAirport)->code }})</td>
-                            <td>{{ optional($flight->arrivalAirport)->name }} ({{ optional($flight->arrivalAirport)->code }})</td>
+                            <td>{{ optional($flight->departureAirport)->name }} ({{ optional($flight->departureAirport)->iata_code }})</td>
+                            <td>{{ optional($flight->arrivalAirport)->name }} ({{ optional($flight->arrivalAirport)->iata_code }})</td>
                             <td>{{ optional($flight->departure_time)->format('d/m/Y H:i') }}</td>
                             <td>{{ optional($flight->arrival_time)->format('d/m/Y H:i') }}</td>
                             <td>
@@ -48,6 +52,7 @@
                                 </span>
                             </td>
                             <td>
+                                <a href="{{ route('admin.flights.show', $flight) }}" class="btn btn-sm btn-info text-white">Xem</a>
                                 <a href="{{ route('admin.flights.edit', $flight) }}" class="btn btn-sm btn-warning">Sửa</a>
                                 <form action="{{ route('admin.flights.destroy', $flight) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa chuyến bay này?')">
                                     @csrf

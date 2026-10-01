@@ -11,6 +11,17 @@
     <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    <!-- Form tìm kiếm -->
+    <form method="GET" action="{{ route('admin.aircrafts.index') }}" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Tìm kiếm theo model máy bay..." value="{{ $search ?? '' }}">
+            <button class="btn btn-outline-secondary" type="submit">Tìm kiếm</button>
+            @if(!empty($search))
+                <a href="{{ route('admin.aircrafts.index') }}" class="btn btn-outline-danger">Reset</a>
+            @endif
+        </div>
+    </form>
+
     <div class="card">
         <div class="card-body">
             <table class="table table-bordered">
@@ -19,6 +30,7 @@
                         <th>#</th>
                         <th>Hãng hàng không</th>
                         <th>Model Máy bay</th>
+                        <th>Số hiệu đăng ký</th>
                         <th>Sức chứa (Số ghế)</th>
                         <th>Hành động</th>
                     </tr>
@@ -26,10 +38,17 @@
                 <tbody>
                     @forelse($aircrafts as $item)
                     <tr>
-                        <td>{{ $item->model }}</td>
+                        <td>{{ $aircrafts->firstItem() + $loop->index }}</td>
+                        <td>{{ optional($item->airline)->name ?? 'Chưa xác định' }}</td>
+                        <td>
+                            <a href="{{ route('admin.aircrafts.show', $item) }}" class="text-primary fw-semibold text-decoration-none">
+                                {{ $item->model }}
+                            </a>
+                        </td>
                         <td>{{ $item->registration_number }}</td>
                         <td>{{ $item->total_seats }}</td>
                         <td>
+                            <a href="{{ route('admin.aircrafts.show', $item) }}" class="btn btn-sm btn-info text-white">Xem</a>
                             <a href="{{ route('admin.aircrafts.edit', $item) }}" class="btn btn-sm btn-warning">Sửa</a>
                             <form action="{{ route('admin.aircrafts.destroy', $item) }}" method="POST" class="d-inline"
                                 onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
@@ -41,7 +60,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center">Không tìm thấy dữ liệu.</td>
+                        <td colspan="6" class="text-center">Không tìm thấy dữ liệu.</td>
                     </tr>
                     @endforelse
                 </tbody>

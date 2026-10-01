@@ -150,6 +150,12 @@ class AircraftControllerTest extends TestCase
 
     public function test_show_returns_aircraft(): void
     {
-        $this->markTestIncomplete('admin/aircrafts/show.blade.php chưa tồn tại — routes/controller đã sẵn sàng, chỉ thiếu view.');
+        $admin = $this->admin();
+        $aircraft = Aircraft::factory()->create();
+
+        $response = $this->actingAs($admin)->get(route('admin.aircrafts.show', $aircraft));
+
+        $response->assertOk();
+        $this->assertEquals($aircraft->id, $response->viewData('aircraft')->id);
     }
 }

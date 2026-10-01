@@ -41,12 +41,17 @@
                     @forelse($airports as $item)
                     <tr>
                         <td>{{ $airports->firstItem() + $loop->index }}</td>
-                        <td>{{ $item->name }}</td>
+                        <td>
+                            <a href="{{ route('admin.airports.show', $item) }}" class="text-primary fw-semibold text-decoration-none">
+                                {{ $item->name }}
+                            </a>
+                        </td>
                         <td>{{ $item->iata_code }}</td>
                         <td>{{ $item->city }}</td>
                         <td>{{ $item->country }}</td>
                         <td>{{ $item->timezone }}</td>
                         <td>
+                            <a href="{{ route('admin.airports.show', $item) }}" class="btn btn-sm btn-info text-white">Xem</a>
                             <a href="{{ route('admin.airports.edit', $item) }}" class="btn btn-sm btn-warning">Sửa</a>
                             <form action="{{ route('admin.airports.destroy', $item) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
                                 @csrf

@@ -130,6 +130,12 @@ class AirportControllerTest extends TestCase
 
     public function test_show_returns_airport(): void
     {
-        $this->markTestIncomplete('admin/airports/show.blade.php chưa tồn tại — routes/controller đã sẵn sàng, chỉ thiếu view.');
+        $admin = $this->admin();
+        $airport = Airport::factory()->create();
+
+        $response = $this->actingAs($admin)->get(route('admin.airports.show', $airport));
+
+        $response->assertOk();
+        $this->assertEquals($airport->id, $response->viewData('airport')->id);
     }
 }

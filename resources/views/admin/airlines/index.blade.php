@@ -46,10 +46,15 @@
                                 N/A
                             @endif
                         </td>
-                        <td>{{ $airline->name }}</td>
+                        <td>
+                            <a href="{{ route('admin.airlines.show', $airline) }}" class="text-primary fw-semibold text-decoration-none">
+                                {{ $airline->name }}
+                            </a>
+                        </td>
                         <td>{{ $airline->code }}</td>
                         <td>{{ $airline->country }}</td>
                         <td>
+                            <a href="{{ route('admin.airlines.show', $airline) }}" class="btn btn-sm btn-info text-white">Xem</a>
                             <a href="{{ route('admin.airlines.edit', $airline) }}" class="btn btn-sm btn-warning">Sửa</a>
                             <form action="{{ route('admin.airlines.destroy', $airline) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa?')">
                                 @csrf

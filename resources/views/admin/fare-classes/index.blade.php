@@ -36,12 +36,17 @@
                     @forelse($fareClasses as $fareClass)
                         <tr>
                             <td>{{ $fareClass->id }}</td>
-                            <td>{{ $fareClass->name }}</td>
+                            <td>
+                                <a href="{{ route('admin.fare-classes.show', $fareClass) }}" class="text-primary fw-semibold text-decoration-none">
+                                    {{ $fareClass->name }}
+                                </a>
+                            </td>
                             <td>{{ number_format($fareClass->base_price, 2) }}</td>
                             <td>{{ number_format($fareClass->seat_selection_fee, 2) }}</td>
                             <td>{{ $fareClass->checked_baggage_kg }} kg</td>
                             <td>{{ $fareClass->carry_on_baggage_kg }} kg</td>
                             <td>
+                                <a href="{{ route('admin.fare-classes.show', $fareClass) }}" class="btn btn-sm btn-info text-white">Xem</a>
                                 <a href="{{ route('admin.fare-classes.edit', $fareClass) }}" class="btn btn-sm btn-warning">Sửa</a>
                                 <form action="{{ route('admin.fare-classes.destroy', $fareClass) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa?')">
                                     @csrf
