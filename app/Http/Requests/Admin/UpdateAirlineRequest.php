@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Admin;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAirlineRequest extends FormRequest
@@ -20,10 +19,10 @@ class UpdateAirlineRequest extends FormRequest
         $airlineId = $this->route('airline')->id ?? $this->route('airline');
 
         return [
-            'name'     => ['required', 'string', 'max:255'],
-            'code'     => ['required', 'string', 'max:50', 'unique:airlines,code,' . $airlineId],
+            'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:50', 'unique:airlines,code,'.$airlineId],
             'logo_url' => ['nullable', 'string', 'max:255'],
-            'country'  => ['nullable', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

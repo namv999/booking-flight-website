@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\FareClass;
-use Illuminate\Http\Request;
 use App\Http\Requests\Admin\StoreFareClassRequest;
 use App\Http\Requests\Admin\UpdateFareClassRequest;
+use App\Models\FareClass;
+use Illuminate\Http\Request;
 
 class FareClassController extends Controller
 {
@@ -60,6 +60,7 @@ class FareClassController extends Controller
         return redirect()->route('admin.fare-classes.index')
             ->with('success', 'Xóa hạng vé thành công.');
     }
+
     public function show(FareClass $fareClass)
     {
         return view('admin.fare-classes.show', compact('fareClass'));

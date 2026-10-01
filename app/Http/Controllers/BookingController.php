@@ -9,7 +9,6 @@ use App\Models\Flight;
 use App\Models\FlightSeat;
 use App\Models\Passenger;
 use App\Models\Ticket;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -19,7 +18,7 @@ class BookingController extends Controller
     {
         $pending = session('pending_selection');
 
-        if (!$pending) {
+        if (! $pending) {
             return redirect()->route('home')
                 ->with('error', 'Vui lòng chọn chuyến bay trước khi nhập thông tin hành khách.');
         }
@@ -37,7 +36,7 @@ class BookingController extends Controller
     {
         $pending = session('pending_selection');
 
-        if (!$pending) {
+        if (! $pending) {
             return redirect()->route('home')
                 ->with('error', 'Vui lòng chọn chuyến bay trước khi nhập thông tin hành khách.');
         }
@@ -52,10 +51,10 @@ class BookingController extends Controller
                     ->where('fare_class_id', $pending['fare_class_id'])
                     ->where(function ($q) {
                         $q->where('status', 'available')
-                        ->orWhere(function ($q2) {
-                            $q2->where('status', 'held')
-                                ->where('held_until', '<', now());
-                        });
+                            ->orWhere(function ($q2) {
+                                $q2->where('status', 'held')
+                                    ->where('held_until', '<', now());
+                            });
                     })
                     ->lockForUpdate()
                     ->inRandomOrder()
@@ -73,8 +72,8 @@ class BookingController extends Controller
                 Ticket::whereIn('flight_seat_id', $heldSeats->pluck('id'))->update(['flight_seat_id' => null]);
 
                 FlightSeat::whereIn('id', $heldSeats->pluck('id'))->update([
-                    'status'     => 'held',
-                    'held_by'    => auth()->id(),
+                    'status' => 'held',
+                    'held_by' => auth()->id(),
                     'held_until' => now()->addMinutes(config('booking.seat_hold_minutes')),
                 ]);
 

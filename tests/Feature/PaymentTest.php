@@ -144,6 +144,7 @@ class PaymentTest extends TestCase
         $data['booking']->refresh();
         $this->assertSame('paid', $data['booking']->status);
     }
+
     public function test_show_aborts_403_when_booking_belongs_to_another_user(): void
     {
         $owner = User::factory()->create();

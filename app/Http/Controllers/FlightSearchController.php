@@ -6,27 +6,31 @@ use App\Http\Requests\FlightSearchRequest;
 use App\Models\Airport;
 use App\Models\FareClass;
 use App\Models\Flight;
+use App\Models\FlightSeat;
+use App\Services\BookingExpiryService;
+use Carbon\Carbon;
 
 class FlightSearchController extends Controller
 {
-    public function __construct(private \App\Services\BookingExpiryService $expiryService) {}
+    public function __construct(private BookingExpiryService $expiryService) {}
+
     public function results(FlightSearchRequest $request)
     {
         $this->expiryService->cancelAllExpired();
         $data = $request->validated();
 
         $departureAirport = Airport::findOrFail($data['departure_airport_id']);
-        $arrivalAirport   = Airport::findOrFail($data['arrival_airport_id']);
-        $fareClass        = FareClass::findOrFail($data['fare_class_id']);
+        $arrivalAirport = Airport::findOrFail($data['arrival_airport_id']);
+        $fareClass = FareClass::findOrFail($data['fare_class_id']);
 
         // Convert ngày local (theo timezone sân bay đi) sang khoảng UTC để query đúng
         // Cột departure_time (lưu UTC) — tránh lệch ngày ở các chuyến khởi hành sớm
-        $localStart = \Carbon\Carbon::parse($data['departure_date'], $departureAirport->timezone)->startOfDay();
-        $localEnd   = \Carbon\Carbon::parse($data['departure_date'], $departureAirport->timezone)->endOfDay();
+        $localStart = Carbon::parse($data['departure_date'], $departureAirport->timezone)->startOfDay();
+        $localEnd = Carbon::parse($data['departure_date'], $departureAirport->timezone)->endOfDay();
         $startUtc = $localStart->clone()->setTimezone('UTC');
-        $endUtc   = $localEnd->clone()->setTimezone('UTC');
+        $endUtc = $localEnd->clone()->setTimezone('UTC');
 
-        $seatStats = \App\Models\FlightSeat::query()
+        $seatStats = FlightSeat::query()
             ->select('flight_id')
             ->selectRaw('MIN(price) as min_price')
             ->selectRaw('COUNT(id) as available_seats')
@@ -56,14 +60,14 @@ class FlightSearchController extends Controller
             ->withQueryString();
 
         return view('flights.results', [
-            'flights'          => $flights,
+            'flights' => $flights,
             'departureAirport' => $departureAirport,
-            'arrivalAirport'   => $arrivalAirport,
-            'fareClass'        => $fareClass,
-            'departureDate'    => $data['departure_date'],
-            'adults'           => $data['adults'],
-            'children'         => $data['children'] ?? 0,
-            'infants'          => $data['infants'] ?? 0,
+            'arrivalAirport' => $arrivalAirport,
+            'fareClass' => $fareClass,
+            'departureDate' => $data['departure_date'],
+            'adults' => $data['adults'],
+            'children' => $data['children'] ?? 0,
+            'infants' => $data['infants'] ?? 0,
         ]);
     }
 }

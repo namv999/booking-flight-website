@@ -14,7 +14,7 @@ class TicketSeeder extends Seeder
     {
         $baggageAddon = BaggageAddon::orderBy('id')->first();
 
-        if (!$baggageAddon) {
+        if (! $baggageAddon) {
             return;
         }
 
@@ -46,7 +46,7 @@ class TicketSeeder extends Seeder
                     $this->createTicket(
                         bookingFlightId: $bookingFlight->id,
                         passengerId: $adult->id,
-                        ticketCode: 'TKT-' . str_pad(
+                        ticketCode: 'TKT-'.str_pad(
                             $adult->id,
                             6,
                             '0',
@@ -65,7 +65,7 @@ class TicketSeeder extends Seeder
                     $this->createTicket(
                         bookingFlightId: $bookingFlight->id,
                         passengerId: $child->id,
-                        ticketCode: 'TKT-' . str_pad(
+                        ticketCode: 'TKT-'.str_pad(
                             $child->id,
                             6,
                             '0',
@@ -87,7 +87,7 @@ class TicketSeeder extends Seeder
                 if ($infant && $adult) {
                     Ticket::firstOrCreate(
                         [
-                            'ticket_code' => 'TKT-' . str_pad(
+                            'ticket_code' => 'TKT-'.str_pad(
                                 $infant->id,
                                 6,
                                 '0',
@@ -133,7 +133,7 @@ class TicketSeeder extends Seeder
             ->orderBy('id')
             ->first();
 
-        if (!$flightSeat) {
+        if (! $flightSeat) {
             return;
         }
 

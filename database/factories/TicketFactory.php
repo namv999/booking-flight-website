@@ -27,7 +27,7 @@ class TicketFactory extends Factory
     // Vé infant: không ghế, giá = 10% giá vé cụ thể của adult đi kèm
     public function infantOf(Passenger $adult, float $adultTicketPrice): static
     {
-        return $this->state(fn(array $attrs) => [
+        return $this->state(fn (array $attrs) => [
             'flight_seat_id' => null,
             'companion_adult_passenger_id' => $adult->id,
             'price' => round($adultTicketPrice * 0.10, 2),

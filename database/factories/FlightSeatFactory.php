@@ -26,7 +26,7 @@ class FlightSeatFactory extends Factory
     // Ghế đang bị người khác giữ hợp lệ - dùng để test KHÔNG được cướp ghế
     public function heldValid(): static
     {
-        return $this->state(fn(array $attrs) => [
+        return $this->state(fn (array $attrs) => [
             'status' => 'held',
             'held_by' => User::factory(),
             'held_until' => now()->addMinutes(10),
@@ -36,7 +36,7 @@ class FlightSeatFactory extends Factory
     // Ghế held nhưng đã hết hạn - dùng để test reclaim trong BookingController::store()
     public function heldExpired(): static
     {
-        return $this->state(fn(array $attrs) => [
+        return $this->state(fn (array $attrs) => [
             'status' => 'held',
             'held_by' => User::factory(),
             'held_until' => now()->subMinutes(5),
@@ -45,7 +45,7 @@ class FlightSeatFactory extends Factory
 
     public function booked(): static
     {
-        return $this->state(fn(array $attrs) => [
+        return $this->state(fn (array $attrs) => [
             'status' => 'booked',
             'held_by' => null,
             'held_until' => null,

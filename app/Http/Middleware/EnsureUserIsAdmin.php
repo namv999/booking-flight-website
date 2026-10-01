@@ -10,7 +10,7 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || $request->user()->role !== 'admin') {
+        if (! $request->user() || $request->user()->role !== 'admin') {
             abort(403, 'Không có quyền truy cập vào trang này.');
         }
 

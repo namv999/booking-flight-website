@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Aircraft;
 use App\Models\FareClass;
 use App\Models\Flight;
 use App\Models\FlightSeat;
@@ -24,7 +23,7 @@ class FlightSeatSeeder extends Seeder
 
                 $fareClass = $fareClasses->get($fareClassName);
 
-                if (!$fareClass) {
+                if (! $fareClass) {
                     continue;
                 }
 

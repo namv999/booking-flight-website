@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Airline;
-use Illuminate\Http\Request;
 use App\Http\Requests\Admin\StoreAirlineRequest;
 use App\Http\Requests\Admin\UpdateAirlineRequest;
+use App\Models\Airline;
+use Illuminate\Http\Request;
 
 class AirlineController extends Controller
 {
@@ -60,6 +60,7 @@ class AirlineController extends Controller
         return redirect()->route('admin.airlines.index')
             ->with('success', 'Xóa hãng hàng không thành công.');
     }
+
     public function show(Airline $airline)
     {
         return view('admin.airlines.show', compact('airline'));

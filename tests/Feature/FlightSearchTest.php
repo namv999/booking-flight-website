@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Aircraft;
 use App\Models\Airport;
 use App\Models\FareClass;
 use App\Models\Flight;
 use App\Models\FlightSeat;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -33,7 +35,7 @@ class FlightSearchTest extends TestCase
         $departureTime = now($departureAirport->timezone)->addDay()->setTime(12, 0);
 
         $flight = Flight::factory()->create([
-            'aircraft_id' => \App\Models\Aircraft::factory()->create(),
+            'aircraft_id' => Aircraft::factory()->create(),
             'departure_airport_id' => $departureAirport->id,
             'arrival_airport_id' => $arrivalAirport->id,
             'departure_time' => $departureTime->clone()->setTimezone('UTC'),
@@ -152,6 +154,7 @@ class FlightSearchTest extends TestCase
         $this->assertEquals(1, $flights->first()->available_seats);
         $this->assertEquals(1500000, $flights->first()->min_price);
     }
+
     public function test_early_morning_local_departure_is_found_by_correct_local_date(): void
     {
         // Sân bay đi ở VN (UTC+7). Chuyến khởi hành 01:00 giờ VN ngày 15/10
@@ -161,7 +164,7 @@ class FlightSearchTest extends TestCase
         $arrivalAirport = Airport::factory()->create();
         $fareClass = FareClass::factory()->create();
 
-        $localDeparture = \Carbon\Carbon::parse('2026-10-15 01:00:00', 'Asia/Ho_Chi_Minh');
+        $localDeparture = Carbon::parse('2026-10-15 01:00:00', 'Asia/Ho_Chi_Minh');
 
         $flight = Flight::factory()->create([
             'departure_airport_id' => $departureAirport->id,
@@ -199,7 +202,7 @@ class FlightSearchTest extends TestCase
         $arrivalAirport = Airport::factory()->create();
         $fareClass = FareClass::factory()->create();
 
-        $localDeparture = \Carbon\Carbon::parse('2026-10-15 01:00:00', 'Asia/Ho_Chi_Minh');
+        $localDeparture = Carbon::parse('2026-10-15 01:00:00', 'Asia/Ho_Chi_Minh');
 
         $flight = Flight::factory()->create([
             'departure_airport_id' => $departureAirport->id,
@@ -225,6 +228,7 @@ class FlightSearchTest extends TestCase
         $response->assertOk();
         $this->assertCount(0, $response->viewData('flights'));
     }
+
     public function test_results_are_sorted_by_min_price_ascending(): void
     {
         $departureAirport = Airport::factory()->create();

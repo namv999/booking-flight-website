@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Airport;
-use Illuminate\Http\Request;
 use App\Http\Requests\Admin\StoreAirportRequest;
 use App\Http\Requests\Admin\UpdateAirportRequest;
+use App\Models\Airport;
+use Illuminate\Http\Request;
 
 class AirportController extends Controller
 {
@@ -53,6 +53,7 @@ class AirportController extends Controller
     {
         return view('admin.airports.edit', compact('airport'));
     }
+
     public function destroy(Airport $airport)
     {
         $airport->delete();
@@ -60,6 +61,7 @@ class AirportController extends Controller
         return redirect()->route('admin.airports.index')
             ->with('success', 'Xóa sân bay thành công.');
     }
+
     public function show(Airport $airport)
     {
         return view('admin.airports.show', compact('airport'));

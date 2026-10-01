@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Admin;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateFareClassRequest extends FormRequest
@@ -15,12 +14,12 @@ class UpdateFareClassRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'                 => ['required', 'string', 'max:255'],
-            'base_price'           => ['required', 'numeric', 'min:0'],
-            'seat_selection_fee'   => ['required', 'numeric', 'min:0'],
-            'checked_baggage_kg'   => ['required', 'integer', 'min:0'],
-            'carry_on_baggage_kg'  => ['required', 'integer', 'min:0'],
-            'description'          => ['nullable', 'string'],
+            'name' => ['required', 'string', 'max:255'],
+            'base_price' => ['required', 'numeric', 'min:0'],
+            'seat_selection_fee' => ['required', 'numeric', 'min:0'],
+            'checked_baggage_kg' => ['required', 'integer', 'min:0'],
+            'carry_on_baggage_kg' => ['required', 'integer', 'min:0'],
+            'description' => ['nullable', 'string'],
         ];
     }
 

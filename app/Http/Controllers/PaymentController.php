@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\FlightSeat;
 use App\Models\Payment;
-use Carbon\Carbon;
+use App\Services\BookingExpiryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 class PaymentController extends Controller
 {
     // const PAYMENT_EXPIRE_MINUTES = 15;
-    public function __construct(private \App\Services\BookingExpiryService $expiryService) {}
+    public function __construct(private BookingExpiryService $expiryService) {}
 
     public function show(Booking $booking)
     {
@@ -112,7 +112,7 @@ class PaymentController extends Controller
 
         if ($validated['simulate_result'] === 'success') {
             return redirect()->route('booking-history.show', $booking)
-                ->with('status', 'Thanh toán thành công! Mã booking #' . $booking->id);
+                ->with('status', 'Thanh toán thành công! Mã booking #'.$booking->id);
         }
 
         return redirect()->route('payment.show', $booking)

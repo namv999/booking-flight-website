@@ -13,8 +13,8 @@ use App\Models\FareClass;
 use App\Models\Flight;
 use App\Models\FlightSeat;
 use App\Models\Seat;
-use Illuminate\Database\Seeder;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class TestSmallAircraftSeeder extends Seeder
 {
@@ -29,7 +29,7 @@ class TestSmallAircraftSeeder extends Seeder
         $aircraft = Aircraft::create([
             'airline_id' => $airline->id,
             'model' => 'ATR 72 (Test)',
-            'registration_number' => 'VN-TEST' . now()->timestamp,
+            'registration_number' => 'VN-TEST'.now()->timestamp,
             'total_seats' => 6,
         ]);
 

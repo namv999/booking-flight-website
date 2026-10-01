@@ -3,13 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\BookingFlight;
 use App\Models\FareClass;
 use App\Models\Flight;
 use App\Models\FlightSeat;
 use App\Models\Passenger;
-use App\Models\User;
 use App\Models\Ticket;
-use App\Models\BookingFlight;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -73,6 +73,7 @@ class PassengerBookingTest extends TestCase
         $this->assertSame($user->id, $seat->held_by);
         $this->assertNotNull($seat->held_until);
     }
+
     public function test_infant_price_is_ten_percent_of_specific_companion_adult_not_average(): void
     {
         $user = User::factory()->create();
@@ -149,6 +150,7 @@ class PassengerBookingTest extends TestCase
         $this->assertSame('held', $seatAdult2->fresh()->status);
         $this->assertSame('held', $seatChild->fresh()->status);
     }
+
     public function test_not_enough_seats_rolls_back_entire_transaction(): void
     {
         $user = User::factory()->create();
@@ -200,6 +202,7 @@ class PassengerBookingTest extends TestCase
         // pending_selection còn nguyên trong session -> user quay lại vẫn giữ được lựa chọn
         $this->assertNotNull(session('pending_selection'));
     }
+
     public function test_reclaims_expired_held_seat_and_nullifies_old_ticket_reference(): void
     {
         $oldUser = User::factory()->create();
@@ -273,6 +276,7 @@ class PassengerBookingTest extends TestCase
             Ticket::where('flight_seat_id', $seat->id)->count()
         );
     }
+
     public function test_redirects_to_home_when_no_pending_selection_in_session(): void
     {
         $user = User::factory()->create();

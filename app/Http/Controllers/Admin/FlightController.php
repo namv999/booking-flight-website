@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Flight;
-use App\Models\Aircraft;
-use App\Models\Airport;
-use Illuminate\Http\Request;
 use App\Http\Requests\Admin\StoreFlightRequest;
 use App\Http\Requests\Admin\UpdateFlightRequest;
+use App\Models\Aircraft;
+use App\Models\Airport;
+use App\Models\Flight;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 
 class FlightController extends Controller
 {
@@ -37,6 +38,7 @@ class FlightController extends Controller
     {
         $aircrafts = Aircraft::all();
         $airports = Airport::all();
+
         return view('admin.flights.create', compact('aircrafts', 'airports'));
     }
 
@@ -52,6 +54,7 @@ class FlightController extends Controller
     {
         $aircrafts = Aircraft::all();
         $airports = Airport::all();
+
         return view('admin.flights.edit', compact('flight', 'aircrafts', 'airports'));
     }
 
@@ -67,7 +70,7 @@ class FlightController extends Controller
     {
         try {
             $flight->delete();
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return redirect()->route('admin.flights.index')
                 ->with('error', 'Không thể xóa chuyến bay này vì đã có người đặt vé.');
         }
@@ -75,9 +78,11 @@ class FlightController extends Controller
         return redirect()->route('admin.flights.index')
             ->with('success', 'Xóa chuyến bay thành công.');
     }
+
     public function show(Flight $flight)
     {
         $flight->load(['aircraft.airline', 'departureAirport', 'arrivalAirport']);
+
         return view('admin.flights.show', compact('flight'));
     }
 }

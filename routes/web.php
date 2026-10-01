@@ -1,20 +1,21 @@
 <?php
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SavedPassengerController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\AirlineController;
+
 use App\Http\Controllers\Admin\AircraftController;
+use App\Http\Controllers\Admin\AirlineController;
 use App\Http\Controllers\Admin\AirportController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FareClassController;
 use App\Http\Controllers\Admin\FlightController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\FlightSearchController;
-use App\Http\Controllers\SeatSelectionController;
 use App\Http\Controllers\BookingController;
-use App\Http\Controllers\PaymentController;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\BookingHistoryController;
+use App\Http\Controllers\FlightSearchController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SavedPassengerController;
+use App\Http\Controllers\SeatSelectionController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
 //     return view('home');
@@ -25,6 +26,7 @@ Route::get('/dashboard', function () {
     if (Auth::user()->role === 'admin') {
         return redirect()->route('admin.dashboard');
     }
+
     return view('dashboard.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 

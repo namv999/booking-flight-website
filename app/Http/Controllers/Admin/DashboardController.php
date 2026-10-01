@@ -1,11 +1,11 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Payment;
-use App\Models\Flight;
 use App\Models\Airline;
 use App\Models\FlightSeat;
+use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller

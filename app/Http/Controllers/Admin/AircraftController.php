@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Aircraft;
-use App\Models\Airline;
 use App\Http\Requests\Admin\StoreAircraftRequest;
 use App\Http\Requests\Admin\UpdateAircraftRequest;
+use App\Models\Aircraft;
+use App\Models\Airline;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 class AircraftController extends Controller
@@ -25,9 +26,11 @@ class AircraftController extends Controller
 
         return view('admin.aircrafts.index', compact('aircrafts', 'search'));
     }
+
     public function create()
     {
         $airlines = Airline::all();
+
         return view('admin.aircrafts.create', compact('airlines'));
     }
 
@@ -41,7 +44,8 @@ class AircraftController extends Controller
 
     public function edit(Aircraft $aircraft)
     {
-        $airlines = \App\Models\Airline::all();
+        $airlines = Airline::all();
+
         return view('admin.aircrafts.edit', compact('aircraft', 'airlines'));
     }
 
@@ -52,11 +56,12 @@ class AircraftController extends Controller
         return redirect()->route('admin.aircrafts.index')
             ->with('success', 'Cập nhật máy bay thành công.');
     }
+
     public function destroy(Aircraft $aircraft)
     {
         try {
             $aircraft->delete();
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return redirect()->route('admin.aircrafts.index')
                 ->with('error', 'Không thể xóa máy bay này vì đã có chuyến bay liên quan.');
         }
@@ -64,9 +69,11 @@ class AircraftController extends Controller
         return redirect()->route('admin.aircrafts.index')
             ->with('success', 'Xóa máy bay thành công.');
     }
+
     public function show(Aircraft $aircraft)
     {
         $aircraft->load('airline');
+
         return view('admin.aircrafts.show', compact('aircraft'));
     }
 }

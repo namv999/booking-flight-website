@@ -54,7 +54,7 @@ class BookingExpiryServiceTest extends TestCase
         $hold = config('booking.seat_hold_minutes');
         $data = $this->makeBookingWithSeat(createdMinutesAgo: $hold - 5); // chưa quá hạn
 
-        $result = (new BookingExpiryService())->cancelIfExpired($data['booking']);
+        $result = (new BookingExpiryService)->cancelIfExpired($data['booking']);
 
         $this->assertFalse($result);
 
@@ -72,7 +72,7 @@ class BookingExpiryServiceTest extends TestCase
         $hold = config('booking.seat_hold_minutes');
         $data = $this->makeBookingWithSeat(createdMinutesAgo: $hold + 5); // đã quá hạn
 
-        $result = (new BookingExpiryService())->cancelIfExpired($data['booking']);
+        $result = (new BookingExpiryService)->cancelIfExpired($data['booking']);
 
         $this->assertTrue($result);
 
@@ -90,6 +90,7 @@ class BookingExpiryServiceTest extends TestCase
         // -> tránh vi phạm uq_tickets_flightseat khi ghế được đặt lại sau này
         $this->assertNull($data['ticket']->flight_seat_id);
     }
+
     public function test_does_not_cancel_paid_or_cancelled_booking_even_if_past_threshold(): void
     {
         $hold = config('booking.seat_hold_minutes');
@@ -97,7 +98,7 @@ class BookingExpiryServiceTest extends TestCase
         $paidData = $this->makeBookingWithSeat(createdMinutesAgo: $hold + 30, status: 'paid');
         $cancelledData = $this->makeBookingWithSeat(createdMinutesAgo: $hold + 30, status: 'cancelled');
 
-        $service = new BookingExpiryService();
+        $service = new BookingExpiryService;
 
         $this->assertFalse($service->cancelIfExpired($paidData['booking']));
         $this->assertFalse($service->cancelIfExpired($cancelledData['booking']));
@@ -155,7 +156,7 @@ class BookingExpiryServiceTest extends TestCase
             'price' => 150000,
         ]);
 
-        $result = (new BookingExpiryService())->cancelIfExpired($booking);
+        $result = (new BookingExpiryService)->cancelIfExpired($booking);
 
         $this->assertTrue($result);
 
@@ -179,7 +180,7 @@ class BookingExpiryServiceTest extends TestCase
         $expiredButPaid = $this->makeBookingWithSeat(createdMinutesAgo: $hold + 10, status: 'paid');
         $expiredButCancelled = $this->makeBookingWithSeat(createdMinutesAgo: $hold + 10, status: 'cancelled');
 
-        $count = (new BookingExpiryService())->cancelAllExpired();
+        $count = (new BookingExpiryService)->cancelAllExpired();
 
         $this->assertSame(1, $count);
 

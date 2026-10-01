@@ -22,7 +22,7 @@ class PaymentFactory extends Factory
 
     public function failed(): static
     {
-        return $this->state(fn(array $attrs) => [
+        return $this->state(fn (array $attrs) => [
             'status' => 'failed',
             'paid_at' => null,
         ]);

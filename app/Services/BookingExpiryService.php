@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\FlightSeat;
+use App\Models\Ticket;
 use Illuminate\Support\Facades\DB;
 
 class BookingExpiryService
@@ -72,7 +73,7 @@ class BookingExpiryService
         if ($flightSeatIds->isNotEmpty()) {
             // Gỡ liên kết ghế khỏi ticket cũ TRƯỚC — tránh vi phạm UNIQUE
             // khi ghế này được đặt lại bởi booking khác sau này
-            \App\Models\Ticket::whereIn('flight_seat_id', $flightSeatIds)
+            Ticket::whereIn('flight_seat_id', $flightSeatIds)
                 ->update(['flight_seat_id' => null]);
 
             FlightSeat::whereIn('id', $flightSeatIds)

@@ -24,7 +24,7 @@ class PassengerFactory extends Factory
 
     public function child(): static
     {
-        return $this->state(fn(array $attrs) => [
+        return $this->state(fn (array $attrs) => [
             'passenger_type' => 'child',
             'date_of_birth' => fake()->dateTimeBetween('-11 years', '-2 years'),
         ]);
@@ -32,7 +32,7 @@ class PassengerFactory extends Factory
 
     public function infant(): static
     {
-        return $this->state(fn(array $attrs) => [
+        return $this->state(fn (array $attrs) => [
             'passenger_type' => 'infant',
             'date_of_birth' => fake()->dateTimeBetween('-23 months', 'now'),
         ]);
