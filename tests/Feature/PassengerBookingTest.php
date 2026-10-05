@@ -298,4 +298,169 @@ class PassengerBookingTest extends TestCase
         $this->assertDatabaseCount('passengers', 0);
         $this->assertDatabaseCount('tickets', 0);
     }
+
+    public function test_validation_failure_creates_nothing(): void
+    {
+        $user = User::factory()->create();
+        $flight = Flight::factory()->create();
+        $fareClass = FareClass::factory()->create();
+        $seat = FlightSeat::factory()->create([
+            'flight_id' => $flight->id,
+            'fare_class_id' => $fareClass->id,
+            'price' => 1500000,
+            'status' => 'available',
+        ]);
+
+        session(['pending_selection' => [
+            'flight_id' => $flight->id,
+            'fare_class_id' => $fareClass->id,
+            'adults' => 1,
+            'children' => 0,
+            'infants' => 0,
+        ]]);
+
+        $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
+            'adults' => [['full_name' => '']],
+        ]);
+
+        $response->assertSessionHasErrors('adults.0.full_name');
+        $this->assertDatabaseCount('bookings', 0);
+        $this->assertDatabaseCount('tickets', 0);
+        $this->assertSame('available', $seat->fresh()->status);
+    }
+
+    public function test_invalid_companion_index_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        $flight = Flight::factory()->create();
+        $fareClass = FareClass::factory()->create();
+        FlightSeat::factory()->create([
+            'flight_id' => $flight->id,
+            'fare_class_id' => $fareClass->id,
+            'price' => 1500000,
+            'status' => 'available',
+        ]);
+
+        session(['pending_selection' => [
+            'flight_id' => $flight->id,
+            'fare_class_id' => $fareClass->id,
+            'adults' => 1,
+            'children' => 0,
+            'infants' => 1,
+        ]]);
+
+        $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
+            'adults' => [['full_name' => 'Adult One']],
+            'infants' => [['full_name' => 'Infant One', 'companion_adult_index' => 5]],
+        ]);
+
+        $response->assertSessionHasErrors('infants.0.companion_adult_index');
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
+    public function test_passenger_form_renders_blocks_for_pending_counts(): void
+    {
+        $user = User::factory()->create();
+        $flight = Flight::factory()->create();
+        $fareClass = FareClass::factory()->create();
+
+        session(['pending_selection' => [
+            'flight_id' => $flight->id,
+            'fare_class_id' => $fareClass->id,
+            'adults' => 2,
+            'children' => 1,
+            'infants' => 1,
+        ]]);
+
+        $response = $this->actingAs($user)->get(route('booking.passengers.form'));
+
+        $response->assertOk();
+        $response->assertViewIs('booking.passengers');
+        $this->assertEquals($flight->id, $response->viewData('flight')->id);
+        $this->assertEquals(2, $response->viewData('pending')['adults']);
+        $response->assertSee('adults[1][full_name]', false);
+        $response->assertDontSee('adults[2][full_name]', false);
+        $response->assertSee('children[0][full_name]', false);
+        $response->assertSee('infants[0][companion_adult_index]', false);
+    }
+
+    public function test_passenger_form_redirects_home_without_pending_selection(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('booking.passengers.form'));
+
+        $response->assertRedirect(route('home'));
+        $response->assertSessionHas('error');
+    }
+
+    // Dựng session + 3 ghế, dùng chung cho các test lệch số lượng
+    private function pendingWith(int $adults, int $children, int $infants): array
+    {
+        $flight = Flight::factory()->create();
+        $fareClass = FareClass::factory()->create();
+        FlightSeat::factory()->count(3)->create([
+            'flight_id' => $flight->id,
+            'fare_class_id' => $fareClass->id,
+            'price' => 1500000,
+            'status' => 'available',
+        ]);
+
+        session(['pending_selection' => [
+            'flight_id' => $flight->id,
+            'fare_class_id' => $fareClass->id,
+            'adults' => $adults,
+            'children' => $children,
+            'infants' => $infants,
+        ]]);
+
+        return [$flight, $fareClass];
+    }
+
+    public function test_more_adults_than_pending_is_rejected_without_holding_seats(): void
+    {
+        $user = User::factory()->create();
+        $this->pendingWith(1, 0, 0);
+
+        $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
+            'adults' => [
+                ['full_name' => 'Adult One'],
+                ['full_name' => 'Adult Two'],
+            ],
+        ]);
+
+        $response->assertSessionHas('error', 'Số lượng hành khách không khớp với lựa chọn ban đầu. Vui lòng thử lại.');
+        $this->assertDatabaseCount('bookings', 0);
+        $this->assertDatabaseCount('tickets', 0);
+        $this->assertSame(3, FlightSeat::where('status', 'available')->count()); // không ghế nào bị held
+        $this->assertNotNull(session('pending_selection'));
+    }
+
+    public function test_fewer_adults_than_pending_is_rejected_without_holding_seats(): void
+    {
+        $user = User::factory()->create();
+        $this->pendingWith(2, 0, 0);
+
+        $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
+            'adults' => [['full_name' => 'Only One']],
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertDatabaseCount('bookings', 0);
+        $this->assertSame(3, FlightSeat::where('status', 'available')->count());
+    }
+
+    public function test_missing_infant_compared_to_pending_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        $this->pendingWith(1, 0, 1);
+
+        $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
+            'adults' => [['full_name' => 'Adult One']],
+            'infants' => [],
+        ]);
+
+        $response->assertSessionHas('error');
+        $this->assertDatabaseCount('bookings', 0);
+    }
 }

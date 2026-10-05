@@ -71,6 +71,14 @@ class BookingExpiryService
         $flightSeatIds = $tickets->pluck('flight_seat_id')->filter()->values();
 
         if ($flightSeatIds->isNotEmpty()) {
+            // Khóa flight_seats TRƯỚC khi sửa tickets, cùng thứ tự khóa với
+            // BookingController::store() để tránh deadlock chéo. Hàm này được gọi
+            // trong DB::transaction() của cancelIfExpired nên lock giữ đến khi commit
+            FlightSeat::whereIn('id', $flightSeatIds)->orderBy('id')->lockForUpdate()->get();
+
+            Ticket::whereIn('flight_seat_id', $flightSeatIds)
+                ->update(['flight_seat_id' => null]);
+
             // Gỡ liên kết ghế khỏi ticket cũ TRƯỚC — tránh vi phạm UNIQUE
             // khi ghế này được đặt lại bởi booking khác sau này
             Ticket::whereIn('flight_seat_id', $flightSeatIds)

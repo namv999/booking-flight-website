@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Flight;
 use App\Models\FlightSeat;
 use Illuminate\Http\Request;
 
@@ -16,6 +17,18 @@ class SeatSelectionController extends Controller
             'children' => ['nullable', 'integer', 'min:0'],
             'infants' => ['nullable', 'integer', 'min:0'],
         ]);
+
+        // Chặn POST trực tiếp flight_id của chuyến đã hủy hoặc đã khởi hành.
+        // Kiểm tra bằng SQL với now('UTC') vì cột departure_time lưu UTC
+        // (tránh phụ thuộc vào cast timezone của model)
+        $flightValid = Flight::whereKey($data['flight_id'])
+            ->whereIn('status', ['scheduled', 'delayed'])
+            ->where('departure_time', '>', now('UTC'))
+            ->exists();
+
+        if (! $flightValid) {
+            return back()->with('error', 'Chuyến bay này không còn khả dụng, vui lòng chọn chuyến khác.');
+        }
 
         $seatsNeeded = $data['adults'] + ($data['children'] ?? 0);
 

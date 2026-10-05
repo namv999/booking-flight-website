@@ -42,6 +42,18 @@ class BookingController extends Controller
         }
 
         $data = $request->validated();
+
+        // Số hành khách form gửi lên phải khớp lựa chọn đã precheck.
+        // (int) vì $pending có thể chứa chuỗi số từ request, so sánh !== với count() sẽ sai kiểu
+        if (
+            count($data['adults']) !== (int) $pending['adults']
+            || count($data['children'] ?? []) !== (int) $pending['children']
+            || count($data['infants'] ?? []) !== (int) $pending['infants']
+        ) {
+            return back()->withInput()
+                ->with('error', 'Số lượng hành khách không khớp với lựa chọn ban đầu. Vui lòng thử lại.');
+        }
+
         $seatsNeeded = $pending['adults'] + $pending['children'];
 
         try {
@@ -91,7 +103,7 @@ class BookingController extends Controller
                 $seatIndex = 0;
                 $totalAmount = 0;
                 $adultPassengerIds = [];
-                $adultTicketPrices = [];
+                $adultFarePrices = [];
 
                 foreach ($data['adults'] as $adultData) {
                     $passenger = Passenger::create([
@@ -111,7 +123,7 @@ class BookingController extends Controller
                         'price' => $seat->price,
                         'ticket_code' => strtoupper(Str::random(8)),
                     ]);
-                    $adultTicketPrices[$passenger->id] = $ticket->price;
+                    $adultFarePrices[$passenger->id] = $seat->price;
                     $totalAmount += $ticket->price;
                     $seatIndex++;
                 }
@@ -139,7 +151,7 @@ class BookingController extends Controller
 
                 foreach ($data['infants'] ?? [] as $infantData) {
                     $companionAdultId = $adultPassengerIds[$infantData['companion_adult_index']];
-                    $companionPrice = $adultTicketPrices[$companionAdultId];
+                    $companionPrice = $adultFarePrices[$companionAdultId];
 
                     $passenger = Passenger::create([
                         'booking_id' => $booking->id,

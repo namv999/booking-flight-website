@@ -341,4 +341,145 @@ class FlightSearchTest extends TestCase
         $response->assertOk();
         $this->assertCount(0, $response->viewData('flights'));
     }
+
+    // Tạo chuyến + 1 ghế available. Ngày bay tính theo timezone sân bay đi,
+    // giống cách các test hiện có dựng dữ liệu
+    private function makeFlightWithSeat(Airport $dep, Airport $arr, FareClass $fare, array $flightOverrides = [], int $hour = 12): Flight
+    {
+        $departure = now($dep->timezone)->addDay()->setTime($hour, 0);
+
+        $flight = Flight::factory()->create(array_merge([
+            'departure_airport_id' => $dep->id,
+            'arrival_airport_id' => $arr->id,
+            'departure_time' => $departure->clone()->setTimezone('UTC'),
+            'arrival_time' => $departure->clone()->addHours(2)->setTimezone('UTC'),
+            'status' => 'scheduled',
+        ], $flightOverrides));
+
+        FlightSeat::factory()->create([
+            'flight_id' => $flight->id,
+            'fare_class_id' => $fare->id,
+            'price' => 1500000,
+            'status' => 'available',
+        ]);
+
+        return $flight;
+    }
+
+    private function searchParams(Airport $dep, Airport $arr, FareClass $fare, array $overrides = []): array
+    {
+        return $this->validParams(array_merge([
+            'departure_airport_id' => $dep->id,
+            'arrival_airport_id' => $arr->id,
+            'fare_class_id' => $fare->id,
+            'departure_date' => now($dep->timezone)->addDay()->toDateString(),
+        ], $overrides));
+    }
+
+    public function test_view_receives_search_context(): void
+    {
+        $dep = Airport::factory()->create();
+        $arr = Airport::factory()->create();
+        $fare = FareClass::factory()->create();
+        $this->makeFlightWithSeat($dep, $arr, $fare);
+
+        $params = $this->searchParams($dep, $arr, $fare, ['adults' => 2, 'children' => 1, 'infants' => 1]);
+        $response = $this->get(route('flights.search.results', $params));
+
+        $response->assertOk();
+        $this->assertEquals($dep->id, $response->viewData('departureAirport')->id);
+        $this->assertEquals($arr->id, $response->viewData('arrivalAirport')->id);
+        $this->assertEquals($fare->id, $response->viewData('fareClass')->id);
+        $this->assertEquals($params['departure_date'], $response->viewData('departureDate'));
+        $this->assertEquals(2, $response->viewData('adults'));
+        $this->assertEquals(1, $response->viewData('children'));
+        $this->assertEquals(1, $response->viewData('infants'));
+    }
+
+    public function test_cancelled_flight_is_excluded_but_delayed_is_included(): void
+    {
+        $dep = Airport::factory()->create();
+        $arr = Airport::factory()->create();
+        $fare = FareClass::factory()->create();
+
+        $this->makeFlightWithSeat($dep, $arr, $fare, ['status' => 'cancelled'], 9);
+        $delayed = $this->makeFlightWithSeat($dep, $arr, $fare, ['status' => 'delayed'], 15);
+
+        $response = $this->get(route('flights.search.results', $this->searchParams($dep, $arr, $fare)));
+
+        $flights = $response->viewData('flights');
+        $this->assertCount(1, $flights);
+        $this->assertEquals($delayed->id, $flights->first()->id);
+    }
+
+    public function test_flight_on_other_route_is_excluded(): void
+    {
+        $dep = Airport::factory()->create();
+        $arr = Airport::factory()->create();
+        $otherArr = Airport::factory()->create();
+        $fare = FareClass::factory()->create();
+
+        $this->makeFlightWithSeat($dep, $otherArr, $fare);
+
+        $response = $this->get(route('flights.search.results', $this->searchParams($dep, $arr, $fare)));
+
+        $this->assertCount(0, $response->viewData('flights'));
+    }
+
+    public function test_pagination_links_keep_search_query(): void
+    {
+        $dep = Airport::factory()->create();
+        $arr = Airport::factory()->create();
+        $fare = FareClass::factory()->create();
+
+        // 11 chuyến -> trang 1 có 10, trang 2 có 1 (paginate(10))
+        for ($i = 0; $i < 11; $i++) {
+            $this->makeFlightWithSeat($dep, $arr, $fare, [], $i);
+        }
+
+        $response = $this->get(route('flights.search.results', $this->searchParams($dep, $arr, $fare)));
+
+        $flights = $response->viewData('flights');
+        $this->assertSame(11, $flights->total());
+        $this->assertCount(10, $flights);
+        $this->assertStringContainsString('departure_airport_id='.$dep->id, $flights->url(2));
+        $this->assertStringContainsString('fare_class_id='.$fare->id, $flights->url(2));
+    }
+
+    public function test_results_page_renders_precheck_form_with_hidden_fields(): void
+    {
+        $dep = Airport::factory()->create();
+        $arr = Airport::factory()->create();
+        $fare = FareClass::factory()->create();
+        $flight = $this->makeFlightWithSeat($dep, $arr, $fare);
+
+        $response = $this->get(route(
+            'flights.search.results',
+            $this->searchParams($dep, $arr, $fare, ['adults' => 2, 'children' => 1])
+        ));
+
+        $response->assertSee('action="'.route('booking.precheck').'"', false);
+        $response->assertSee('name="flight_id" value="'.$flight->id.'"', false);
+        $response->assertSee('name="fare_class_id" value="'.$fare->id.'"', false);
+        $response->assertSee('name="adults" value="2"', false);
+        $response->assertSee('name="children" value="1"', false);
+    }
+
+    public function test_trip_type_sent_by_home_form_does_not_break_one_way_search(): void
+    {
+        // Form trang chủ luôn gửi trip_type; hiện backend bỏ qua, sau refactor
+        // trip_type=one-way vẫn phải cho kết quả y hệt
+        $dep = Airport::factory()->create();
+        $arr = Airport::factory()->create();
+        $fare = FareClass::factory()->create();
+        $flight = $this->makeFlightWithSeat($dep, $arr, $fare);
+
+        $response = $this->get(route(
+            'flights.search.results',
+            $this->searchParams($dep, $arr, $fare, ['trip_type' => 'one-way'])
+        ));
+
+        $response->assertOk();
+        $this->assertEquals($flight->id, $response->viewData('flights')->first()->id);
+    }
 }
