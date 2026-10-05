@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Flight;
 use App\Models\FlightSeat;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class SeatSelectionController extends Controller
@@ -18,21 +19,20 @@ class SeatSelectionController extends Controller
             'infants' => ['nullable', 'integer', 'min:0'],
         ]);
 
-        // Chặn POST trực tiếp flight_id của chuyến đã hủy hoặc đã khởi hành.
-        // Kiểm tra bằng SQL với now('UTC') vì cột departure_time lưu UTC
-        // (tránh phụ thuộc vào cast timezone của model)
-        $flightValid = Flight::whereKey($data['flight_id'])
+        // Chuyến phải còn hiệu lực. Kiểm tra bằng SQL với now('UTC') vì departure_time lưu UTC
+        $flight = Flight::with('departureAirport')
+            ->whereKey($data['flight_id'])
             ->whereIn('status', ['scheduled', 'delayed'])
             ->where('departure_time', '>', now('UTC'))
-            ->exists();
+            ->first();
 
-        if (! $flightValid) {
+        if (! $flight) {
             return back()->with('error', 'Chuyến bay này không còn khả dụng, vui lòng chọn chuyến khác.');
         }
 
         $seatsNeeded = $data['adults'] + ($data['children'] ?? 0);
 
-        $availableCount = FlightSeat::where('flight_id', $data['flight_id'])
+        $availableCount = FlightSeat::where('flight_id', $flight->id)
             ->where('fare_class_id', $data['fare_class_id'])
             ->where(function ($q) {
                 $q->where('status', 'available')
@@ -47,12 +47,24 @@ class SeatSelectionController extends Controller
             return back()->with('error', 'Không đủ ghế trống cho hạng vé này, vui lòng thử lại hoặc chọn chuyến khác.');
         }
 
+        // Ngày local của chặng: đọc giá trị UTC thô từ DB rồi đổi sang timezone sân bay đi
+        // (getRawOriginal để không phụ thuộc cast timezone của model)
+        $localDate = Carbon::parse($flight->getRawOriginal('departure_time'), 'UTC')
+            ->setTimezone($flight->departureAirport->timezone)
+            ->toDateString();
+
         session(['pending_selection' => [
-            'flight_id' => $data['flight_id'],
+            'trip_type' => 'one-way',
             'fare_class_id' => $data['fare_class_id'],
             'adults' => $data['adults'],
             'children' => $data['children'] ?? 0,
             'infants' => $data['infants'] ?? 0,
+            'legs' => [[
+                'from' => $flight->departure_airport_id,
+                'to' => $flight->arrival_airport_id,
+                'date' => $localDate,
+                'flight_id' => $flight->id,
+            ]],
         ]]);
 
         return redirect()->route('booking.passengers.form');

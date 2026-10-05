@@ -73,14 +73,15 @@ class SeatPrecheckTest extends TestCase
         );
 
         $response->assertRedirect(route('booking.passengers.form'));
-        // assertEquals (so sánh lỏng) vì giá trị từ request có thể là chuỗi số
-        $this->assertEquals([
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => 1,
-            'children' => 1,
-            'infants' => 1,
-        ], session('pending_selection'));
+
+        $pending = session('pending_selection');
+        $this->assertSame('one-way', $pending['trip_type']);
+        $this->assertEquals($fareClass->id, $pending['fare_class_id']);
+        $this->assertEquals([1, 1, 1], [$pending['adults'], $pending['children'], $pending['infants']]);
+        $this->assertCount(1, $pending['legs']);
+        $this->assertEquals($flight->id, $pending['legs'][0]['flight_id']);
+        $this->assertEquals($flight->departure_airport_id, $pending['legs'][0]['from']);
+        $this->assertEquals($flight->arrival_airport_id, $pending['legs'][0]['to']);
 
         // precheck KHÔNG giữ ghế: không đổi status, không held_by, không tạo booking
         $this->assertSame(2, FlightSeat::where('status', 'available')->count());

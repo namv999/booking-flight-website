@@ -5,60 +5,34 @@ namespace App\Http\Controllers;
 use App\Http\Requests\FlightSearchRequest;
 use App\Models\Airport;
 use App\Models\FareClass;
-use App\Models\Flight;
-use App\Models\FlightSeat;
 use App\Services\BookingExpiryService;
-use Carbon\Carbon;
+use App\Services\FlightSearchService;
 
 class FlightSearchController extends Controller
 {
-    public function __construct(private BookingExpiryService $expiryService) {}
+    public function __construct(
+        private BookingExpiryService $expiryService,
+        private FlightSearchService $searchService,
+    ) {}
 
     public function results(FlightSearchRequest $request)
     {
         $this->expiryService->cancelAllExpired();
         $data = $request->validated();
+        $leg = $request->legs()[0];
 
-        $departureAirport = Airport::findOrFail($data['departure_airport_id']);
-        $arrivalAirport = Airport::findOrFail($data['arrival_airport_id']);
+        $departureAirport = Airport::findOrFail($leg['from']);
+        $arrivalAirport = Airport::findOrFail($leg['to']);
         $fareClass = FareClass::findOrFail($data['fare_class_id']);
 
-        // Convert ngày local (theo timezone sân bay đi) sang khoảng UTC để query đúng
-        // Cột departure_time (lưu UTC) — tránh lệch ngày ở các chuyến khởi hành sớm
-        $localStart = Carbon::parse($data['departure_date'], $departureAirport->timezone)->startOfDay();
-        $localEnd = Carbon::parse($data['departure_date'], $departureAirport->timezone)->endOfDay();
-        $startUtc = $localStart->clone()->setTimezone('UTC');
-        $endUtc = $localEnd->clone()->setTimezone('UTC');
+        $flights = $this->searchService->searchLeg(
+            $departureAirport,
+            $arrivalAirport,
+            $leg['date'],
+            (int) $data['fare_class_id']
+        );
 
-        $seatStats = FlightSeat::query()
-            ->select('flight_id')
-            ->selectRaw('MIN(price) as min_price')
-            ->selectRaw('COUNT(id) as available_seats')
-            ->where('fare_class_id', $data['fare_class_id'])
-            ->where(function ($q) {
-                $q->where('status', 'available')
-                    ->orWhere(function ($q2) {
-                        $q2->where('status', 'held')
-                            ->where('held_until', '<', now());
-                    });
-            })
-            ->groupBy('flight_id')
-            ->having('available_seats', '>', 0);
-
-        $flights = Flight::query()
-            ->joinSub($seatStats, 'seat_stats', function ($join) {
-                $join->on('seat_stats.flight_id', '=', 'flights.id');
-            })
-            ->where('flights.departure_airport_id', $data['departure_airport_id'])
-            ->where('flights.arrival_airport_id', $data['arrival_airport_id'])
-            ->whereBetween('flights.departure_time', [$startUtc, $endUtc]) // thay whereDate
-            ->whereIn('flights.status', ['scheduled', 'delayed'])
-            ->with(['aircraft.airline', 'departureAirport', 'arrivalAirport'])
-            ->select('flights.*', 'seat_stats.min_price', 'seat_stats.available_seats')
-            ->orderBy('seat_stats.min_price', 'asc')
-            ->paginate(10)
-            ->withQueryString();
-
+        // Các key truyền sang view giữ nguyên
         return view('flights.results', [
             'flights' => $flights,
             'departureAirport' => $departureAirport,

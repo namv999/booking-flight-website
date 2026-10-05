@@ -30,13 +30,7 @@ class PassengerBookingTest extends TestCase
             'status' => 'available',
         ]);
 
-        session(['pending_selection' => [
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => 1,
-            'children' => 0,
-            'infants' => 0,
-        ]]);
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 0)]);
 
         $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
             'adults' => [
@@ -101,13 +95,7 @@ class PassengerBookingTest extends TestCase
             'status' => 'available',
         ]);
 
-        session(['pending_selection' => [
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => 2,
-            'children' => 1,
-            'infants' => 1,
-        ]]);
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 2, 1, 1)]);
 
         $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
             'adults' => [
@@ -165,13 +153,7 @@ class PassengerBookingTest extends TestCase
             'status' => 'available',
         ]);
 
-        session(['pending_selection' => [
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => 1,
-            'children' => 1,
-            'infants' => 0,
-        ]]);
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 1, 0)]);
 
         $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
             'adults' => [
@@ -184,7 +166,7 @@ class PassengerBookingTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('error');
+        $response->assertSessionHas('error', 'Rất tiếc, ghế vừa hết trong lúc bạn điền thông tin. Vui lòng thử lại.');
 
         // KHÔNG booking/passenger/ticket nào được tạo — rollback toàn bộ closure
         $this->assertDatabaseCount('bookings', 0);
@@ -232,13 +214,7 @@ class PassengerBookingTest extends TestCase
             'price' => 1500000,
         ]);
 
-        session(['pending_selection' => [
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => 1,
-            'children' => 0,
-            'infants' => 0,
-        ]]);
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 0)]);
 
         $response = $this->actingAs($newUser)->post(route('booking.passengers.store'), [
             'adults' => [
@@ -311,13 +287,7 @@ class PassengerBookingTest extends TestCase
             'status' => 'available',
         ]);
 
-        session(['pending_selection' => [
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => 1,
-            'children' => 0,
-            'infants' => 0,
-        ]]);
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 0)]);
 
         $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
             'adults' => [['full_name' => '']],
@@ -341,13 +311,7 @@ class PassengerBookingTest extends TestCase
             'status' => 'available',
         ]);
 
-        session(['pending_selection' => [
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => 1,
-            'children' => 0,
-            'infants' => 1,
-        ]]);
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 1)]);
 
         $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
             'adults' => [['full_name' => 'Adult One']],
@@ -364,13 +328,7 @@ class PassengerBookingTest extends TestCase
         $flight = Flight::factory()->create();
         $fareClass = FareClass::factory()->create();
 
-        session(['pending_selection' => [
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => 2,
-            'children' => 1,
-            'infants' => 1,
-        ]]);
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 2, 1, 1)]);
 
         $response = $this->actingAs($user)->get(route('booking.passengers.form'));
 
@@ -406,13 +364,7 @@ class PassengerBookingTest extends TestCase
             'status' => 'available',
         ]);
 
-        session(['pending_selection' => [
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => $adults,
-            'children' => $children,
-            'infants' => $infants,
-        ]]);
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, $adults, $children, $infants)]);
 
         return [$flight, $fareClass];
     }
@@ -445,9 +397,10 @@ class PassengerBookingTest extends TestCase
             'adults' => [['full_name' => 'Only One']],
         ]);
 
-        $response->assertSessionHas('error');
+        $response->assertSessionHas('error', 'Số lượng hành khách không khớp với lựa chọn ban đầu. Vui lòng thử lại.');
         $this->assertDatabaseCount('bookings', 0);
         $this->assertSame(3, FlightSeat::where('status', 'available')->count());
+        $this->assertNotNull(session('pending_selection'));
     }
 
     public function test_missing_infant_compared_to_pending_is_rejected(): void
@@ -460,7 +413,7 @@ class PassengerBookingTest extends TestCase
             'infants' => [],
         ]);
 
-        $response->assertSessionHas('error');
+        $response->assertSessionHas('error', 'Số lượng hành khách không khớp với lựa chọn ban đầu. Vui lòng thử lại.');
         $this->assertDatabaseCount('bookings', 0);
     }
 }

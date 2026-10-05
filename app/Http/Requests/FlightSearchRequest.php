@@ -30,4 +30,15 @@ class FlightSearchRequest extends FormRequest
             'departure_airport_id.different' => 'Điểm đi và điểm đến phải khác nhau.',
         ];
     }
+
+    // Danh sách chặng đã chuẩn hóa. Giai đoạn A chỉ có 1 chặng từ các trường phẳng;
+    // giai đoạn B/C sẽ bổ sung return_date / extra_legs[] tại đây
+    public function legs(): array
+    {
+        return [[
+            'from' => (int) $this->validated('departure_airport_id'),
+            'to' => (int) $this->validated('arrival_airport_id'),
+            'date' => $this->validated('departure_date'),
+        ]];
+    }
 }
