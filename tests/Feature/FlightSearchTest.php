@@ -446,7 +446,7 @@ class FlightSearchTest extends TestCase
         $this->assertStringContainsString('fare_class_id='.$fare->id, $flights->url(2));
     }
 
-    public function test_results_page_renders_precheck_form_with_hidden_fields(): void
+    public function test_results_page_renders_precheck_form_with_flight_and_leg(): void
     {
         $dep = Airport::factory()->create();
         $arr = Airport::factory()->create();
@@ -460,9 +460,10 @@ class FlightSearchTest extends TestCase
 
         $response->assertSee('action="'.route('booking.precheck').'"', false);
         $response->assertSee('name="flight_id" value="'.$flight->id.'"', false);
-        $response->assertSee('name="fare_class_id" value="'.$fare->id.'"', false);
-        $response->assertSee('name="adults" value="2"', false);
-        $response->assertSee('name="children" value="1"', false);
+        $response->assertSee('name="leg" value="0"', false);
+        // hạng vé và số người giờ lấy từ session, không còn nằm trong form
+        $response->assertDontSee('name="fare_class_id"', false);
+        $response->assertDontSee('name="adults"', false);
     }
 
     public function test_trip_type_sent_by_home_form_does_not_break_one_way_search(): void

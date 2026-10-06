@@ -3,70 +3,54 @@
 namespace App\Http\Controllers;
 
 use App\Models\Flight;
-use App\Models\FlightSeat;
-use Carbon\Carbon;
+use App\Services\JourneyValidationService;
 use Illuminate\Http\Request;
 
 class SeatSelectionController extends Controller
 {
+    public function __construct(private JourneyValidationService $journey) {}
+
+    // Client chỉ gửi flight_id + leg; hạng vé và số người lấy từ session
     public function precheck(Request $request)
     {
         $data = $request->validate([
-            'flight_id' => ['required', 'exists:flights,id'],
-            'fare_class_id' => ['required', 'exists:fare_classes,id'],
-            'adults' => ['required', 'integer', 'min:1'],
-            'children' => ['nullable', 'integer', 'min:0'],
-            'infants' => ['nullable', 'integer', 'min:0'],
+            'flight_id' => ['required', 'integer', 'exists:flights,id'],
+            'leg' => ['required', 'integer', 'min:0'],
         ]);
 
-        // Chuyến phải còn hiệu lực. Kiểm tra bằng SQL với now('UTC') vì departure_time lưu UTC
-        $flight = Flight::with('departureAirport')
-            ->whereKey($data['flight_id'])
-            ->whereIn('status', ['scheduled', 'delayed'])
-            ->where('departure_time', '>', now('UTC'))
-            ->first();
+        $pending = session('pending_selection');
+        $legIndex = (int) $data['leg'];
 
-        if (! $flight) {
-            return back()->with('error', 'Chuyến bay này không còn khả dụng, vui lòng chọn chuyến khác.');
+        if (! $pending || ! isset($pending['legs'][$legIndex])) {
+            return redirect()->route('home')
+                ->with('error', 'Phiên tìm kiếm đã hết hạn, vui lòng tìm chuyến bay lại.');
         }
 
-        $seatsNeeded = $data['adults'] + ($data['children'] ?? 0);
-
-        $availableCount = FlightSeat::where('flight_id', $flight->id)
-            ->where('fare_class_id', $data['fare_class_id'])
-            ->where(function ($q) {
-                $q->where('status', 'available')
-                    ->orWhere(function ($q2) {
-                        $q2->where('status', 'held')
-                            ->where('held_until', '<', now());
-                    });
-            })
-            ->count();
-
-        if ($availableCount < $seatsNeeded) {
-            return back()->with('error', 'Không đủ ghế trống cho hạng vé này, vui lòng thử lại hoặc chọn chuyến khác.');
+        // Không được nhảy cóc: các chặng trước phải chọn xong
+        $firstUnchosen = $this->journey->firstUnchosenLeg($pending);
+        if ($firstUnchosen !== null && $legIndex > $firstUnchosen) {
+            return redirect($this->journey->legUrl($pending, $firstUnchosen));
         }
 
-        // Ngày local của chặng: đọc giá trị UTC thô từ DB rồi đổi sang timezone sân bay đi
-        // (getRawOriginal để không phụ thuộc cast timezone của model)
-        $localDate = Carbon::parse($flight->getRawOriginal('departure_time'), 'UTC')
-            ->setTimezone($flight->departureAirport->timezone)
-            ->toDateString();
+        $previous = $legIndex > 0 ? Flight::find($pending['legs'][$legIndex - 1]['flight_id']) : null;
 
-        session(['pending_selection' => [
-            'trip_type' => 'one-way',
-            'fare_class_id' => $data['fare_class_id'],
-            'adults' => $data['adults'],
-            'children' => $data['children'] ?? 0,
-            'infants' => $data['infants'] ?? 0,
-            'legs' => [[
-                'from' => $flight->departure_airport_id,
-                'to' => $flight->arrival_airport_id,
-                'date' => $localDate,
-                'flight_id' => $flight->id,
-            ]],
-        ]]);
+        $error = $this->journey->validateLeg($pending, $legIndex, (int) $data['flight_id'], $previous);
 
-        return redirect()->route('booking.passengers.form');
+        if ($error) {
+            return back()->with('error', $error);
+        }
+
+        // Lưu chuyến cho chặng này, xóa lựa chọn của các chặng sau (chọn lại chặng trước thì chặng sau phải chọn lại)
+        $pending['legs'][$legIndex]['flight_id'] = (int) $data['flight_id'];
+        for ($i = $legIndex + 1; $i < count($pending['legs']); $i++) {
+            $pending['legs'][$i]['flight_id'] = null;
+        }
+        session(['pending_selection' => $pending]);
+
+        $next = $this->journey->firstUnchosenLeg($pending);
+
+        return $next === null
+            ? redirect()->route('booking.passengers.form')
+            : redirect()->route('booking.leg', $next);
     }
 }

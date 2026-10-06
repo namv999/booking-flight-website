@@ -21,6 +21,8 @@ class FlightSearchRequest extends FormRequest
             'adults' => ['required', 'integer', 'min:1', 'max:9'],
             'children' => ['nullable', 'integer', 'min:0', 'max:9'],
             'infants' => ['nullable', 'integer', 'min:0', 'max:9', 'lte:adults'], // infant bắt buộc companion adult
+            'trip_type' => ['nullable', 'in:one-way,round-trip'],
+            'return_date' => ['required_if:trip_type,round-trip', 'nullable', 'date', 'after_or_equal:departure_date'],
         ];
     }
 
@@ -31,14 +33,23 @@ class FlightSearchRequest extends FormRequest
         ];
     }
 
-    // Danh sách chặng đã chuẩn hóa. Giai đoạn A chỉ có 1 chặng từ các trường phẳng;
-    // giai đoạn B/C sẽ bổ sung return_date / extra_legs[] tại đây
+    public function tripType(): string
+    {
+        return $this->validated('trip_type') ?? 'one-way';
+    }
+
+    // Chặng 2 của khứ hồi = đảo chiều chặng 1 với ngày về
     public function legs(): array
     {
-        return [[
-            'from' => (int) $this->validated('departure_airport_id'),
-            'to' => (int) $this->validated('arrival_airport_id'),
-            'date' => $this->validated('departure_date'),
-        ]];
+        $from = (int) $this->validated('departure_airport_id');
+        $to = (int) $this->validated('arrival_airport_id');
+
+        $legs = [['from' => $from, 'to' => $to, 'date' => $this->validated('departure_date')]];
+
+        if ($this->tripType() === 'round-trip') {
+            $legs[] = ['from' => $to, 'to' => $from, 'date' => $this->validated('return_date')];
+        }
+
+        return $legs;
     }
 }

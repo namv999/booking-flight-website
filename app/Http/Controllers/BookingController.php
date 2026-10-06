@@ -9,18 +9,25 @@ use App\Models\Flight;
 use App\Models\FlightSeat;
 use App\Models\Passenger;
 use App\Models\Ticket;
+use App\Services\JourneyValidationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
-    public function create()
+    public function create(JourneyValidationService $journey)
     {
         $pending = session('pending_selection');
 
         if (! $pending) {
             return redirect()->route('home')
                 ->with('error', 'Vui lòng chọn chuyến bay trước khi nhập thông tin hành khách.');
+        }
+
+        // Hành trình chưa chọn đủ chặng thì quay lại wizard
+        $next = $journey->firstUnchosenLeg($pending);
+        if ($next !== null) {
+            return redirect($journey->legUrl($pending, $next));
         }
 
         $flightIds = collect($pending['legs'])->pluck('flight_id');

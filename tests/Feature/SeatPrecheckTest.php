@@ -7,6 +7,7 @@ use App\Models\Flight;
 use App\Models\FlightSeat;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Tests\TestCase;
 
 class SeatPrecheckTest extends TestCase
@@ -39,15 +40,23 @@ class SeatPrecheckTest extends TestCase
         $factory->create($attrs);
     }
 
-    private function payload(Flight $flight, FareClass $fareClass, array $overrides = []): array
+    // Dựng session giống results() (chưa chọn chuyến), body chỉ còn flight_id + leg
+    private function payload($flight, $fareClass, array $overrides = []): array
     {
-        return array_merge([
-            'flight_id' => $flight->id,
-            'fare_class_id' => $fareClass->id,
-            'adults' => 1,
-            'children' => 0,
-            'infants' => 0,
-        ], $overrides);
+        session(['pending_selection' => $this->pendingSelection(
+            $flight,
+            $fareClass,
+            $overrides['adults'] ?? 1,
+            $overrides['children'] ?? 0,
+            $overrides['infants'] ?? 0,
+            false
+        )]);
+
+        // adults/children/infants thuộc session, không gửi qua body nữa
+        return array_merge(
+            ['flight_id' => $flight->id, 'leg' => 0],
+            Arr::except($overrides, ['adults', 'children', 'infants'])
+        );
     }
 
     public function test_guest_is_redirected_to_login(): void
@@ -103,7 +112,7 @@ class SeatPrecheckTest extends TestCase
         );
 
         $response->assertSessionHas('error', 'Không đủ ghế trống cho hạng vé này, vui lòng thử lại hoặc chọn chuyến khác.');
-        $response->assertSessionMissing('pending_selection');
+        $this->assertNull(session('pending_selection.legs.0.flight_id')); // chuyến bị từ chối thì chặng vẫn chưa chọn
     }
 
     public function test_expired_held_seat_counts_as_available_but_valid_held_does_not(): void
@@ -143,10 +152,10 @@ class SeatPrecheckTest extends TestCase
         );
 
         $response->assertSessionHas('error');
-        $response->assertSessionMissing('pending_selection');
+        $this->assertNull(session('pending_selection.legs.0.flight_id')); // chuyến bị từ chối thì chặng vẫn chưa chọn
     }
 
-    public function test_validation_errors_for_missing_or_unknown_flight_and_zero_adults(): void
+    public function test_validation_errors_for_missing_or_unknown_flight(): void
     {
         $user = User::factory()->create();
         $fareClass = FareClass::factory()->create();
@@ -163,12 +172,6 @@ class SeatPrecheckTest extends TestCase
             $this->payload($flight, $fareClass, ['flight_id' => 999999])
         )
             ->assertSessionHasErrors('flight_id');
-
-        $this->actingAs($user)->post(
-            route('booking.precheck'),
-            $this->payload($flight, $fareClass, ['adults' => 0])
-        )
-            ->assertSessionHasErrors('adults');
     }
 
     public function test_cancelled_flight_is_rejected(): void
@@ -181,7 +184,7 @@ class SeatPrecheckTest extends TestCase
         $response = $this->actingAs($user)->post(route('booking.precheck'), $this->payload($flight, $fareClass));
 
         $response->assertSessionHas('error', 'Chuyến bay này không còn khả dụng, vui lòng chọn chuyến khác.');
-        $response->assertSessionMissing('pending_selection');
+        $this->assertNull(session('pending_selection.legs.0.flight_id')); // chuyến bị từ chối thì chặng vẫn chưa chọn
     }
 
     public function test_flight_that_already_departed_is_rejected(): void
@@ -197,7 +200,7 @@ class SeatPrecheckTest extends TestCase
         $response = $this->actingAs($user)->post(route('booking.precheck'), $this->payload($flight, $fareClass));
 
         $response->assertSessionHas('error');
-        $response->assertSessionMissing('pending_selection');
+        $this->assertNull(session('pending_selection.legs.0.flight_id')); // chuyến bị từ chối thì chặng vẫn chưa chọn
     }
 
     public function test_delayed_flight_is_accepted(): void

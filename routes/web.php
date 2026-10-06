@@ -53,6 +53,7 @@ Route::get('/flights/results', [FlightSearchController::class, 'results'])->name
 
 Route::middleware('auth')->group(function () {
     Route::post('/booking/precheck', [SeatSelectionController::class, 'precheck'])->name('booking.precheck');
+    Route::get('/booking/leg/{leg}', [FlightSearchController::class, 'leg'])->whereNumber('leg')->name('booking.leg');
     Route::get('/booking/passengers', [BookingController::class, 'create'])->name('booking.passengers.form');
     Route::post('/booking/passengers', [BookingController::class, 'store'])->name('booking.passengers.store');
     Route::get('/payment/{booking}', [PaymentController::class, 'show'])->name('payment.show');
