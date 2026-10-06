@@ -41,4 +41,13 @@ class Booking extends Model
     {
         return $this->hasOne(Payment::class);
     }
+
+    // Các chặng theo thứ tự bay (đã chốt: suy ra từ departure_time, không có cột leg_order)
+    // Yêu cầu đã eager load bookingFlights.flight
+    public function getOrderedLegsAttribute()
+    {
+        return $this->bookingFlights
+            ->sortBy(fn ($bf) => [$bf->flight->getRawOriginal('departure_time'), $bf->flight_id])
+            ->values();
+    }
 }

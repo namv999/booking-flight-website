@@ -43,7 +43,7 @@ class JourneyValidationService
     }
 
     // Trả về thông báo lỗi hoặc null nếu chuyến hợp lệ cho chặng $legIndex
-    public function validateLeg(array $pending, int $legIndex, int $flightId, ?Flight $previous): ?string
+    public function validateLeg(array $pending, int $legIndex, int $flightId, ?Flight $previous, bool $checkSeats = true): ?string
     {
         $leg = $pending['legs'][$legIndex];
 
@@ -82,20 +82,22 @@ class JourneyValidationService
             }
         }
 
-        $seatsNeeded = (int) $pending['adults'] + (int) $pending['children'];
+        if ($checkSeats) {
+            $seatsNeeded = (int) $pending['adults'] + (int) $pending['children'];
 
-        $availableCount = FlightSeat::where('flight_id', $flight->id)
-            ->where('fare_class_id', $pending['fare_class_id'])
-            ->where(function ($q) {
-                $q->where('status', 'available')
-                    ->orWhere(function ($q2) {
-                        $q2->where('status', 'held')->where('held_until', '<', now());
-                    });
-            })
-            ->count();
+            $availableCount = FlightSeat::where('flight_id', $flight->id)
+                ->where('fare_class_id', $pending['fare_class_id'])
+                ->where(function ($q) {
+                    $q->where('status', 'available')
+                        ->orWhere(function ($q2) {
+                            $q2->where('status', 'held')->where('held_until', '<', now());
+                        });
+                })
+                ->count();
 
-        if ($availableCount < $seatsNeeded) {
-            return 'Không đủ ghế trống cho hạng vé này, vui lòng thử lại hoặc chọn chuyến khác.';
+            if ($availableCount < $seatsNeeded) {
+                return 'Không đủ ghế trống cho hạng vé này, vui lòng thử lại hoặc chọn chuyến khác.';
+            }
         }
 
         return null;

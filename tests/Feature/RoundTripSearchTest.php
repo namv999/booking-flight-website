@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Aircraft;
 use App\Models\Airport;
+use App\Models\Booking;
+use App\Models\BookingFlight;
 use App\Models\FareClass;
 use App\Models\Flight;
 use App\Models\FlightSeat;
@@ -297,5 +299,94 @@ class RoundTripSearchTest extends TestCase
         $this->chooseOutbound($out);
 
         $this->get(route('booking.passengers.form'))->assertRedirect(route('booking.leg', 1));
+    }
+    // store() re-validate chuỗi chuyến
+
+    // Giả định payload tối thiểu khớp PassengerBookingRequest; nếu thiếu field bắt buộc, copy mẫu từ PassengerBookingTest
+    private function passengerPayload(): array
+    {
+        return ['adults' => [[
+            'full_name' => 'Nguyen Van A',
+            'document_number' => '012345678901',
+            'date_of_birth' => '1990-01-01',
+        ]]];
+    }
+
+    private function chooseBoth(Flight $out, Flight $ret): void
+    {
+        $pending = session('pending_selection');
+        $pending['legs'][0]['flight_id'] = $out->id;
+        $pending['legs'][1]['flight_id'] = $ret->id;
+        session(['pending_selection' => $pending]);
+    }
+
+    public function test_store_rejects_when_a_leg_is_unchosen(): void
+    {
+        [$out] = $this->startRoundTrip();
+        $this->chooseOutbound($out); // chặng về chưa chọn
+
+        $this->post(route('booking.passengers.store'), $this->passengerPayload())
+            ->assertRedirect(route('booking.leg', 1))
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, Booking::count());
+    }
+
+    public function test_store_rejects_when_return_flight_cancelled_mid_flow(): void
+    {
+        [$out, $ret] = $this->startRoundTrip();
+        $this->chooseBoth($out, $ret);
+        $ret->update(['status' => 'cancelled']); // bị hủy sau khi khách chọn xong
+
+        $this->post(route('booking.passengers.store'), $this->passengerPayload())
+            ->assertRedirect(route('booking.leg', 1))
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, Booking::count());
+        $this->assertNull(session('pending_selection')['legs'][1]['flight_id']);
+        $this->assertSame($out->id, session('pending_selection')['legs'][0]['flight_id']); // chặng đi giữ nguyên
+        $this->assertSame(0, FlightSeat::where('status', 'held')->count());
+    }
+
+    public function test_store_rejects_when_outbound_cancelled_and_clears_all_legs(): void
+    {
+        [$out, $ret] = $this->startRoundTrip();
+        $this->chooseBoth($out, $ret);
+        $out->update(['status' => 'cancelled']);
+
+        $this->post(route('booking.passengers.store'), $this->passengerPayload())
+            ->assertRedirectContains('/flights/results');
+
+        $pending = session('pending_selection');
+        $this->assertNull($pending['legs'][0]['flight_id']);
+        $this->assertNull($pending['legs'][1]['flight_id']);
+        $this->assertSame(0, Booking::count());
+    }
+
+    public function test_store_rejects_when_return_departs_before_outbound_arrives(): void
+    {
+        [$out] = $this->startRoundTrip();
+        $early = $this->makeFlight($this->han, $this->sgn, $this->at(2, 30), $this->at(4)); // out hạ cánh 03:00
+        $this->chooseBoth($out, $early); // session bị dựng tay lệch chuỗi
+
+        $this->post(route('booking.passengers.store'), $this->passengerPayload())
+            ->assertRedirect(route('booking.leg', 1))
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, Booking::count());
+    }
+
+    public function test_ordered_legs_follow_departure_time_not_row_id(): void
+    {
+        [$out, $ret] = $this->startRoundTrip();
+        $booking = Booking::factory()->create();
+
+        // tạo chặng về TRƯỚC để booking_flights.id của chặng về nhỏ hơn
+        BookingFlight::factory()->create(['booking_id' => $booking->id, 'flight_id' => $ret->id]);
+        BookingFlight::factory()->create(['booking_id' => $booking->id, 'flight_id' => $out->id]);
+
+        $booking->load('bookingFlights.flight');
+
+        $this->assertSame([$out->id, $ret->id], $booking->ordered_legs->pluck('flight_id')->all());
     }
 }

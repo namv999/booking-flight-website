@@ -50,7 +50,7 @@ class BookingController extends Controller
         ]);
     }
 
-    public function store(PassengerBookingRequest $request)
+    public function store(PassengerBookingRequest $request, JourneyValidationService $journey)
     {
         $pending = session('pending_selection');
 
@@ -70,12 +70,37 @@ class BookingController extends Controller
                 ->with('error', 'Số lượng hành khách không khớp với lựa chọn ban đầu. Vui lòng thử lại.');
         }
 
+        // 1. Hành trình phải chọn đủ chuyến cho mọi chặng
+        $unchosen = $journey->firstUnchosenLeg($pending);
+        if ($unchosen !== null) {
+            return redirect($journey->legUrl($pending, $unchosen))
+                ->with('error', 'Vui lòng chọn đủ chuyến bay cho mọi chặng.');
+        }
+
+        // 2. Mỗi chặng phải là một chuyến khác nhau (uq_bookingflights và giữ ghế theo flight_id)
         $flightIds = collect($pending['legs'])->pluck('flight_id');
 
-        // Mỗi chặng phải là một chuyến khác nhau (uq_bookingflights và giữ ghế theo flight_id)
         if ($flightIds->unique()->count() !== $flightIds->count()) {
             return redirect()->route('home')
                 ->with('error', 'Hành trình không hợp lệ, vui lòng chọn lại chuyến bay.');
+        }
+
+        // 3. Kiểm tra lại cả chuỗi: chuyến có thể bị hủy/đã cất cánh sau khi khách chọn xong
+        $chosen = Flight::whereIn('id', $flightIds)->get()->keyBy('id');
+
+        foreach ($pending['legs'] as $i => $leg) {
+            $previous = $i > 0 ? $chosen->get($pending['legs'][$i - 1]['flight_id']) : null;
+            $error = $journey->validateLeg($pending, $i, (int) $leg['flight_id'], $previous, false); // false: ghế kiểm tra trong transaction
+
+            if ($error) {
+                // Chặng lỗi và các chặng sau phải chọn lại
+                for ($j = $i; $j < count($pending['legs']); $j++) {
+                    $pending['legs'][$j]['flight_id'] = null;
+                }
+                session(['pending_selection' => $pending]);
+
+                return redirect($journey->legUrl($pending, $i))->with('error', $error);
+            }
         }
 
         $seatsNeeded = (int) $pending['adults'] + (int) $pending['children'];

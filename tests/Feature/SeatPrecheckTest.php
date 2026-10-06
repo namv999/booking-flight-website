@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
 use App\Models\FareClass;
 use App\Models\Flight;
 use App\Models\FlightSeat;
