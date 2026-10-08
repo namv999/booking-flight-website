@@ -268,15 +268,22 @@
                                 <i class="bi bi-credit-card-fill text-primary" aria-hidden="true"></i>
                                 <span>Chi tiết giao dịch thanh toán</span>
                             </h2>
-                            <span class="badge bg-success text-white">
-                                <i class="bi bi-check-all me-1"></i>Thành công
+                            @php
+                                [$payBadgeClass, $payBadgeIcon, $payBadgeText] = match ($booking->payment->status) {
+                                    'success' => ['bg-success text-white', 'bi-check-all', 'Thành công'],
+                                    'failed' => ['bg-danger text-white', 'bi-x-circle', 'Thất bại'],
+                                    default => ['bg-warning text-dark', 'bi-clock', 'Đang xử lý'],
+                                };
+                            @endphp
+                            <span class="badge {{ $payBadgeClass }}">
+                                <i class="bi {{ $payBadgeIcon }} me-1"></i>{{ $payBadgeText }}
                             </span>
                         </div>
 
                         <div class="row g-3 small">
                             <div class="col-12 col-sm-6">
                                 <div class="text-muted mb-1">Mã giao dịch:</div>
-                                <div class="fw-bold font-monospace fs-6">{{ $booking->payment->transaction_code }}</div>
+                                <div class="fw-bold font-monospace fs-6">{{ $booking->payment->transaction_code ?: '-' }}</div>
                             </div>
                             <div class="col-12 col-sm-6">
                                 <div class="text-muted mb-1">Phương thức thanh toán:</div>
