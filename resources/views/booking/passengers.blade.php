@@ -224,7 +224,7 @@
 
                                 <div class="bf-infant-notice">
                                     <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
-                                    <span>Em bé ngồi cùng người lớn đi kèm và không chiếm ghế riêng. Giá vé bằng 10% giá vé người lớn.</span>
+                                    <span>Em bé ngồi cùng người lớn đi kèm và không chiếm ghế riêng. Giá vé bằng 10% giá ghế của người lớn đi kèm trên mỗi chặng.</span>
                                 </div>
 
                                 <div class="row g-3">
@@ -304,14 +304,8 @@
             {{-- CỘT PHẢI: SIDEBAR TÓM TẮT CHUYẾN BAY (BOOKING SIDEBAR) --}}
             <aside class="col-lg-4 col-md-5">
                 @php
-                    $depTime = \Carbon\Carbon::parse($flight->departure_time);
-                    $arrTime = \Carbon\Carbon::parse($flight->arrival_time);
-                    $diffMinutes = $depTime->diffInMinutes($arrTime);
-                    $hours = intdiv($diffMinutes, 60);
-                    $mins = $diffMinutes % 60;
-                    $durationText = ($hours > 0 ? "{$hours}h " : "") . ($mins > 0 ? "{$mins}m" : "00m");
-                    $airlineName = $flight->aircraft->airline->name ?? 'Hãng hàng không';
-                    $aircraftModel = $flight->aircraft->model ?? 'Aircraft';
+                    $isRound = ($pending['trip_type'] ?? 'one-way') === 'round-trip';
+                    $legCount = $flights->count();
                     $seatsNeeded = $pending['adults'] + ($pending['children'] ?? 0);
                 @endphp
 
@@ -321,40 +315,62 @@
                         <span>Tóm tắt hành trình</span>
                     </h3>
 
-                    <div class="bf-sidebar-route">
-                        <div class="bf-sidebar-route-item">
-                            <strong>{{ $flight->departureAirport->iata_code }}</strong>
-                            <small>{{ $flight->departureAirport->city }}</small>
+                    @foreach ($flights as $i => $f)
+                        @php
+                            $depTime = \Carbon\Carbon::parse($f->departure_time);
+                            $arrTime = \Carbon\Carbon::parse($f->arrival_time);
+                            $diffMinutes = $depTime->diffInMinutes($arrTime);
+                            $hours = intdiv($diffMinutes, 60);
+                            $mins = $diffMinutes % 60;
+                            $durationText = ($hours > 0 ? "{$hours}h " : "") . ($mins > 0 ? "{$mins}m" : "00m");
+                            $airlineName = $f->aircraft->airline->name ?? 'Hãng hàng không';
+                            $aircraftModel = $f->aircraft->model ?? 'Aircraft';
+                            $legLabel = $legCount > 1
+                                ? ($isRound ? ($i === 0 ? 'Chuyến đi' : 'Chuyến về') : 'Chặng '.($i + 1))
+                                : null;
+                        @endphp
+
+                        <div class="{{ ! $loop->last ? 'mb-3 pb-3 border-bottom' : '' }}">
+                            @if ($legLabel)
+                                <div class="mb-2"><span class="badge bg-primary">{{ $legLabel }}</span></div>
+                            @endif
+
+                            <div class="bf-sidebar-route">
+                                <div class="bf-sidebar-route-item">
+                                    <strong>{{ $f->departureAirport->iata_code }}</strong>
+                                    <small>{{ $f->departureAirport->city }}</small>
+                                </div>
+                                <i class="bi bi-arrow-right bf-sidebar-arrow" aria-hidden="true"></i>
+                                <div class="bf-sidebar-route-item text-end">
+                                    <strong>{{ $f->arrivalAirport->iata_code }}</strong>
+                                    <small>{{ $f->arrivalAirport->city }}</small>
+                                </div>
+                            </div>
+
+                            <div class="bf-sidebar-airline">
+                                <i class="bi bi-airplane" aria-hidden="true"></i>
+                                <div>
+                                    <div class="fw-bold text-navy">{{ $airlineName }}</div>
+                                    <div class="small text-muted">{{ $aircraftModel }} &bull; Chuyến #FL-{{ str_pad($f->id, 4, '0', STR_PAD_LEFT) }}</div>
+                                </div>
+                            </div>
+
+                            <div class="bf-sidebar-meta-row">
+                                <span>Cất cánh:</span>
+                                <strong>{{ $depTime->format('H:i, d/m/Y') }}</strong>
+                            </div>
+
+                            <div class="bf-sidebar-meta-row">
+                                <span>Hạ cánh:</span>
+                                <strong>{{ $arrTime->format('H:i, d/m/Y') }}</strong>
+                            </div>
+
+                            <div class="bf-sidebar-meta-row">
+                                <span>Thời gian bay:</span>
+                                <span>{{ $durationText }} &bull; Bay thẳng</span>
+                            </div>
                         </div>
-                        <i class="bi bi-arrow-right bf-sidebar-arrow" aria-hidden="true"></i>
-                        <div class="bf-sidebar-route-item text-end">
-                            <strong>{{ $flight->arrivalAirport->iata_code }}</strong>
-                            <small>{{ $flight->arrivalAirport->city }}</small>
-                        </div>
-                    </div>
-
-                    <div class="bf-sidebar-airline">
-                        <i class="bi bi-airplane" aria-hidden="true"></i>
-                        <div>
-                            <div class="fw-bold text-navy">{{ $airlineName }}</div>
-                            <div class="small text-muted">{{ $aircraftModel }} &bull; Chuyến #FL-{{ str_pad($flight->id, 4, '0', STR_PAD_LEFT) }}</div>
-                        </div>
-                    </div>
-
-                    <div class="bf-sidebar-meta-row">
-                        <span>Cất cánh:</span>
-                        <strong>{{ $depTime->format('H:i, d/m/Y') }}</strong>
-                    </div>
-
-                    <div class="bf-sidebar-meta-row">
-                        <span>Hạ cánh:</span>
-                        <strong>{{ $arrTime->format('H:i, d/m/Y') }}</strong>
-                    </div>
-
-                    <div class="bf-sidebar-meta-row">
-                        <span>Thời gian bay:</span>
-                        <span>{{ $durationText }} &bull; Bay thẳng</span>
-                    </div>
+                    @endforeach
 
                     <div class="bf-sidebar-meta-row">
                         <span>Số lượng khách:</span>
@@ -367,12 +383,18 @@
 
                     <div class="bf-sidebar-meta-row">
                         <span>Số ghế cần đặt:</span>
-                        <strong class="text-primary">{{ $seatsNeeded }} ghế riêng</strong>
+                        <strong class="text-primary">
+                            {{ $seatsNeeded }} ghế riêng{{ $legCount > 1 ? ' mỗi chặng (tổng '.($seatsNeeded * $legCount).' ghế)' : '' }}
+                        </strong>
                     </div>
 
                     <div class="bf-sidebar-security-badge">
                         <i class="bi bi-shield-check text-success" aria-hidden="true"></i>
-                        <span>Ghế sẽ được hệ thống giữ tự động ngay sau khi bạn xác nhận thông tin hành khách.</span>
+                        <span>
+                            {{ $legCount > 1
+                                ? 'Ghế của tất cả các chặng được giữ cùng lúc ngay sau khi bạn xác nhận; nếu một chặng hết ghế, đơn sẽ không được tạo.'
+                                : 'Ghế sẽ được hệ thống giữ tự động ngay sau khi bạn xác nhận thông tin hành khách.' }}
+                        </span>
                     </div>
                 </div>
             </aside>

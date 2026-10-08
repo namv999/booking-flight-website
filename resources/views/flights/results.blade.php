@@ -85,6 +85,13 @@
         $dayName = $dayOfWeekNames[$depDate->dayOfWeek] ?? '';
         @endphp
         <section class="bf-summary-bar" aria-label="Thông tin tìm kiếm">
+            @if ($totalLegs > 1)
+                <div class="mb-2">
+                    <span class="badge bg-primary">Chặng {{ $legIndex + 1 }}/{{ $totalLegs }}</span>
+                    <span class="fw-semibold small ms-1">{{ $legIndex === 0 ? 'Chuyến đi' : 'Chuyến về' }}</span>
+                </div>
+            @endif
+
             <div class="bf-summary-route">
                 <div>
                     <span class="bf-summary-city">{{ $departureAirport->city }}</span>
@@ -122,6 +129,25 @@
                 </a>
             </div>
         </section>
+
+        @if ($chosenFlights->isNotEmpty())
+            <div class="alert alert-light border mb-4">
+                <div class="fw-bold small text-muted text-uppercase mb-2">Chuyến bạn đã chọn</div>
+                @foreach ($chosenFlights as $i => $cf)
+                    @php $cfDep = \Carbon\Carbon::parse($cf->departure_time); @endphp
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 {{ ! $loop->last ? 'mb-2' : '' }}">
+                        <div>
+                            <span class="badge bg-secondary me-1">Chặng {{ $i + 1 }}</span>
+                            <strong>{{ $cf->departureAirport->iata_code }} → {{ $cf->arrivalAirport->iata_code }}</strong>
+                            <span class="text-muted small ms-2">
+                                {{ $cfDep->format('H:i d/m/Y') }} · {{ $cf->aircraft->airline->name ?? '' }}
+                            </span>
+                        </div>
+                    </div>
+                @endforeach
+                <a href="{{ $backUrl }}" class="small text-decoration-none">Chọn lại chuyến trước</a>
+            </div>
+        @endif
 
         {{-- 3. KHU VỰC NỘI DUNG CHÍNH (SIDEBAR FILTER + FLIGHT LIST) --}}
         <div class="row g-4">
@@ -344,18 +370,30 @@
                 <i class="bi bi-airplane" aria-hidden="true"></i>
             </div>
             <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp</h3>
-            <p class="bf-empty-desc">
-                Rất tiếc, hiện tại không có chuyến bay nào từ
-                <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
-                đến
-                <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
-                trong ngày {{ $depDate->format('d/m/Y') }} với hạng vé
-                <strong>{{ $fareClass->name }}</strong>.
-                Bạn vui lòng thử chọn ngày bay khác hoặc thay đổi tiêu chí tìm kiếm.
-            </p>
-            <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search">
-                <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm ngày khác
-            </a>
+            @if ($legIndex > 0)
+                <p class="bf-empty-desc">
+                    Không có chuyến bay nào từ <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
+                    đến <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
+                    trong ngày {{ $depDate->format('d/m/Y') }} khởi hành sau khi chặng trước hạ cánh,
+                    với hạng vé <strong>{{ $fareClass->name }}</strong>.
+                </p>
+                <a href="{{ $backUrl }}" class="bf-btn-empty-search">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i> Chọn lại chuyến của chặng trước
+                </a>
+            @else
+                <p class="bf-empty-desc">
+                    Rất tiếc, hiện tại không có chuyến bay nào từ
+                    <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
+                    đến
+                    <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
+                    trong ngày {{ $depDate->format('d/m/Y') }} với hạng vé
+                    <strong>{{ $fareClass->name }}</strong>.
+                    Bạn vui lòng thử chọn ngày bay khác hoặc thay đổi tiêu chí tìm kiếm.
+                </p>
+                <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search">
+                    <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm ngày khác
+                </a>
+            @endif
         </div>
         @endforelse
 
