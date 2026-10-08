@@ -55,16 +55,21 @@
         </div>
         @endif
 
+        @php
+            $tripType = in_array(old('trip_type'), ['one-way', 'round-trip'], true) ? old('trip_type') : 'one-way';
+        @endphp
+
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div class="bf-trip-tabs">
-                <input type="radio" class="btn-check" name="trip_type" id="trip-oneway" value="one-way" checked>
+                <input type="radio" class="btn-check" name="trip_type" id="trip-oneway" value="one-way" {{ $tripType === 'one-way' ? 'checked' : '' }}>
                 <label class="bf-tab-btn" for="trip-oneway">Một chiều</label>
 
-                <input type="radio" class="btn-check" name="trip_type" id="trip-roundtrip" value="round-trip">
+                <input type="radio" class="btn-check" name="trip_type" id="trip-roundtrip" value="round-trip" {{ $tripType === 'round-trip' ? 'checked' : '' }}>
                 <label class="bf-tab-btn" for="trip-roundtrip">Khứ hồi</label>
 
-                <input type="radio" class="btn-check" name="trip_type" id="trip-multicity" value="multi-city">
-                <label class="bf-tab-btn" for="trip-multicity">Đa chặng</label>
+                {{-- Đa chặng: mở ở giai đoạn C --}}
+                <input type="radio" class="btn-check" name="trip_type" id="trip-multicity" value="multi-city" disabled>
+                <label class="bf-tab-btn" for="trip-multicity" title="Sắp ra mắt">Đa chặng</label>
             </div>
 
             <div class="d-flex gap-2">
@@ -81,7 +86,7 @@
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="adults" data-step="-1">−</button>
-                                <input type="number" class="form-control form-control-sm text-center" style="width:52px" name="adults" id="adults-input" value="1" min="1" max="9">
+                                <input type="number" class="form-control form-control-sm text-center" style="width:52px" name="adults" id="adults-input" value="{{ old('adults', 1) }}" min="1" max="9">
                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="adults" data-step="1">+</button>
                             </div>
                         </div>
@@ -92,7 +97,7 @@
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="children" data-step="-1">−</button>
-                                <input type="number" class="form-control form-control-sm text-center" style="width:52px" name="children" id="children-input" value="0" min="0" max="9">
+                                <input type="number" class="form-control form-control-sm text-center" style="width:52px" name="children" id="children-input" value="{{ old('children', 0) }}" min="0" max="9">
                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="children" data-step="1">+</button>
                             </div>
                         </div>
@@ -103,7 +108,7 @@
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="infants" data-step="-1">−</button>
-                                <input type="number" class="form-control form-control-sm text-center" style="width:52px" name="infants" id="infants-input" value="0" min="0" max="9">
+                                <input type="number" class="form-control form-control-sm text-center" style="width:52px" name="infants" id="infants-input" value="{{ old('infants', 0) }}" min="0" max="9">
                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle bf-stepper-btn" data-target="infants" data-step="1">+</button>
                             </div>
                         </div>
@@ -203,7 +208,9 @@
             <!-- Ngày về -->
             <div class="col-6 col-md-6 mt-2">
                 <label class="form-label text-muted small mb-1 ms-1">Ngày về</label>
-                <input type="date" class="form-control bf-input bf-date-input" id="return-date" disabled>
+                <input type="date" class="form-control bf-input bf-date-input @error('return_date') is-invalid @enderror"
+                       name="return_date" id="return-date" value="{{ old('return_date') }}"
+                       {{ $tripType === 'round-trip' ? 'required' : 'disabled' }}>
             </div>
         </div>
 

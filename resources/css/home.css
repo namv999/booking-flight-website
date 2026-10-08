@@ -568,6 +568,12 @@
     font-weight: 600;
 }
 
+/* Radio Đa chặng bị khóa */
+.btn-check:disabled + .bf-tab-btn {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Các dropdown chọn khách & hạng ghế */
 .bf-dropdown-btn {
     background-color: #ffffff;

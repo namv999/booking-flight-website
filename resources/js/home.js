@@ -4,17 +4,39 @@ document.addEventListener("DOMContentLoaded", function () {
     const returnDate = document.getElementById("return-date");
     const swapButton = document.getElementById("swap-airports");
     const tripTypeInputs = document.querySelectorAll('input[name="trip_type"]');
-    
-    const today = new Date().toISOString().split("T")[0];
+    // Ngày hôm nay theo giờ máy người dùng (toISOString trả về ngày UTC, có thể lệch 1 ngày)
+    function localToday() {
+        const d = new Date();
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().split("T")[0];
+    }
+    const today = localToday();
     if (departureDate) departureDate.min = today;
-    if (returnDate) returnDate.min = today;
 
-    // Bật/tắt ô Ngày về theo Loại hành trình
+    // Ô ngày về chỉ bật khi chọn Khứ hồi (input disabled không được gửi lên server)
+    function syncTripType() {
+        const checked = document.querySelector('input[name="trip_type"]:checked');
+        const isRound = !!checked && checked.value === "round-trip";
+        if (!returnDate) return;
+        returnDate.disabled = !isRound;
+        returnDate.required = isRound;
+        if (!isRound) returnDate.value = "";
+    }
+
+    // Ngày về không được trước ngày đi
+    function syncReturnMin() {
+        if (!returnDate) return;
+        const min = departureDate && departureDate.value ? departureDate.value : today;
+        returnDate.min = min;
+        if (returnDate.value && returnDate.value < min) returnDate.value = min;
+    }
+
     tripTypeInputs.forEach(function (input) {
-        input.addEventListener("change", function () {
-            if (returnDate) returnDate.disabled = (input.value === "one-way");
-        });
+        input.addEventListener("change", syncTripType);
     });
+    if (departureDate) departureDate.addEventListener("change", syncReturnMin);
+    syncTripType();
+    syncReturnMin();
 
     // 2. CUSTOM AIRPORT SELECTOR
     function setupAirportPicker(type) {
@@ -71,6 +93,16 @@ document.addEventListener("DOMContentLoaded", function () {
             const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(inputDisplay);
             dropdownInstance.hide();
         });
+
+        // Hidden đã có id (old) nhưng ô hiển thị đang trống: lấy chữ từ option tương ứng
+        if (inputHidden && inputHidden.value && !inputDisplay.value) {
+            const saved = dropdownMenu.querySelector(`[data-id="${inputHidden.value}"]`);
+            if (saved) {
+                const code = saved.getAttribute("data-code") || "";
+                const city = saved.getAttribute("data-city") || "";
+                inputDisplay.value = code ? `${city} (${code})` : city;
+            }
+        }
     }
 
     // Khởi tạo bộ chọn cho cả Điểm đi (departure) và Điểm đến (arrival)
@@ -173,6 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (toggle) bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
         });
     }
+    updatePassengerSummary();
 
     // 4. NEWSLETTER FORM (chưa có mockup)
     const newsletterForm = document.getElementById("newsletter-form");
