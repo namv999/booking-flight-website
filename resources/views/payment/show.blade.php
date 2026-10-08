@@ -200,22 +200,14 @@
             {{-- CỘT PHẢI: SIDEBAR TÓM TẮT ĐƠN HÀNG & CHI TIẾT VÉ --}}
             <aside class="col-lg-4 col-md-5">
                 @php
-                $firstBf = $booking->bookingFlights->first();
-                $flight = $firstBf?->flight;
-                $depTime = $flight ? \Carbon\Carbon::parse($flight->departure_time) : null;
-                $arrTime = $flight ? \Carbon\Carbon::parse($flight->arrival_time) : null;
-                $diffMinutes = ($depTime && $arrTime) ? $depTime->diffInMinutes($arrTime) : 0;
-                $hours = intdiv($diffMinutes, 60);
-                $mins = $diffMinutes % 60;
-                $durationText = ($hours > 0 ? "{$hours}h " : "") . ($mins > 0 ? "{$mins}m" : "00m");
-                $airlineName = $flight?->aircraft?->airline?->name ?? 'Hãng hàng không';
-                $aircraftModel = $flight?->aircraft?->model ?? 'Aircraft';
-                $departureAirport = $flight?->departureAirport;
-                $arrivalAirport = $flight?->arrivalAirport;
-                $totalTicketsCount = 0;
-                foreach ($booking->bookingFlights as $bf) {
-                $totalTicketsCount += $bf->tickets->count();
-                }
+                    $legs = $booking->ordered_legs;
+                    $legCount = $legs->count();
+                    $firstFlight = $legs->first()?->flight;
+                    $lastFlight = $legs->last()?->flight;
+                    $isRoundTrip = $legCount === 2 && $firstFlight && $lastFlight
+                        && $firstFlight->departure_airport_id === $lastFlight->arrival_airport_id
+                        && $firstFlight->arrival_airport_id === $lastFlight->departure_airport_id;
+                    $totalTicketsCount = $legs->sum(fn ($bf) => $bf->tickets->count());
                 @endphp
 
                 <div class="bf-booking-sidebar">
@@ -224,42 +216,66 @@
                         <span>Tóm tắt đơn hàng</span>
                     </h3>
 
-                    @if ($flight)
-                    <div class="bf-sidebar-route">
-                        <div class="bf-sidebar-route-item">
-                            <strong>{{ $departureAirport?->iata_code ?? $flight->departure_airport_id }}</strong>
-                            <small>{{ $departureAirport?->city ?? 'Sân bay đi' }}</small>
-                        </div>
-                        <i class="bi bi-arrow-right bf-sidebar-arrow" aria-hidden="true"></i>
-                        <div class="bf-sidebar-route-item text-end">
-                            <strong>{{ $arrivalAirport?->iata_code ?? $flight->arrival_airport_id }}</strong>
-                            <small>{{ $arrivalAirport?->city ?? 'Sân bay đến' }}</small>
-                        </div>
-                    </div>
+                    @foreach ($legs as $i => $bf)
+                        @php
+                            $f = $bf->flight;
+                            $depTime = $f ? \Carbon\Carbon::parse($f->departure_time) : null;
+                            $arrTime = $f ? \Carbon\Carbon::parse($f->arrival_time) : null;
+                            $diffMinutes = ($depTime && $arrTime) ? $depTime->diffInMinutes($arrTime) : 0;
+                            $hours = intdiv($diffMinutes, 60);
+                            $mins = $diffMinutes % 60;
+                            $durationText = ($hours > 0 ? "{$hours}h " : "") . ($mins > 0 ? "{$mins}m" : "00m");
+                            $airlineName = $f?->aircraft?->airline?->name ?? 'Hãng hàng không';
+                            $aircraftModel = $f?->aircraft?->model ?? 'Aircraft';
+                            $departureAirport = $f?->departureAirport;
+                            $arrivalAirport = $f?->arrivalAirport;
+                            $legLabel = $legCount > 1
+                                ? ($isRoundTrip ? ($i === 0 ? 'Chuyến đi' : 'Chuyến về') : 'Chặng '.($i + 1))
+                                : null;
+                        @endphp
+                        @if ($f)
+                            <div class="{{ ! $loop->last ? 'mb-3 pb-3 border-bottom' : '' }}">
+                                @if ($legLabel)
+                                    <div class="mb-2"><span class="badge bg-primary">{{ $legLabel }}</span></div>
+                                @endif
 
-                    <div class="bf-sidebar-airline">
-                        <i class="bi bi-airplane" aria-hidden="true"></i>
-                        <div>
-                            <div class="fw-bold text-navy">{{ $airlineName }}</div>
-                            <div class="small text-muted">{{ $aircraftModel }} &bull; Chuyến #FL-{{ str_pad($flight->id, 4, '0', STR_PAD_LEFT) }}</div>
-                        </div>
-                    </div>
+                                <div class="bf-sidebar-route">
+                                    <div class="bf-sidebar-route-item">
+                                        <strong>{{ $departureAirport?->iata_code ?? $f->departure_airport_id }}</strong>
+                                        <small>{{ $departureAirport?->city ?? 'Sân bay đi' }}</small>
+                                    </div>
+                                    <i class="bi bi-arrow-right bf-sidebar-arrow" aria-hidden="true"></i>
+                                    <div class="bf-sidebar-route-item text-end">
+                                        <strong>{{ $arrivalAirport?->iata_code ?? $f->arrival_airport_id }}</strong>
+                                        <small>{{ $arrivalAirport?->city ?? 'Sân bay đến' }}</small>
+                                    </div>
+                                </div>
 
-                    <div class="bf-sidebar-meta-row">
-                        <span>Cất cánh:</span>
-                        <strong>{{ $depTime?->format('H:i, d/m/Y') }}</strong>
-                    </div>
+                                <div class="bf-sidebar-airline">
+                                    <i class="bi bi-airplane" aria-hidden="true"></i>
+                                    <div>
+                                        <div class="fw-bold text-navy">{{ $airlineName }}</div>
+                                        <div class="small text-muted">{{ $aircraftModel }} &bull; Chuyến #FL-{{ str_pad($f->id, 4, '0', STR_PAD_LEFT) }}</div>
+                                    </div>
+                                </div>
 
-                    <div class="bf-sidebar-meta-row">
-                        <span>Hạ cánh:</span>
-                        <strong>{{ $arrTime?->format('H:i, d/m/Y') }}</strong>
-                    </div>
+                                <div class="bf-sidebar-meta-row">
+                                    <span>Cất cánh:</span>
+                                    <strong>{{ $depTime?->format('H:i, d/m/Y') }}</strong>
+                                </div>
 
-                    <div class="bf-sidebar-meta-row">
-                        <span>Thời gian bay:</span>
-                        <span>{{ $durationText }} &bull; Bay thẳng</span>
-                    </div>
-                    @endif
+                                <div class="bf-sidebar-meta-row">
+                                    <span>Hạ cánh:</span>
+                                    <strong>{{ $arrTime?->format('H:i, d/m/Y') }}</strong>
+                                </div>
+
+                                <div class="bf-sidebar-meta-row">
+                                    <span>Thời gian bay:</span>
+                                    <span>{{ $durationText }} &bull; Bay thẳng</span>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
 
                     {{-- DANH SÁCH CHI TIẾT VÉ HÀNH KHÁCH --}}
                     <div class="bf-ticket-breakdown-list">
@@ -268,44 +284,56 @@
                             <span class="text-muted small">({{ $totalTicketsCount }} vé)</span>
                         </div>
 
-                        @foreach ($booking->bookingFlights as $bf)
-                        @foreach ($bf->tickets as $ticket)
-                        @php
-                        $pType = $ticket->passenger->passenger_type ?? 'adult';
-                        $pTypeLabel = match($pType) {
-                        'child' => 'Trẻ em',
-                        'infant' => 'Em bé',
-                        default => 'Người lớn',
-                        };
-                        $pTypeBadgeClass = match($pType) {
-                        'child' => 'bf-passenger-badge--child',
-                        'infant' => 'bf-passenger-badge--infant',
-                        default => 'bf-passenger-badge--adult',
-                        };
-                        $seatNumber = $ticket->flightSeat?->seat?->seat_number;
-                        @endphp
-                        <div class="bf-ticket-row">
-                            <div class="bf-ticket-row-header">
-                                <span class="bf-ticket-row-name">{{ $ticket->passenger->full_name }}</span>
-                                <span class="bf-passenger-badge {{ $pTypeBadgeClass }}" style="font-size: 0.68rem; padding: 1px 6px;">
-                                    {{ $pTypeLabel }}
-                                </span>
-                            </div>
-                            <div class="bf-ticket-row-meta">
-                                <span>
-                                    <i class="bi bi-person-badge me-1"></i>
-                                    @if ($seatNumber)
-                                    Ghế: <strong>{{ $seatNumber }}</strong>
-                                    @elseif ($pType === 'infant')
-                                    Ngồi cùng người lớn
-                                    @else
-                                    Ghế hệ thống
-                                    @endif
-                                </span>
-                                <span class="bf-ticket-row-price">{{ number_format($ticket->price, 0, ',', '.') }} đ</span>
-                            </div>
-                        </div>
-                        @endforeach
+                        @foreach ($legs as $i => $bf)
+                            @if ($legCount > 1)
+                                <div class="small fw-bold text-navy mt-2 mb-1">
+                                    {{ $isRoundTrip ? ($i === 0 ? 'Chuyến đi' : 'Chuyến về') : 'Chặng '.($i + 1) }}
+                                    · {{ $bf->flight?->departureAirport?->iata_code }} → {{ $bf->flight?->arrivalAirport?->iata_code }}
+                                </div>
+                            @endif
+                            @foreach ($bf->tickets as $ticket)
+                                @php
+                                    $pType = $ticket->passenger->passenger_type ?? 'adult';
+                                    $pTypeLabel = match($pType) {
+                                        'child' => 'Trẻ em',
+                                        'infant' => 'Em bé',
+                                        default => 'Người lớn',
+                                    };
+                                    $pTypeBadgeClass = match($pType) {
+                                        'child' => 'bf-passenger-badge--child',
+                                        'infant' => 'bf-passenger-badge--infant',
+                                        default => 'bf-passenger-badge--adult',
+                                    };
+                                    $seatNumber = $ticket->flightSeat?->seat?->seat_number;
+                                @endphp
+                                <div class="bf-ticket-row">
+                                    <div class="bf-ticket-row-header">
+                                        <span class="bf-ticket-row-name">{{ $ticket->passenger->full_name }}</span>
+                                        <span class="bf-passenger-badge {{ $pTypeBadgeClass }}" style="font-size: 0.68rem; padding: 1px 6px;">
+                                            {{ $pTypeLabel }}
+                                        </span>
+                                    </div>
+                                    <div class="bf-ticket-row-meta">
+                                        <span>
+                                            <i class="bi bi-person-badge me-1"></i>
+                                            @if ($seatNumber)
+                                                Ghế: <strong>{{ $seatNumber }}</strong>
+                                            @elseif ($pType === 'infant')
+                                                Ngồi cùng người lớn
+                                            @else
+                                                Ghế hệ thống
+                                            @endif
+                                        </span>
+                                        <span class="bf-ticket-row-price">{{ number_format($ticket->price, 0, ',', '.') }} đ</span>
+                                    </div>
+                                </div>
+                            @endforeach
+                            @if ($legCount > 1)
+                                <div class="d-flex justify-content-between small text-muted mb-2">
+                                    <span>Tạm tính chặng này</span>
+                                    <span>{{ number_format($bf->tickets->sum('price'), 0, ',', '.') }} đ</span>
+                                </div>
+                            @endif
                         @endforeach
                     </div>
 

@@ -113,8 +113,18 @@
         <div class="row g-4">
             {{-- CỘT TRÁI: THÔNG TIN HÀNH TRÌNH, VÉ ĐIỆN TỬ VÀ THANH TOÁN --}}
             <main class="col-lg-8 col-md-7">
+                @php
+                    $legs = $booking->ordered_legs;
+                    $legCount = $legs->count();
+                    $firstFlight = $legs->first()?->flight;
+                    $lastFlight = $legs->last()?->flight;
+                    $isRoundTrip = $legCount === 2 && $firstFlight && $lastFlight
+                        && $firstFlight->departure_airport_id === $lastFlight->arrival_airport_id
+                        && $firstFlight->arrival_airport_id === $lastFlight->departure_airport_id;
+                @endphp
+
                 {{-- 1. THẺ HÀNH TRÌNH CHUYẾN BAY --}}
-                @foreach ($booking->bookingFlights as $bf)
+                @foreach ($legs as $i => $bf)
                     @php
                         $flight = $bf->flight;
                         $depTime = $flight ? \Carbon\Carbon::parse($flight->departure_time) : null;
@@ -127,12 +137,16 @@
                         $aircraftModel = $flight?->aircraft?->model ?? 'Aircraft';
                         $departureAirport = $flight?->departureAirport;
                         $arrivalAirport = $flight?->arrivalAirport;
+                        $legLabel = $legCount > 1
+                            ? ($isRoundTrip ? ($i === 0 ? 'Chuyến đi' : 'Chuyến về') : 'Chặng '.($i + 1))
+                            : null;
                     @endphp
 
                     <div class="bf-payment-card mb-4">
                         <div class="bf-payment-card__header">
                             <h2 class="bf-payment-card__title">
                                 <i class="bi bi-airplane-engines text-primary" aria-hidden="true"></i>
+                                @if ($legLabel) <span class="badge bg-primary me-2">{{ $legLabel }}</span> @endif
                                 <span>Thông tin hành trình</span>
                             </h2>
                             <span class="badge bg-light text-navy border">
@@ -173,6 +187,7 @@
                         <div class="bf-payment-card__header">
                             <h2 class="bf-payment-card__title">
                                 <i class="bi bi-ticket-perforated-fill text-primary" aria-hidden="true"></i>
+                                @if ($legLabel) <span class="badge bg-primary me-2">{{ $legLabel }}</span> @endif
                                 <span>Vé điện tử hành khách ({{ $bf->tickets->count() }} vé)</span>
                             </h2>
                             <span class="text-muted small">Xuất trình mã vé khi làm thủ tục check-in</span>

@@ -78,36 +78,57 @@
                     <tbody>
                         @foreach ($bookings as $booking)
                         @php
-                        $firstBf = $booking->bookingFlights->first();
-                        $flight = $firstBf?->flight;
-                        $depAirport = $flight?->departureAirport;
-                        $arrAirport = $flight?->arrivalAirport;
-                        $depTime = $flight ? \Carbon\Carbon::parse($flight->departure_time) : null;
+                            $legs = $booking->ordered_legs;
+                            $firstFlight = $legs->first()?->flight;
+                            $lastFlight = $legs->last()?->flight;
+                            $depTime = $firstFlight ? \Carbon\Carbon::parse($firstFlight->departure_time) : null;
+                            $retTime = $legs->count() > 1 && $lastFlight ? \Carbon\Carbon::parse($lastFlight->departure_time) : null;
+
+                            // Chuỗi sân bay: điểm đi chặng đầu rồi điểm đến từng chặng (SGN → HAN → SGN)
+                            $codes = [];
+                            $cities = [];
+                            if ($firstFlight) {
+                                $codes[] = $firstFlight->departureAirport?->iata_code ?? $firstFlight->departure_airport_id;
+                                $cities[] = $firstFlight->departureAirport?->city;
+                                foreach ($legs as $bf) {
+                                    $codes[] = $bf->flight->arrivalAirport?->iata_code ?? $bf->flight->arrival_airport_id;
+                                    $cities[] = $bf->flight->arrivalAirport?->city;
+                                }
+                            }
+                            $isRoundTrip = $legs->count() === 2 && $firstFlight && $lastFlight
+                                && $firstFlight->departure_airport_id === $lastFlight->arrival_airport_id
+                                && $firstFlight->arrival_airport_id === $lastFlight->departure_airport_id;
                         @endphp
                         <tr>
                             <td class="ps-4">
                                 <strong class="font-monospace text-primary">#BK-{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}</strong>
                             </td>
                             <td>
-                                @if ($flight)
-                                <div class="fw-bold text-navy">
-                                    {{ $depAirport?->iata_code ?? $flight->departure_airport_id }}
-                                    <i class="bi bi-arrow-right text-muted mx-1"></i>
-                                    {{ $arrAirport?->iata_code ?? $flight->arrival_airport_id }}
-                                </div>
-                                <div class="text-muted small" style="font-size: 0.76rem;">
-                                    {{ $depAirport?->city }} đến {{ $arrAirport?->city }}
-                                </div>
+                                @if ($firstFlight)
+                                    <div class="fw-bold text-navy">
+                                        {{ implode(' → ', $codes) }}
+                                        @if ($isRoundTrip)
+                                            <span class="badge bg-info-subtle text-info-emphasis ms-1">Khứ hồi</span>
+                                        @elseif ($legs->count() > 1)
+                                            <span class="badge bg-info-subtle text-info-emphasis ms-1">{{ $legs->count() }} chặng</span>
+                                        @endif
+                                    </div>
+                                    <div class="text-muted small" style="font-size: 0.76rem;">{{ implode(' → ', array_filter($cities)) }}</div>
                                 @else
-                                <span class="text-muted fst-italic">Không có dữ liệu</span>
+                                    <span class="text-muted fst-italic">Không có dữ liệu</span>
                                 @endif
                             </td>
                             <td>
                                 @if ($depTime)
-                                <div class="fw-bold text-navy">{{ $depTime->format('H:i') }}</div>
-                                <div class="text-muted small" style="font-size: 0.76rem;">{{ $depTime->format('d/m/Y') }}</div>
+                                    <div class="fw-bold text-navy">{{ $depTime->format('H:i') }}</div>
+                                    <div class="text-muted small" style="font-size: 0.76rem;">{{ $depTime->format('d/m/Y') }}</div>
+                                    @if ($retTime)
+                                        <div class="text-muted small" style="font-size: 0.76rem;">
+                                            {{ $isRoundTrip ? 'Về' : 'Chặng cuối' }}: {{ $retTime->format('d/m/Y') }}
+                                        </div>
+                                    @endif
                                 @else
-                                <span class="text-muted">-</span>
+                                    <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>
