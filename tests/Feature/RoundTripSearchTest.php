@@ -124,12 +124,6 @@ class RoundTripSearchTest extends TestCase
         $this->get(route('flights.search.results', $params))->assertSessionHasErrors('return_date');
     }
 
-    public function test_multi_city_is_not_accepted_in_phase_b(): void
-    {
-        $this->get(route('flights.search.results', $this->searchParams(['trip_type' => 'multi-city'])))
-            ->assertSessionHasErrors('trip_type');
-    }
-
     public function test_zero_adults_is_rejected_by_search_request(): void
     {
         $this->get(route('flights.search.results', $this->searchParams(['adults' => 0])))

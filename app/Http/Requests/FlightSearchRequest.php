@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Carbon\Carbon;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class FlightSearchRequest extends FormRequest
@@ -21,8 +23,12 @@ class FlightSearchRequest extends FormRequest
             'adults' => ['required', 'integer', 'min:1', 'max:9'],
             'children' => ['nullable', 'integer', 'min:0', 'max:9'],
             'infants' => ['nullable', 'integer', 'min:0', 'max:9', 'lte:adults'], // infant bắt buộc companion adult
-            'trip_type' => ['nullable', 'in:one-way,round-trip'],
+            'trip_type' => ['nullable', 'in:one-way,round-trip,multi-city'],
             'return_date' => ['required_if:trip_type,round-trip', 'nullable', 'date', 'after_or_equal:departure_date'],
+            'extra_legs' => ['exclude_unless:trip_type,multi-city', 'required', 'array', 'min:1', 'max:3'],
+            'extra_legs.*.departure_airport_id' => ['exclude_unless:trip_type,multi-city', 'required', 'exists:airports,id', 'different:extra_legs.*.arrival_airport_id'],
+            'extra_legs.*.arrival_airport_id' => ['exclude_unless:trip_type,multi-city', 'required', 'exists:airports,id'],
+            'extra_legs.*.date' => ['exclude_unless:trip_type,multi-city', 'required', 'date'],
         ];
     }
 
@@ -30,6 +36,12 @@ class FlightSearchRequest extends FormRequest
     {
         return [
             'departure_airport_id.different' => 'Điểm đi và điểm đến phải khác nhau.',
+            'extra_legs.required' => 'Vui lòng thêm ít nhất một chặng tiếp theo.',
+            'extra_legs.max' => 'Tối đa 4 chặng cho mỗi hành trình.',
+            'extra_legs.*.departure_airport_id.required' => 'Vui lòng chọn điểm đi cho chặng tiếp theo.',
+            'extra_legs.*.departure_airport_id.different' => 'Điểm đi và điểm đến của mỗi chặng phải khác nhau.',
+            'extra_legs.*.arrival_airport_id.required' => 'Vui lòng chọn điểm đến cho chặng tiếp theo.',
+            'extra_legs.*.date.required' => 'Vui lòng chọn ngày bay cho chặng tiếp theo.',
         ];
     }
 
@@ -50,6 +62,40 @@ class FlightSearchRequest extends FormRequest
             $legs[] = ['from' => $to, 'to' => $from, 'date' => $this->validated('return_date')];
         }
 
+        if ($this->tripType() === 'multi-city') {
+            foreach ($this->validated('extra_legs') as $extra) {
+                $legs[] = [
+                    'from' => (int) $extra['departure_airport_id'],
+                    'to' => (int) $extra['arrival_airport_id'],
+                    'date' => $extra['date'],
+                ];
+            }
+        }
+
         return $legs;
+    }
+
+    public function after(): array
+    {
+        return [function (Validator $validator) {
+            if ($validator->errors()->isNotEmpty() || $this->input('trip_type') !== 'multi-city') {
+                return;
+            }
+
+            $prevDate = Carbon::parse($this->input('departure_date'))->toDateString();
+
+            foreach ($this->input('extra_legs', []) as $i => $leg) {
+                $date = Carbon::parse($leg['date'])->toDateString();
+
+                if ($date < $prevDate) {
+                    $validator->errors()->add(
+                        "extra_legs.$i.date",
+                        'Chặng '.($i + 2).': ngày bay không được trước ngày bay của chặng trước.'
+                    );
+                }
+
+                $prevDate = $date;
+            }
+        }];
     }
 }

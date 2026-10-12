@@ -39,6 +39,16 @@ class JourneyValidationService
             'adults' => $pending['adults'],
             'children' => $pending['children'],
             'infants' => $pending['infants'],
+            'extra_legs' => $pending['trip_type'] === 'multi-city'
+                ? array_map(
+                    fn ($l) => [
+                        'departure_airport_id' => $l['from'],
+                        'arrival_airport_id' => $l['to'],
+                        'date' => $l['date'],
+                    ],
+                    array_slice($pending['legs'], 1)
+                )
+                : null,
         ]));
     }
 

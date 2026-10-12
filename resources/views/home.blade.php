@@ -56,7 +56,7 @@
         @endif
 
         @php
-            $tripType = in_array(old('trip_type'), ['one-way', 'round-trip'], true) ? old('trip_type') : 'one-way';
+        $tripType = in_array(old('trip_type'), ['one-way', 'round-trip'], true) ? old('trip_type') : 'one-way';
         @endphp
 
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -209,8 +209,8 @@
             <div class="col-6 col-md-6 mt-2">
                 <label class="form-label text-muted small mb-1 ms-1">Ngày về</label>
                 <input type="date" class="form-control bf-input bf-date-input @error('return_date') is-invalid @enderror"
-                       name="return_date" id="return-date" value="{{ old('return_date') }}"
-                       {{ $tripType === 'round-trip' ? 'required' : 'disabled' }}>
+                    name="return_date" id="return-date" value="{{ old('return_date') }}"
+                    {{ $tripType === 'round-trip' ? 'required' : 'disabled' }}>
             </div>
         </div>
 
