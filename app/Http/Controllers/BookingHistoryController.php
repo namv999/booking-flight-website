@@ -7,7 +7,10 @@ class BookingHistoryController extends Controller
     public function index()
     {
         $bookings = auth()->user()->bookings()
-            ->with(['bookingFlights.flight.departureAirport', 'bookingFlights.flight.arrivalAirport'])
+            ->with([
+                'bookingFlights.flight.departureAirport' => fn($q) => $q->withTrashed(),
+                'bookingFlights.flight.arrivalAirport' => fn($q) => $q->withTrashed(),
+            ])
             ->latest('created_at')
             ->paginate(10);
 
@@ -20,10 +23,10 @@ class BookingHistoryController extends Controller
             ->with([
                 'passengers',
                 'payment',
-                'bookingFlights.flight.aircraft' => fn ($q) => $q->withTrashed(),
-                'bookingFlights.flight.aircraft.airline' => fn ($q) => $q->withTrashed(),
-                'bookingFlights.flight.departureAirport' => fn ($q) => $q->withTrashed(),
-                'bookingFlights.flight.arrivalAirport' => fn ($q) => $q->withTrashed(),
+                'bookingFlights.flight.aircraft' => fn($q) => $q->withTrashed(),
+                'bookingFlights.flight.aircraft.airline' => fn($q) => $q->withTrashed(),
+                'bookingFlights.flight.departureAirport' => fn($q) => $q->withTrashed(),
+                'bookingFlights.flight.arrivalAirport' => fn($q) => $q->withTrashed(),
                 'bookingFlights.tickets.passenger',
                 'bookingFlights.tickets.flightSeat.seat',
                 'bookingFlights.tickets.baggageAddon',
