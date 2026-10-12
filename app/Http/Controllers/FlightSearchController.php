@@ -31,7 +31,7 @@ class FlightSearchController extends Controller
             'adults' => (int) $data['adults'],
             'children' => (int) ($data['children'] ?? 0),
             'infants' => (int) ($data['infants'] ?? 0),
-            'legs' => array_map(fn ($leg) => [
+            'legs' => array_map(fn($leg) => [
                 'from' => $leg['from'],
                 'to' => $leg['to'],
                 'date' => Carbon::parse($leg['date'])->toDateString(), // chuẩn hóa Y-m-d
@@ -91,7 +91,7 @@ class FlightSearchController extends Controller
             ->whereIn('id', collect($pending['legs'])->take($legIndex)->pluck('flight_id'))
             ->get()->keyBy('id');
         $chosenFlights = collect($pending['legs'])->take($legIndex)
-            ->map(fn ($l) => $byId->get($l['flight_id']))->filter()->values();
+            ->map(fn($l) => $byId->get($l['flight_id']))->filter()->values();
 
         return view('flights.results', [
             'flights' => $flights,
@@ -104,6 +104,7 @@ class FlightSearchController extends Controller
             'infants' => $pending['infants'],
             'legIndex' => $legIndex,                  // B3 dùng cho "Chặng k/N"
             'totalLegs' => count($pending['legs']),
+            'tripType' => $pending['trip_type'],
             'chosenFlights' => $chosenFlights,
             'backUrl' => $legIndex > 0 ? $this->journey->legUrl($pending, $legIndex - 1) : null, // chọn lại chặng trước
         ]);

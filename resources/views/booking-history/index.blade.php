@@ -78,26 +78,42 @@
                     <tbody>
                         @foreach ($bookings as $booking)
                         @php
-                            $legs = $booking->ordered_legs;
-                            $firstFlight = $legs->first()?->flight;
-                            $lastFlight = $legs->last()?->flight;
-                            $depTime = $firstFlight ? \Carbon\Carbon::parse($firstFlight->departure_time) : null;
-                            $retTime = $legs->count() > 1 && $lastFlight ? \Carbon\Carbon::parse($lastFlight->departure_time) : null;
+                        $legs = $booking->ordered_legs;
+                        $firstFlight = $legs->first()?->flight;
+                        $lastFlight = $legs->last()?->flight;
+                        $depTime = $firstFlight ? \Carbon\Carbon::parse($firstFlight->departure_time) : null;
+                        $retTime = $legs->count() > 1 && $lastFlight ? \Carbon\Carbon::parse($lastFlight->departure_time) : null;
 
-                            // Chuỗi sân bay: điểm đi chặng đầu rồi điểm đến từng chặng (SGN → HAN → SGN)
-                            $codes = [];
-                            $cities = [];
-                            if ($firstFlight) {
-                                $codes[] = $firstFlight->departureAirport?->iata_code ?? $firstFlight->departure_airport_id;
-                                $cities[] = $firstFlight->departureAirport?->city;
-                                foreach ($legs as $bf) {
-                                    $codes[] = $bf->flight->arrivalAirport?->iata_code ?? $bf->flight->arrival_airport_id;
-                                    $cities[] = $bf->flight->arrivalAirport?->city;
-                                }
-                            }
-                            $isRoundTrip = $legs->count() === 2 && $firstFlight && $lastFlight
-                                && $firstFlight->departure_airport_id === $lastFlight->arrival_airport_id
-                                && $firstFlight->arrival_airport_id === $lastFlight->departure_airport_id;
+                        // Chuỗi sân bay: điểm đi chặng đầu rồi điểm đến từng chặng (SGN → HAN → SGN)
+                        // Chặng nối tiếp thì nối bằng " → ", chặng đứt đoạn (open-jaw) thì tách bằng " · "
+                        $route = '';
+                        $cityRoute = '';
+                        $prevToId = null;
+                        foreach ($legs as $bf) {
+                        $f = $bf->flight;
+                        if (! $f) {
+                        continue;
+                        }
+                        $from = $f->departureAirport?->iata_code ?? $f->departure_airport_id;
+                        $to = $f->arrivalAirport?->iata_code ?? $f->arrival_airport_id;
+                        $fromCity = $f->departureAirport?->city;
+                        $toCity = $f->arrivalAirport?->city;
+
+                        if ($prevToId === null) {
+                        $route = "$from → $to";
+                        $cityRoute = "$fromCity → $toCity";
+                        } elseif ($f->departure_airport_id === $prevToId) {
+                        $route .= " → $to";
+                        $cityRoute .= " → $toCity";
+                        } else {
+                        $route .= " · $from → $to";
+                        $cityRoute .= " · $fromCity → $toCity";
+                        }
+                        $prevToId = $f->arrival_airport_id;
+                        }
+                        $isRoundTrip = $legs->count() === 2 && $firstFlight && $lastFlight
+                        && $firstFlight->departure_airport_id === $lastFlight->arrival_airport_id
+                        && $firstFlight->arrival_airport_id === $lastFlight->departure_airport_id;
                         @endphp
                         <tr>
                             <td class="ps-4">
@@ -105,30 +121,30 @@
                             </td>
                             <td>
                                 @if ($firstFlight)
-                                    <div class="fw-bold text-navy">
-                                        {{ implode(' → ', $codes) }}
-                                        @if ($isRoundTrip)
-                                            <span class="badge bg-info-subtle text-info-emphasis ms-1">Khứ hồi</span>
-                                        @elseif ($legs->count() > 1)
-                                            <span class="badge bg-info-subtle text-info-emphasis ms-1">{{ $legs->count() }} chặng</span>
-                                        @endif
-                                    </div>
-                                    <div class="text-muted small" style="font-size: 0.76rem;">{{ implode(' → ', array_filter($cities)) }}</div>
+                                <div class="fw-bold text-navy">
+                                    {{ $route }}
+                                    @if ($isRoundTrip)
+                                    <span class="badge bg-info-subtle text-info-emphasis ms-1">Khứ hồi</span>
+                                    @elseif ($legs->count() > 1)
+                                    <span class="badge bg-info-subtle text-info-emphasis ms-1">{{ $legs->count() }} chặng</span>
+                                    @endif
+                                </div>
+                                <div class="text-muted small" style="font-size: 0.76rem;">{{ $cityRoute }}</div>
                                 @else
-                                    <span class="text-muted fst-italic">Không có dữ liệu</span>
+                                <span class="text-muted fst-italic">Không có dữ liệu</span>
                                 @endif
                             </td>
                             <td>
                                 @if ($depTime)
-                                    <div class="fw-bold text-navy">{{ $depTime->format('H:i') }}</div>
-                                    <div class="text-muted small" style="font-size: 0.76rem;">{{ $depTime->format('d/m/Y') }}</div>
-                                    @if ($retTime)
-                                        <div class="text-muted small" style="font-size: 0.76rem;">
-                                            {{ $isRoundTrip ? 'Về' : 'Chặng cuối' }}: {{ $retTime->format('d/m/Y') }}
-                                        </div>
-                                    @endif
+                                <div class="fw-bold text-navy">{{ $depTime->format('H:i') }}</div>
+                                <div class="text-muted small" style="font-size: 0.76rem;">{{ $depTime->format('d/m/Y') }}</div>
+                                @if ($retTime)
+                                <div class="text-muted small" style="font-size: 0.76rem;">
+                                    {{ $isRoundTrip ? 'Về' : 'Chặng cuối' }}: {{ $retTime->format('d/m/Y') }}
+                                </div>
+                                @endif
                                 @else
-                                    <span class="text-muted">-</span>
+                                <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>
