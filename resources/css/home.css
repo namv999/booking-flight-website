@@ -540,6 +540,33 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     max-width: 850px;
     margin: 0 auto;
+    transition: max-width 0.3s ease;
+}
+
+/* Mở rộng chiều rộng khi ở chế độ Đa chặng để layout thoáng đẹp hơn */
+.bf-search-card.bf-search-card--multicity {
+    max-width: 980px;
+}
+
+/* Card chặng bay */
+.extra-leg-row {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.extra-leg-row:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.leg-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px dashed #e2e8f0;
 }
 
 /* Tabs chọn kiểu chuyến bay */
