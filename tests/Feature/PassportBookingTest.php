@@ -212,4 +212,23 @@ class PassportBookingTest extends TestCase
         $this->assertTrue($response->viewData('isInternational'));
         $this->assertArrayHasKey('VNM', $response->viewData('countries'));
     }
+
+    public function test_country_label_and_passenger_accessors(): void
+    {
+        $service = app(PassportService::class);
+
+        $this->assertSame('Vietnam (VNM)', $service->countryLabel('vnm'));
+        $this->assertSame('XXX', $service->countryLabel('XXX')); // mã lạ: giữ nguyên mã
+        $this->assertNull($service->countryLabel(null));
+
+        $passenger = Passenger::factory()->make([
+            'nationality' => 'JPN',
+            'document_issued_country' => 'VNM',
+            'gender' => 'female',
+        ]);
+
+        $this->assertSame('Japan (JPN)', $passenger->nationality_label);
+        $this->assertSame('Vietnam (VNM)', $passenger->issued_country_label);
+        $this->assertSame('Nữ', $passenger->gender_label);
+    }
 }

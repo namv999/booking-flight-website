@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\PassportService;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -48,5 +50,25 @@ class Passenger extends Model
             Ticket::class,
             'companion_adult_passenger_id'
         );
+    }
+
+    // $passenger->nationality_label, ->issued_country_label, ->gender_label
+    protected function nationalityLabel(): Attribute
+    {
+        return Attribute::get(fn () => app(PassportService::class)->countryLabel($this->nationality));
+    }
+
+    protected function issuedCountryLabel(): Attribute
+    {
+        return Attribute::get(fn () => app(PassportService::class)->countryLabel($this->document_issued_country));
+    }
+
+    protected function genderLabel(): Attribute
+    {
+        return Attribute::get(fn () => match ($this->gender) {
+            'male' => 'Nam',
+            'female' => 'Nữ',
+            default => null,
+        });
     }
 }

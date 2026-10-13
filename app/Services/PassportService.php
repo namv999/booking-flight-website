@@ -59,4 +59,17 @@ class PassportService
 
         return $this->normalizeCountry($from->country ?? '') !== $this->normalizeCountry($to->country ?? '');
     }
+
+    // "VNM" thành "Vietnam (VNM)"; mã lạ thì trả lại chính mã; null thì null
+    public function countryLabel(?string $code): ?string
+    {
+        if (! $code) {
+            return null;
+        }
+
+        $code = strtoupper($code);
+        $name = config('countries.'.$code);
+
+        return $name ? "$name ($code)" : $code;
+    }
 }
