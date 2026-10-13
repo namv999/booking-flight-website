@@ -49,4 +49,14 @@ class PassportService
     {
         return Str::lower(trim($country));
     }
+
+    // So sánh quốc gia của hai sân bay (null thì coi như không quốc tế)
+    public function differentCountry(?Airport $from, ?Airport $to): bool
+    {
+        if (! $from || ! $to) {
+            return false;
+        }
+
+        return $this->normalizeCountry($from->country ?? '') !== $this->normalizeCountry($to->country ?? '');
+    }
 }

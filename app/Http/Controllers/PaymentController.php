@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\FlightSeat;
 use App\Models\Payment;
 use App\Services\BookingExpiryService;
+use App\Services\PassportRiskService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -13,7 +14,10 @@ use Illuminate\Support\Str;
 class PaymentController extends Controller
 {
     // const PAYMENT_EXPIRE_MINUTES = 15;
-    public function __construct(private BookingExpiryService $expiryService) {}
+    public function __construct(
+        private BookingExpiryService $expiryService,
+        private PassportRiskService $passportRisk,
+    ) {}
 
     public function show(Booking $booking)
     {
@@ -45,6 +49,7 @@ class PaymentController extends Controller
                 'bookingFlights.tickets.flightSeat.seat',
             ]),
             'expiresAt' => $expiresAt,
+            'passportRisk' => $this->passportRisk->assess($booking),
         ]);
     }
 
@@ -68,9 +73,18 @@ class PaymentController extends Controller
             };
         }
 
-        $validated = $request->validate([
+        $rules = [
             'method' => 'required|in:the_tin_dung,vi_dien_tu',
             'simulate_result' => 'required|in:success,failed',
+        ];
+
+        // Tính lại ở server mỗi lần thanh toán (kể cả retry sau khi thất bại), không tin client
+        if ($this->passportRisk->assess($booking)['level'] !== null) {
+            $rules['confirm_passport_risk'] = 'accepted';
+        }
+
+        $validated = $request->validate($rules, [
+            'confirm_passport_risk.accepted' => 'Vui lòng xác nhận bạn đã đọc cảnh báo về hộ chiếu trước khi thanh toán.',
         ]);
 
         DB::transaction(function () use ($validated, $booking) {
