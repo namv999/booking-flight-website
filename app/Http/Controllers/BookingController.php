@@ -10,12 +10,13 @@ use App\Models\FlightSeat;
 use App\Models\Passenger;
 use App\Models\Ticket;
 use App\Services\JourneyValidationService;
+use App\Services\PassportService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
-    public function create(JourneyValidationService $journey)
+    public function create(JourneyValidationService $journey, PassportService $passport)
     {
         $pending = session('pending_selection');
 
@@ -44,9 +45,11 @@ class BookingController extends Controller
         }
 
         return view('booking.passengers', [
-            'flight' => $flights->first(), // view hiện tại chỉ hiển thị 1 chuyến; giai đoạn B đổi sang $flights
+            'flight' => $flights->first(),
             'flights' => $flights,
             'pending' => $pending,
+            'isInternational' => $passport->isInternational($pending),
+            'countries' => config('countries'),
         ]);
     }
 
@@ -235,6 +238,12 @@ class BookingController extends Controller
             'passenger_type' => $type,
             'document_number' => $row['document_number'] ?? null,
             'date_of_birth' => $row['date_of_birth'] ?? null,
+            'document_type' => $row['document_type'] ?? null,
+            'gender' => $row['gender'] ?? null,
+            'nationality' => $row['nationality'] ?? null,
+            'document_issued_country' => $row['document_issued_country'] ?? null,
+            'document_issue_date' => $row['document_issue_date'] ?? null,
+            'document_expiry_date' => $row['document_expiry_date'] ?? null,
         ]);
     }
 

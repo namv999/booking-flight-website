@@ -564,9 +564,30 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
     border-bottom: 1px dashed #e2e8f0;
+}
+
+/* Badge Chặng N: hiện đại, tối giản, tinh tế, không icon */
+.bf-leg-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #0b5ed7;
+    background-color: #e7f1ff;
+    border: 1px solid #cfe2ff;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.bf-leg-desc {
+    color: #64748b;
+    font-size: 12px;
+    font-style: italic;
 }
 
 /* Tabs chọn kiểu chuyến bay */

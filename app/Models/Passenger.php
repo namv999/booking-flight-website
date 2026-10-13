@@ -19,12 +19,16 @@ class Passenger extends Model
         'nationality',
         'document_issued_country',
         'document_expiry_date',
+        'gender',
+        'document_issue_date',
     ];
 
     protected function casts(): array
     {
         return [
             'date_of_birth' => 'date',
+            'document_issue_date' => 'date',
+            'document_expiry_date' => 'date',
         ];
     }
 

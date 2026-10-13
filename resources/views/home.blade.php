@@ -131,10 +131,8 @@
         <!-- Khối Chặng 1 -->
         <div class="p-0 mb-3" id="leg-1-card">
             <div class="d-none mb-2 align-items-center justify-content-between" id="leg-1-badge-wrap">
-                <span class="badge bg-primary text-white fw-semibold px-2 py-1 fs-6">
-                    <i class="bi bi-airplane-engines me-1"></i>Chặng 1
-                </span>
-                <span class="text-muted small fst-italic">Chặng bay đầu tiên</span>
+                <span class="bf-leg-badge">Chặng 1</span>
+                <span class="bf-leg-desc">Chặng bay đầu tiên</span>
             </div>
             <div class="row g-2 align-items-center position-relative" id="leg-1-row">
                 <!-- Từ (Điểm đi) -->
@@ -240,9 +238,7 @@
         <template id="extra-leg-template">
             <div class="extra-leg-row border rounded-4 p-3 mb-3 position-relative">
                 <div class="leg-card-header">
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1 fs-6 extra-leg-label">
-                        <i class="bi bi-airplane me-1"></i>Chặng 2
-                    </span>
+                    <span class="bf-leg-badge extra-leg-label">Chặng 2</span>
                     <button type="button" class="btn btn-sm btn-outline-danger border-0 remove-leg-btn rounded-pill px-2" title="Xóa chặng này">
                         <i class="bi bi-trash3 me-1"></i>Xóa chặng
                     </button>

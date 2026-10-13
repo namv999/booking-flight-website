@@ -46,7 +46,7 @@ class MultiCitySearchTest extends TestCase
         $this->fare = FareClass::factory()->create();
         $this->aircraft = Aircraft::factory()->create();
         $this->seats = Seat::factory()->count(4)
-            ->sequence(fn($s) => ['seat_number' => ($s->index + 1) . 'A'])
+            ->sequence(fn ($s) => ['seat_number' => ($s->index + 1).'A'])
             ->create(['aircraft_id' => $this->aircraft->id]);
         $this->day = now('UTC')->addDays(3)->startOfDay();
 
@@ -149,7 +149,7 @@ class MultiCitySearchTest extends TestCase
 
     public function test_more_than_three_extra_legs_is_rejected(): void
     {
-        $leg = fn(int $d) => ['departure_airport_id' => $this->han->id, 'arrival_airport_id' => $this->dad->id, 'date' => $this->date($d)];
+        $leg = fn (int $d) => ['departure_airport_id' => $this->han->id, 'arrival_airport_id' => $this->dad->id, 'date' => $this->date($d)];
 
         $this->search(['extra_legs' => [$leg(1), $leg(2), $leg(3), $leg(4)]])
             ->assertSessionHasErrors('extra_legs');
@@ -279,6 +279,7 @@ class MultiCitySearchTest extends TestCase
         $this->assertNull($pending['legs'][1]['flight_id']);
         $this->assertNull($pending['legs'][2]['flight_id']);
     }
+
     public function test_leg_page_labels_third_leg_as_leg_number_not_return_trip(): void
     {
         $this->search();
