@@ -101,9 +101,57 @@
                     </div>
                 </div>
 
+                {{-- KHỐI CẢNH BÁO RỦI RO HỘ CHIẾU (NẾU CÓ) --}}
+                @if (isset($passportRisk['level']) && $passportRisk['level'] !== null)
+                    <div class="mb-4">
+                        <div class="alert alert-light border shadow-sm mb-3">
+                            <div class="d-flex align-items-center gap-2 text-muted small">
+                                <i class="bi bi-info-circle-fill text-primary"></i>
+                                <span>Thông tin hộ chiếu có thể nhập sai hoặc vừa được gia hạn? Vui lòng liên hệ hotline 1900 1234 để được hỗ trợ cập nhật.</span>
+                            </div>
+                        </div>
+
+                        @php
+                            $refDateStr = !empty($passportRisk['ref_date']) ? \Carbon\Carbon::parse($passportRisk['ref_date'])->format('d/m/Y') : '';
+                        @endphp
+
+                        @foreach ($passportRisk['items'] as $riskItem)
+                            @php
+                                $itemPassenger = $riskItem['passenger'];
+                                $itemExpiryStr = !empty($riskItem['expiry_date']) ? \Carbon\Carbon::parse($riskItem['expiry_date'])->format('d/m/Y') : '';
+                            @endphp
+
+                            @if ($riskItem['level'] === 'red')
+                                <div class="alert alert-danger d-flex align-items-start gap-2 mb-2" role="alert">
+                                    <i class="bi bi-x-octagon-fill fs-5 flex-shrink-0 mt-1"></i>
+                                    <div>
+                                        Hộ chiếu của <strong>{{ $itemPassenger->full_name }}</strong> hết hạn ngày <strong>{{ $itemExpiryStr }}</strong>, TRƯỚC khi hành trình quốc tế kết thúc ({{ $refDateStr }}). Hành khách có nguy cơ cao bị từ chối khởi hành hoặc nhập cảnh.
+                                    </div>
+                                </div>
+                            @elseif ($riskItem['level'] === 'yellow')
+                                <div class="alert alert-warning d-flex align-items-start gap-2 mb-2" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0 mt-1"></i>
+                                    <div>
+                                        Hộ chiếu của <strong>{{ $itemPassenger->full_name }}</strong> còn hiệu lực đến <strong>{{ $itemExpiryStr }}</strong> nhưng chưa đủ 6 tháng kể từ ngày hạ cánh chặng quốc tế cuối ({{ $refDateStr }}). Một số quốc gia và hãng hàng không có thể từ chối nhập cảnh hoặc từ chối cho lên máy bay.
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
+
                 {{-- FORM THANH TOÁN & GIẢ LẬP KẾT QUẢ --}}
                 <form method="POST" action="{{ route('payment.store', $booking) }}" id="bf-payment-form">
                     @csrf
+
+                    @if (isset($passportRisk['level']) && $passportRisk['level'] !== null)
+                        <div class="form-check my-3">
+                            <input class="form-check-input" type="checkbox" name="confirm_passport_risk" value="1" id="confirm_passport_risk" required>
+                            <label class="form-check-label fw-bold text-danger" for="confirm_passport_risk">
+                                Tôi đã đọc và hiểu rủi ro về hộ chiếu nêu trên và vẫn muốn tiếp tục thanh toán.
+                            </label>
+                        </div>
+                    @endif
 
                     <div class="bf-payment-card">
                         <div class="bf-payment-card__header">

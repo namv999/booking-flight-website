@@ -45,6 +45,20 @@ class AirportSeeder extends Seeder
                 'country' => 'Vietnam',
                 'timezone' => 'Asia/Ho_Chi_Minh',
             ],
+            [
+                'iata_code' => 'BKK',
+                'name' => 'Suvarnabhumi Airport',
+                'city' => 'Bangkok',
+                'country' => 'Thailand',
+                'timezone' => 'Asia/Bangkok',
+            ],
+            [
+                'iata_code' => 'NRT',
+                'name' => 'Narita International Airport',
+                'city' => 'Tokyo',
+                'country' => 'Japan',
+                'timezone' => 'Asia/Tokyo',
+            ],
         ];
 
         foreach ($airports as $airport) {

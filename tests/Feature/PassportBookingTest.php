@@ -231,4 +231,45 @@ class PassportBookingTest extends TestCase
         $this->assertSame('Vietnam (VNM)', $passenger->issued_country_label);
         $this->assertSame('Nữ', $passenger->gender_label);
     }
+
+    public function test_international_form_renders_passport_inputs_and_country_options(): void
+    {
+        $user = $this->internationalSetup(1, 1, 1);
+
+        $response = $this->actingAs($user)->get(route('booking.passengers.form'))->assertOk();
+
+        foreach (['adults', 'children', 'infants'] as $group) {
+            foreach (
+                [
+                    'document_type',
+                    'document_number',
+                    'gender',
+                    'nationality',
+                    'document_issued_country',
+                    'document_issue_date',
+                    'document_expiry_date',
+                ] as $field
+            ) {
+                $response->assertSee("{$group}[0][{$field}]", false);
+            }
+        }
+
+        $response->assertSee('Vietnam (VNM)', false);
+        $response->assertSee('value="VNM"', false);
+    }
+
+    public function test_domestic_form_has_no_passport_inputs(): void
+    {
+        $user = User::factory()->create();
+        $flight = Flight::factory()->create(); // cả hai sân bay đều Vietnam
+        $fareClass = FareClass::factory()->create();
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 0)]);
+
+        $this->actingAs($user)->get(route('booking.passengers.form'))
+            ->assertOk()
+            ->assertSee('adults[0][full_name]', false)
+            ->assertDontSee('adults[0][gender]', false)
+            ->assertDontSee('adults[0][nationality]', false)
+            ->assertDontSee('adults[0][document_expiry_date]', false);
+    }
 }

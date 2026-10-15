@@ -12,41 +12,55 @@ class FlightSeatSeeder extends Seeder
     public function run(): void
     {
         $fareClasses = FareClass::all()->keyBy('name');
+        $now = now();
 
-        Flight::with('aircraft.seats')->each(function (Flight $flight) use ($fareClasses) {
-            foreach ($flight->aircraft->seats as $seat) {
-                $fareClassName = match ($seat->seat_class) {
-                    'business' => 'Business',
-                    'first' => 'First',
-                    default => 'Economy',
-                };
+        Flight::with(['aircraft.seats', 'departureAirport', 'arrivalAirport'])
+            ->each(function (Flight $flight) use ($fareClasses, $now) {
+                // Chuyến quốc tế giá gấp 3 lần nội địa
+                $multiplier = $flight->departureAirport?->country !== $flight->arrivalAirport?->country ? 3 : 1;
 
-                $fareClass = $fareClasses->get($fareClassName);
+                $rows = [];
 
-                if (! $fareClass) {
-                    continue;
-                }
+                foreach ($flight->aircraft->seats as $seat) {
+                    $fareClassName = match ($seat->seat_class) {
+                        'business' => 'Business',
+                        'first' => 'First',
+                        default => 'Economy',
+                    };
 
-                $price = match ($fareClassName) {
-                    'First' => 5000000,
-                    'Business' => 2500000,
-                    default => 1000000,
-                };
+                    $fareClass = $fareClasses->get($fareClassName);
 
-                FlightSeat::updateOrCreate(
-                    [
+                    if (! $fareClass) {
+                        continue;
+                    }
+
+                    $price = match ($fareClassName) {
+                        'First' => 5000000,
+                        'Business' => 2500000,
+                        default => 1000000,
+                    };
+
+                    $rows[] = [
                         'flight_id' => $flight->id,
                         'seat_id' => $seat->id,
-                    ],
-                    [
                         'fare_class_id' => $fareClass->id,
-                        'price' => $price,
+                        'price' => $price * $multiplier,
                         'status' => 'available',
                         'held_by' => null,
                         'held_until' => null,
-                    ]
-                );
-            }
-        });
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+
+                // Khóa duy nhất (flight_id, seat_id) có sẵn nên upsert chạy đúng
+                foreach (array_chunk($rows, 500) as $chunk) {
+                    FlightSeat::upsert(
+                        $chunk,
+                        ['flight_id', 'seat_id'],
+                        ['fare_class_id', 'price', 'status', 'held_by', 'held_until', 'updated_at']
+                    );
+                }
+            });
     }
 }

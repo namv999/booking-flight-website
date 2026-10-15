@@ -7,7 +7,6 @@ use App\Models\Airport;
 use App\Models\FareClass;
 use App\Models\Flight;
 use App\Models\FlightSeat;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -164,7 +163,7 @@ class FlightSearchTest extends TestCase
         $arrivalAirport = Airport::factory()->create();
         $fareClass = FareClass::factory()->create();
 
-        $localDeparture = Carbon::parse('2026-10-15 01:00:00', 'Asia/Ho_Chi_Minh');
+        $localDeparture = now('Asia/Ho_Chi_Minh')->addDays(2)->setTime(1, 0);
 
         $flight = Flight::factory()->create([
             'departure_airport_id' => $departureAirport->id,
@@ -185,7 +184,7 @@ class FlightSearchTest extends TestCase
             'departure_airport_id' => $departureAirport->id,
             'arrival_airport_id' => $arrivalAirport->id,
             'fare_class_id' => $fareClass->id,
-            'departure_date' => '2026-10-15',
+            'departure_date' => $localDeparture->toDateString(),
         ])));
 
         $response->assertOk();
@@ -202,7 +201,7 @@ class FlightSearchTest extends TestCase
         $arrivalAirport = Airport::factory()->create();
         $fareClass = FareClass::factory()->create();
 
-        $localDeparture = Carbon::parse('2026-10-15 01:00:00', 'Asia/Ho_Chi_Minh');
+        $localDeparture = now('Asia/Ho_Chi_Minh')->addDays(2)->setTime(1, 0);
 
         $flight = Flight::factory()->create([
             'departure_airport_id' => $departureAirport->id,
@@ -222,7 +221,7 @@ class FlightSearchTest extends TestCase
             'departure_airport_id' => $departureAirport->id,
             'arrival_airport_id' => $arrivalAirport->id,
             'fare_class_id' => $fareClass->id,
-            'departure_date' => '2026-10-14', // ngày UTC, KHÔNG phải ngày local đúng
+            'departure_date' => $localDeparture->clone()->setTimezone('UTC')->toDateString(),
         ])));
 
         $response->assertOk();

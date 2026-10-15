@@ -390,7 +390,7 @@
                 <strong>{{ $fareClass->name }}</strong>.
                 Bạn vui lòng thử chọn ngày bay khác hoặc thay đổi tiêu chí tìm kiếm.
             </p>
-            <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search">
+            <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search text-light">
                 <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm ngày khác
             </a>
             @endif

@@ -241,7 +241,14 @@
 
                                         <div class="bf-eticket-field">
                                             <label>Giấy tờ tùy thân</label>
-                                            <span>{{ $ticket->passenger->document_number ?: 'Chưa cung cấp' }}</span>
+                                            @if ($ticket->passenger->document_type === 'passport')
+                                                <span class="fw-bold text-navy">Hộ chiếu {{ $ticket->passenger->document_number }}</span>
+                                                <div class="small text-muted" style="font-size: 0.75rem;">
+                                                    {{ $ticket->passenger->nationality_label }} &bull; Hết hạn {{ \Carbon\Carbon::parse($ticket->passenger->document_expiry_date)->format('d/m/Y') }}
+                                                </div>
+                                            @else
+                                                <span>{{ $ticket->passenger->document_number ?: 'Chưa cung cấp' }}</span>
+                                            @endif
                                         </div>
 
                                         <div class="bf-eticket-field">

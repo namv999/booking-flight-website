@@ -8,6 +8,7 @@ use App\Models\BookingFlight;
 use App\Models\Flight;
 use App\Models\Passenger;
 use App\Models\Payment;
+use App\Models\Ticket;
 use App\Models\User;
 use App\Services\PassportRiskService;
 use Carbon\Carbon;
@@ -219,5 +220,59 @@ class PassportRiskTest extends TestCase
             ->assertSessionHasErrors('confirm_passport_risk');
 
         $this->assertSame('pending', $booking->fresh()->status);
+    }
+
+    public function test_payment_page_shows_yellow_warning_and_checkbox(): void
+    {
+        $user = User::factory()->create();
+        $booking = $this->bookingWith([[$this->vn, $this->th, 0]], [$this->monthsAfterRef(3)], $user);
+
+        $this->actingAs($user)->get(route('payment.show', $booking))
+            ->assertOk()
+            ->assertSee('alert-warning', false)
+            ->assertSee('confirm_passport_risk', false)
+            ->assertSee('PAX 1');
+    }
+
+    public function test_payment_page_shows_red_warning_for_expired_passport(): void
+    {
+        $user = User::factory()->create();
+        $booking = $this->bookingWith([[$this->vn, $this->th, 0]], [$this->ref->copy()->subDay()->toDateString()], $user);
+
+        $this->actingAs($user)->get(route('payment.show', $booking))
+            ->assertOk()
+            ->assertSee('alert-danger', false)
+            ->assertSee('confirm_passport_risk', false);
+    }
+
+    public function test_payment_page_has_no_warning_or_checkbox_without_risk(): void
+    {
+        $user = User::factory()->create();
+        $booking = $this->bookingWith([[$this->vn, $this->th, 0]], [$this->monthsAfterRef(12)], $user);
+
+        $this->actingAs($user)->get(route('payment.show', $booking))
+            ->assertOk()
+            ->assertDontSee('confirm_passport_risk', false);
+    }
+
+    public function test_history_shows_passport_details_on_ticket(): void
+    {
+        $user = User::factory()->create();
+        $booking = $this->bookingWith([[$this->vn, $this->th, 0]], [$this->monthsAfterRef(12)], $user);
+        $passenger = Passenger::where('booking_id', $booking->id)->firstOrFail();
+        $passenger->update(['document_number' => 'C1234567', 'nationality' => 'VNM']);
+        $bookingFlight = BookingFlight::where('booking_id', $booking->id)->firstOrFail();
+
+        Ticket::factory()->create([
+            'booking_flight_id' => $bookingFlight->id,
+            'passenger_id' => $passenger->id,
+            'flight_seat_id' => null,
+            'price' => 1000000,
+        ]);
+
+        $this->actingAs($user)->get(route('booking-history.show', $booking))
+            ->assertOk()
+            ->assertSee('Hộ chiếu C1234567')
+            ->assertSee('Vietnam (VNM)');
     }
 }
