@@ -1,0 +1,53 @@
+@extends('layouts.admin')
+
+@section('content')
+<div class="container-fluid">
+    <h2>Thêm mới Máy bay</h2> <!-- Sửa thành "Thêm mới Máy bay" ở đây -->
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+    <form action="{{ route('admin.aircrafts.store') }}" method="POST">
+        @csrf
+
+        <div class="mb-3">
+            <label class="form-label">Hãng hàng không</label>
+            <select name="airline_id" class="form-control @error('airline_id') is-invalid @enderror">
+                <option value="">-- Chọn hãng hàng không --</option>
+                @foreach($airlines as $airline)
+                    <option value="{{ $airline->id }}" {{ old('airline_id') == $airline->id ? 'selected' : '' }}>
+                        {{ $airline->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('airline_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Model Máy bay</label>
+            <input type="text" name="model" class="form-control @error('model') is-invalid @enderror" value="{{ old('model') }}" placeholder="VD: Airbus A320">
+            @error('model') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Số hiệu đăng ký (Registration Number)</label>
+            <input type="text" name="registration_number" class="form-control @error('registration_number') is-invalid @enderror" value="{{ old('registration_number') }}" placeholder="VD: VN-A123">
+            @error('registration_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tổng số ghế (Total Seats)</label>
+            <input type="number" name="total_seats" class="form-control @error('total_seats') is-invalid @enderror" value="{{ old('total_seats') }}" placeholder="VD: 180">
+            @error('total_seats') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a href="{{ route('admin.aircrafts.index') }}" class="btn btn-secondary">Quay lại</a>
+    </form>
+</div>
+@endsection

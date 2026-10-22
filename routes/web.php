@@ -1,0 +1,73 @@
+<?php
+
+use App\Http\Controllers\Admin\AircraftController;
+use App\Http\Controllers\Admin\AirlineController;
+use App\Http\Controllers\Admin\AirportController;
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FareClassController;
+use App\Http\Controllers\Admin\FlightController;
+use App\Http\Controllers\Admin\PassportUpdateRequestController as AdminPassportUpdateRequestController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\BookingHistoryController;
+use App\Http\Controllers\BookingPassportUpdateController;
+use App\Http\Controllers\FlightSearchController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SavedPassengerController;
+use App\Http\Controllers\SeatSelectionController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+
+// Route::get('/', function () {
+//     return view('home');
+// });
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/dashboard', function () {
+    if (Auth::user()->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+
+    return view('dashboard.index');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::resource('saved-passengers', SavedPassengerController::class)->except('show');
+});
+
+// Nhóm Route Quản trị Admin - khôi phục middleware 'admin'
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::resource('airlines', AirlineController::class);
+    Route::resource('aircrafts', AircraftController::class);
+    Route::resource('airports', AirportController::class);
+    Route::resource('fare-classes', FareClassController::class);
+    Route::resource('flights', FlightController::class);
+    Route::resource('bookings', AdminBookingController::class)->only(['index', 'show']);
+    // Thao tác ghi duy nhất của phần quản lý đơn: duyệt hoặc từ chối yêu cầu cập nhật hộ chiếu
+    Route::post('passport-update-requests/{passportUpdateRequest}/approve', [AdminPassportUpdateRequestController::class, 'approve'])->name('passport-update-requests.approve');
+    Route::post('passport-update-requests/{passportUpdateRequest}/reject', [AdminPassportUpdateRequestController::class, 'reject'])->name('passport-update-requests.reject');
+});
+
+// ROUTE MODULE LUỒNG ĐẶT VÉ - TÌM KIẾM CHUYẾN BAY
+Route::get('/flights/results', [FlightSearchController::class, 'results'])->name('flights.search.results');
+
+Route::middleware('auth')->group(function () {
+    Route::post('/booking/precheck', [SeatSelectionController::class, 'precheck'])->name('booking.precheck');
+    Route::get('/booking/leg/{leg}', [FlightSearchController::class, 'leg'])->whereNumber('leg')->name('booking.leg');
+    Route::get('/booking/passengers', [BookingController::class, 'create'])->name('booking.passengers.form');
+    Route::post('/booking/passengers', [BookingController::class, 'store'])->name('booking.passengers.store');
+    Route::get('/payment/{booking}', [PaymentController::class, 'show'])->name('payment.show');
+    Route::post('/payment/{booking}', [PaymentController::class, 'store'])->name('payment.store');
+    Route::get('/booking-history', [BookingHistoryController::class, 'index'])->name('booking-history.index');
+    Route::get('/booking-history/{id}', [BookingHistoryController::class, 'show'])->name('booking-history.show');
+    Route::post('/booking-history/{id}/passengers/{passenger}/passport-update', [BookingPassportUpdateController::class, 'store'])->name('booking-history.passport-update.store');
+});
+
+require __DIR__.'/auth.php';

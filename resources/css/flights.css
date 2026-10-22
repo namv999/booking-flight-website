@@ -1,0 +1,1338 @@
+@import "./base.css";
+
+/* resources/css/flights.css - Giao diện Kết quả tìm kiếm chuyến bay (Bootstrap 5 + Custom CSS) */
+
+.bf-results-page {
+    background-color: #f7fafe;
+    min-height: 80vh;
+    padding-bottom: 64px;
+}
+
+/* ============================================================
+   1. BOOKING STEP WIZARD (Thanh tiến trình 5 bước)
+   ============================================================ */
+.bf-step-wizard {
+    background: #ffffff;
+    border-bottom: 1px solid var(--bf-line);
+    padding: 16px 0;
+    margin-bottom: 24px;
+}
+.bf-steps {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    position: relative;
+}
+.bf-step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--bf-muted);
+    position: relative;
+    z-index: 2;
+}
+.bf-step-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #eef3f7;
+    color: var(--bf-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: all 0.25s ease;
+}
+.bf-step-item.completed {
+    color: var(--bf-ink);
+}
+.bf-step-item.completed .bf-step-circle {
+    background: #eaf7f2;
+    color: var(--bf-success);
+}
+.bf-step-item.active {
+    color: var(--bf-blue);
+    font-weight: 700;
+}
+.bf-step-item.active .bf-step-circle {
+    background: var(--bf-blue);
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(18, 104, 179, 0.3);
+}
+.bf-step-divider {
+    flex: 1;
+    height: 2px;
+    background: #e6edf3;
+    margin: 0 12px;
+}
+.bf-step-divider.completed {
+    background: var(--bf-success);
+}
+
+/* ============================================================
+   2. SEARCH SUMMARY BAR (Tóm tắt tìm kiếm)
+   ============================================================ */
+.bf-summary-bar {
+    background: #ffffff;
+    border: 1px solid var(--bf-line);
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 6px 18px rgba(18, 54, 90, 0.04);
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.bf-summary-route {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.bf-summary-city {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+}
+.bf-summary-code {
+    display: inline-block;
+    background: var(--bf-sky);
+    color: var(--bf-blue);
+    font-size: 0.82rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-left: 6px;
+}
+.bf-summary-arrow {
+    color: var(--bf-blue);
+    font-size: 1.3rem;
+}
+.bf-summary-details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    font-size: 0.88rem;
+    color: #4b6072;
+}
+.bf-summary-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.bf-summary-meta-item i {
+    color: var(--bf-blue);
+    font-size: 1rem;
+}
+.bf-btn-modify {
+    border: 1px solid #c7d8e6;
+    background: #ffffff;
+    color: var(--bf-navy);
+    font-size: 0.84rem;
+    font-weight: 700;
+    padding: 8px 18px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.bf-btn-modify:hover {
+    background: var(--bf-sky);
+    border-color: var(--bf-blue);
+    color: var(--bf-blue);
+}
+
+/* ============================================================
+   3. SIDEBAR FILTER (Bộ lọc giao diện trực quan)
+   ============================================================ */
+.bf-filter-card {
+    background: #ffffff;
+    border: 1px solid var(--bf-line);
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 4px 16px rgba(18, 54, 90, 0.04);
+}
+.bf-filter-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #edf2f7;
+    margin-bottom: 18px;
+}
+.bf-filter-card__title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.bf-filter-card__reset {
+    font-size: 0.78rem;
+    color: var(--bf-blue);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+.bf-filter-card__reset:hover {
+    text-decoration: underline;
+}
+.bf-filter-section {
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #edf2f7;
+}
+.bf-filter-section:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+.bf-filter-label {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--bf-navy);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.bf-filter-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.84rem;
+    color: #384c5e;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+.bf-filter-option:last-child {
+    margin-bottom: 0;
+}
+.bf-filter-option input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    border-radius: 4px;
+    border: 1.5px solid #bdcddb;
+    accent-color: var(--bf-blue);
+    margin-right: 10px;
+    cursor: pointer;
+}
+.bf-filter-badge {
+    font-size: 0.72rem;
+    color: var(--bf-muted);
+    background: #f1f5f9;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+.bf-time-slots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.bf-time-slot-btn {
+    border: 1px solid var(--bf-line);
+    border-radius: 8px;
+    padding: 8px 6px;
+    background: #fff;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #4b6072;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bf-time-slot-btn strong {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--bf-navy);
+}
+.bf-time-slot-btn:hover {
+    border-color: var(--bf-blue);
+    background: var(--bf-sky);
+    color: var(--bf-blue);
+}
+
+/* ============================================================
+   4. FLIGHT LIST & CONTROLS
+   ============================================================ */
+.bf-results-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.bf-results-count {
+    font-size: 0.95rem;
+    color: #475a6c;
+}
+.bf-results-count strong {
+    color: var(--bf-navy);
+    font-weight: 800;
+}
+.bf-sort-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+}
+.bf-sort-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid var(--bf-line);
+    color: #4b6072;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bf-sort-pill.active,
+.bf-sort-pill:hover {
+    background: var(--bf-navy);
+    color: #ffffff;
+    border-color: var(--bf-navy);
+}
+
+/* ============================================================
+   5. FLIGHT CARD (Thẻ thông tin chuyến bay)
+   ============================================================ */
+.bf-flight-card {
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 16px rgba(18, 54, 90, 0.05);
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+.bf-flight-card:hover {
+    transform: translateY(-2px);
+    border-color: #bad3e8;
+    box-shadow: 0 10px 28px rgba(18, 54, 90, 0.1);
+}
+.bf-flight-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--bf-blue);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.bf-flight-card:hover::before {
+    opacity: 1;
+}
+
+/* Airline Header */
+.bf-flight-airline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #e9f0f6;
+}
+.bf-airline-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.bf-airline-logo-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bf-sky);
+    color: var(--bf-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+.bf-airline-name {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+}
+.bf-airline-aircraft {
+    font-size: 0.76rem;
+    color: var(--bf-muted);
+}
+.bf-flight-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+.bf-flight-status-badge--delayed {
+    background: #fff8e6;
+    color: #9c6800;
+    border: 1px solid #ffd57a;
+}
+.bf-flight-status-badge--scheduled {
+    background: #f0f7ff;
+    color: var(--bf-blue);
+    border: 1px solid #d0e5fc;
+}
+
+/* Schedule & Route Timeline */
+.bf-flight-route-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 20px;
+}
+.bf-flight-endpoint {
+    min-width: 100px;
+}
+.bf-flight-time {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    line-height: 1.1;
+    margin-bottom: 3px;
+}
+.bf-flight-code {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--bf-blue);
+}
+.bf-flight-city {
+    font-size: 0.78rem;
+    color: var(--bf-muted);
+}
+.bf-flight-endpoint--arrival {
+    text-align: right;
+}
+
+/* Flight Timeline Visualization */
+.bf-flight-timeline {
+    text-align: center;
+    position: relative;
+    padding: 0 10px;
+}
+.bf-flight-duration {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #556c80;
+    margin-bottom: 6px;
+}
+.bf-flight-track {
+    position: relative;
+    height: 2px;
+    background: #d4e3ef;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.bf-flight-track::before,
+.bf-flight-track::after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--bf-blue);
+}
+.bf-flight-track::before {
+    left: 0;
+}
+.bf-flight-track::after {
+    right: 0;
+}
+.bf-flight-track-plane {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    padding: 0 6px;
+    color: var(--bf-blue);
+    font-size: 1rem;
+}
+.bf-flight-type {
+    font-size: 0.72rem;
+    color: var(--bf-success);
+    font-weight: 700;
+}
+
+/* Pricing & CTA Block */
+.bf-flight-pricing-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding-left: 24px;
+    border-left: 1px solid #edf3f8;
+    min-width: 210px;
+}
+.bf-fare-badge {
+    background: #f1f6fa;
+    color: #3b5368;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+.bf-flight-price-wrap {
+    text-align: right;
+    margin-bottom: 6px;
+}
+.bf-price-prefix {
+    font-size: 0.74rem;
+    color: var(--bf-muted);
+}
+.bf-flight-price {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--bf-blue-dark);
+    line-height: 1.15;
+}
+.bf-flight-price-unit {
+    font-size: 0.72rem;
+    color: var(--bf-muted);
+}
+.bf-seats-indicator {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #4b6072;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.bf-seats-indicator--urgent {
+    color: var(--bf-danger);
+    font-weight: 700;
+}
+.bf-btn-select {
+    width: 100%;
+    min-height: 42px;
+    background: var(--bf-blue);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(18, 104, 179, 0.22);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bf-btn-select:hover {
+    background: var(--bf-blue-dark);
+    box-shadow: 0 6px 16px rgba(18, 104, 179, 0.32);
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   6. EMPTY STATE (Trạng thái không có kết quả)
+   ============================================================ */
+.bf-empty-card {
+    background: #ffffff;
+    border: 1px solid var(--bf-line);
+    border-radius: 16px;
+    padding: 56px 24px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(18, 54, 90, 0.04);
+}
+.bf-empty-icon-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--bf-sky);
+    color: var(--bf-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4rem;
+    margin-bottom: 20px;
+}
+.bf-empty-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    margin-bottom: 8px;
+}
+.bf-empty-desc {
+    font-size: 0.92rem;
+    color: var(--bf-muted);
+    max-width: 500px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+}
+.bf-btn-empty-search {
+    background: var(--bf-blue);
+    color: #ffffff;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.bf-btn-empty-search:hover {
+    background: var(--bf-blue-dark);
+    color: #ffffff;
+}
+
+/* ============================================================
+   7. PAGINATION STYLING
+   ============================================================ */
+.bf-pagination-wrap {
+    margin-top: 32px;
+    display: flex;
+    justify-content: center;
+}
+.bf-pagination-wrap .pagination {
+    gap: 6px;
+    margin: 0;
+}
+.bf-pagination-wrap .page-item .page-link {
+    border: 1px solid #d5e2ec;
+    border-radius: 8px !important;
+    color: var(--bf-navy);
+    font-weight: 700;
+    font-size: 0.88rem;
+    padding: 8px 14px;
+    transition: all 0.2s ease;
+}
+.bf-pagination-wrap .page-item.active .page-link {
+    background-color: var(--bf-blue);
+    border-color: var(--bf-blue);
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(18, 104, 179, 0.25);
+}
+.bf-pagination-wrap .page-item .page-link:hover {
+    background-color: var(--bf-sky);
+    border-color: var(--bf-blue);
+    color: var(--bf-blue);
+}
+
+/* ============================================================
+   8. RESPONSIVE BREAKPOINTS
+   ============================================================ */
+@media (max-width: 991px) {
+    .bf-steps {
+        overflow-x: auto;
+        padding-bottom: 6px;
+    }
+    .bf-step-item {
+        white-space: nowrap;
+    }
+    .bf-flight-card-body {
+        flex-direction: column;
+    }
+    .bf-flight-pricing-block {
+        border-left: none;
+        border-top: 1px dashed #e9f0f6;
+        padding-left: 0;
+        padding-top: 16px;
+        margin-top: 16px;
+        width: 100%;
+        align-items: stretch;
+    }
+    .bf-flight-price-wrap {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 576px) {
+    .bf-summary-bar {
+        padding: 16px;
+    }
+    .bf-summary-route {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .bf-summary-city {
+        font-size: 1.05rem;
+    }
+    .bf-flight-route-grid {
+        gap: 10px;
+    }
+    .bf-flight-time {
+        font-size: 1.25rem;
+    }
+    .bf-flight-endpoint {
+        min-width: 70px;
+    }
+}
+
+/* ============================================================
+   9. PASSENGER INFORMATION FORM & SIDEBAR (Giao diện hành khách)
+   ============================================================ */
+.bf-passenger-card {
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 16px rgba(18, 54, 90, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.bf-passenger-card:hover {
+    border-color: #bad3e8;
+}
+.bf-passenger-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #edf2f7;
+}
+.bf-passenger-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+.bf-passenger-icon-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--bf-sky);
+    color: var(--bf-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.bf-passenger-badge {
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+.bf-passenger-badge--adult {
+    background: #eef6fc;
+    color: var(--bf-blue);
+    border: 1px solid #d2e6f7;
+}
+.bf-passenger-badge--child {
+    background: #f0fbf7;
+    color: #16805f;
+    border: 1px solid #c8efe2;
+}
+.bf-passenger-badge--infant {
+    background: #fff8eb;
+    color: #b56a12;
+    border: 1px solid #fedf9e;
+}
+.bf-passenger-group-heading {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    margin-top: 10px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.bf-infant-notice {
+    background: #fff9e6;
+    border: 1px solid #ffe59e;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: #855302;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Sticky Booking Sidebar */
+.bf-booking-sidebar {
+    position: sticky;
+    top: 96px;
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 4px 20px rgba(18, 54, 90, 0.05);
+}
+.bf-booking-sidebar__title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #edf2f7;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.bf-sidebar-route {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+.bf-sidebar-route-item strong {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+}
+.bf-sidebar-route-item small {
+    color: var(--bf-muted);
+    font-size: 0.78rem;
+}
+.bf-sidebar-arrow {
+    color: var(--bf-blue);
+    font-size: 1.2rem;
+}
+.bf-sidebar-airline {
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    color: #4b6072;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.bf-sidebar-meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.84rem;
+    padding: 6px 0;
+    color: #4b6072;
+}
+.bf-sidebar-meta-row strong {
+    color: var(--bf-navy);
+}
+.bf-sidebar-security-badge {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed #e2edf6;
+    font-size: 0.76rem;
+    color: #5d7386;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.bf-sidebar-security-badge i {
+    color: var(--bf-success);
+    font-size: 1.1rem;
+}
+.bf-btn-submit-passengers {
+    width: 100%;
+    min-height: 48px;
+    background: var(--bf-blue);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 14px rgba(18, 104, 179, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+.bf-btn-submit-passengers:hover {
+    background: var(--bf-blue-dark);
+    box-shadow: 0 6px 18px rgba(18, 104, 179, 0.35);
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   5. PAYMENT PAGE (Giao diện thanh toán)
+   ============================================================ */
+.bf-payment-card {
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(18, 54, 90, 0.05);
+    margin-bottom: 24px;
+}
+.bf-payment-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #edf2f7;
+}
+.bf-payment-card__title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Expiry Banner */
+.bf-payment-expiry-banner {
+    background: linear-gradient(135deg, #fff9ee 0%, #fff4db 100%);
+    border: 1px solid #f6d289;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+.bf-payment-expiry-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #fedf9e;
+    color: #b56a12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+.bf-payment-expiry-content {
+    flex: 1;
+}
+.bf-payment-expiry-title {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #855302;
+    margin-bottom: 4px;
+}
+.bf-payment-expiry-desc {
+    font-size: 0.8rem;
+    color: #795548;
+    margin: 0;
+    line-height: 1.5;
+}
+.bf-payment-countdown-badge {
+    display: inline-block;
+    background: #b56a12;
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+/* Payment Method Cards */
+.bf-payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.bf-payment-method-item {
+    position: relative;
+    border: 1.5px solid #e2edf6;
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: #ffffff;
+}
+.bf-payment-method-item:hover {
+    border-color: #cbdbe9;
+    background: #fbfdff;
+}
+.bf-payment-method-item.active,
+.bf-payment-method-item:has(input:checked) {
+    border-color: var(--bf-blue);
+    background: #f4f9fd;
+    box-shadow: 0 4px 14px rgba(18, 104, 179, 0.08);
+}
+.bf-payment-method-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+}
+.bf-payment-method-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.bf-payment-method-info strong {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--bf-navy);
+}
+.bf-payment-method-info small {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--bf-muted);
+    margin-top: 2px;
+}
+.bf-payment-method-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.bf-payment-brand-badge {
+    background: #eef3f8;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #4b6072;
+}
+
+/* Simulation Section (Testing Mode) */
+.bf-simulation-box {
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+}
+.bf-simulation-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+}
+.bf-simulation-desc {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+.bf-simulation-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+@media (max-width: 576px) {
+    .bf-simulation-actions {
+        grid-template-columns: 1fr;
+    }
+}
+.bf-btn-pay-success {
+    min-height: 48px;
+    background: #16805f;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(22, 128, 95, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 10px 16px;
+    text-align: center;
+}
+.bf-btn-pay-success:hover {
+    background: #11674d;
+    box-shadow: 0 6px 18px rgba(22, 128, 95, 0.35);
+    transform: translateY(-1px);
+}
+.bf-btn-pay-failed {
+    min-height: 48px;
+    background: #ffffff;
+    color: #dc3545 !important;
+    border: 1.5px solid #dc3545;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 10px 16px;
+    text-align: center;
+}
+.bf-btn-pay-failed:hover {
+    background: #dc3545;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(220, 53, 69, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Sidebar Ticket Breakdown */
+.bf-ticket-breakdown-list {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed #e2edf6;
+}
+.bf-ticket-breakdown-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+.bf-ticket-row {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+}
+.bf-ticket-row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.bf-ticket-row-name {
+    font-weight: 700;
+    color: var(--bf-navy);
+}
+.bf-ticket-row-type {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+.bf-ticket-row-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #64748b;
+    font-size: 0.76rem;
+}
+.bf-ticket-row-price {
+    font-weight: 700;
+    color: var(--bf-blue);
+}
+.bf-sidebar-total-box {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 2px solid #e2edf6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.bf-sidebar-total-label {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+}
+.bf-sidebar-total-amount {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--bf-blue);
+}
+
+/* Modal Hết hạn & Trạng thái khóa form */
+.bf-expired-modal {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 15px 40px rgba(18, 54, 90, 0.18);
+    overflow: hidden;
+}
+.bf-btn-modal-home {
+    background: var(--bf-blue);
+    color: #ffffff !important;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+.bf-btn-modal-home:hover {
+    background: var(--bf-blue-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(18, 104, 179, 0.3);
+}
+.bf-payment-expired {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(0.2);
+}
+
+/* ============================================================
+   6. BOOKING CONFIRMATION & HISTORY (Xác nhận đặt vé & Lịch sử)
+   ============================================================ */
+.bf-success-hero {
+    background: linear-gradient(135deg, #eefbf4 0%, #e0f6eb 100%);
+    border: 1.5px solid #a3e9c6;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+.bf-success-hero-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #16805f;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(22, 128, 95, 0.25);
+}
+.bf-success-hero-content h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0b533b;
+    margin-bottom: 4px;
+}
+.bf-success-hero-content p {
+    font-size: 0.88rem;
+    color: #1f6b50;
+    margin: 0;
+}
+
+/* Status Badges */
+.bf-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.bf-status-badge--paid {
+    background: #eaf7f2;
+    color: #16805f;
+    border: 1px solid #b7ebd5;
+}
+.bf-status-badge--cancelled {
+    background: #fdf2f2;
+    color: #dc3545;
+    border: 1px solid #f9c9cb;
+}
+.bf-status-badge--pending {
+    background: #fff8eb;
+    color: #b56a12;
+    border: 1px solid #fedf9e;
+}
+
+/* E-Ticket Voucher Card */
+.bf-eticket-card {
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 14px rgba(18, 54, 90, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+.bf-eticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #e2edf6;
+    margin-bottom: 14px;
+}
+.bf-eticket-code {
+    font-family: monospace, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--bf-blue);
+    background: #edf5fc;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+.bf-eticket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+}
+.bf-eticket-field label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.bf-eticket-field span {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--bf-navy);
+}
+
+/* Print Styles */
+@media print {
+    .bf-navbar,
+    .bf-footer,
+    .bf-step-wizard,
+    .bf-print-hide,
+    .alert,
+    .btn,
+    aside {
+        display: none !important;
+    }
+    body, .bf-results-page {
+        background: #ffffff !important;
+        padding: 0 !important;
+    }
+    .col-lg-8 {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+    .bf-payment-card, .bf-eticket-card {
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+}
+
+
+

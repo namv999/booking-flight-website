@@ -1,0 +1,521 @@
+/* resources/css/seat-map.css - Bước "Chọn ghế". Dùng biến màu và thành phần bf-* của flights.css (nạp cùng trang). */
+
+/* ============================================================
+   1. TAB CHẶNG BAY
+   ============================================================ */
+.bf-seat-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    overflow-x: auto; /* chỉ cuộn trong khung tab, không làm trang cuộn ngang */
+    padding-bottom: 4px;
+}
+.bf-seat-tab {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-height: 48px;
+    padding: 8px 14px;
+    background: #ffffff;
+    border: 1px solid var(--bf-line);
+    border-radius: 10px;
+    color: var(--bf-ink);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+.bf-seat-tab:hover {
+    border-color: var(--bf-blue);
+}
+.bf-seat-tab.is-active {
+    background: var(--bf-sky);
+    border-color: var(--bf-blue);
+    color: var(--bf-blue);
+}
+.bf-seat-tab__title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.bf-seat-tab__time {
+    font-size: 0.72rem;
+    color: var(--bf-muted);
+}
+.bf-seat-tab__count {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--bf-muted);
+}
+.bf-seat-tab__count.has-seats {
+    color: var(--bf-success);
+}
+
+/* ============================================================
+   2. KHUNG CHẶNG, CHIP HÀNH KHÁCH
+   ============================================================ */
+.bf-seat-panel {
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(18, 54, 90, 0.05);
+    margin-bottom: 20px;
+}
+.bf-seat-leginfo {
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px dashed var(--bf-line);
+}
+.bf-seat-leginfo[hidden] {
+    display: none;
+}
+.bf-seat-leginfo__route {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--bf-navy);
+}
+.bf-seat-leginfo__route strong {
+    font-size: 1.15rem;
+}
+.bf-seat-subtitle {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--bf-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 8px;
+}
+.bf-seat-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.bf-seat-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 6px 12px 6px 8px;
+    background: #ffffff;
+    border: 1px solid var(--bf-line);
+    border-radius: 999px;
+    color: var(--bf-ink);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+.bf-seat-chip:hover {
+    border-color: var(--bf-blue);
+}
+.bf-seat-chip.is-active {
+    background: var(--bf-sky);
+    border-color: var(--bf-blue);
+    box-shadow: 0 0 0 2px rgba(18, 104, 179, 0.18);
+}
+.bf-seat-chip__no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #eef3f7;
+    color: var(--bf-navy);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+.bf-seat-chip.is-active .bf-seat-chip__no {
+    background: var(--bf-blue);
+    color: #ffffff;
+}
+.bf-seat-chip__body {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+}
+.bf-seat-chip__name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+.bf-seat-chip__type {
+    font-size: 0.7rem;
+    color: var(--bf-muted);
+}
+.bf-seat-chip__seat {
+    margin-left: 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #f3f6f9;
+    color: var(--bf-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.bf-seat-chip__seat.has-seat {
+    background: #eaf7f2;
+    color: var(--bf-success);
+}
+
+.bf-seat-notice {
+    display: none;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #fff6e0;
+    border: 1px solid var(--bf-yellow-dark);
+    color: var(--bf-warning);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+.bf-seat-notice.is-visible {
+    display: block;
+}
+.bf-seat-warnings:empty {
+    display: none;
+}
+
+/* ============================================================
+   3. CHÚ GIẢI
+   ============================================================ */
+.bf-seat-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+    color: var(--bf-ink);
+}
+.bf-seat-legend__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.bf-seat-swatch {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 1px solid var(--bf-line);
+}
+.bf-seat-swatch--available {
+    background: #ffffff;
+    border-color: #9fb7c9;
+}
+.bf-seat-swatch--selected {
+    background: var(--bf-blue);
+    border-color: var(--bf-blue);
+}
+.bf-seat-swatch--booked {
+    background: #e3e9ee;
+    border-color: #cbd6de;
+}
+.bf-seat-swatch--held {
+    background: #fff6d6;
+    border: 1px dashed var(--bf-yellow-dark);
+}
+.bf-seat-fee-note {
+    min-height: 1.2em;
+    margin-bottom: 12px;
+    font-size: 0.78rem;
+    color: var(--bf-muted);
+}
+
+/* ============================================================
+   4. LƯỚI GHẾ
+   ============================================================ */
+.bf-seat-stage {
+    max-width: 100%;
+    overflow-x: auto; /* dự phòng cho máy bay nhiều cột; thường không xuất hiện thanh cuộn */
+    padding: 6px 0;
+}
+.bf-seat-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: max-content;
+    min-width: 100%;
+}
+.bf-seat-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.bf-seat-row__label {
+    flex: none;
+    width: 26px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--bf-muted);
+    text-align: center;
+}
+.bf-seat-colhead {
+    flex: none;
+    width: 40px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--bf-muted);
+    text-align: center;
+}
+.bf-seat-aisle {
+    flex: none;
+    width: 22px;
+}
+.bf-seat {
+    position: relative;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1.5px solid #9fb7c9;
+    border-radius: 8px 8px 6px 6px;
+    color: var(--bf-navy);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.bf-seat:hover:not(:disabled) {
+    border-color: var(--bf-blue);
+    background: var(--bf-sky);
+    transform: translateY(-1px);
+}
+.bf-seat:focus-visible,
+.bf-seat-tab:focus-visible,
+.bf-seat-chip:focus-visible {
+    outline: 3px solid rgba(18, 104, 179, 0.45);
+    outline-offset: 2px;
+}
+.bf-seat.is-selected {
+    background: var(--bf-blue);
+    border-color: var(--bf-blue-dark);
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(18, 104, 179, 0.35);
+}
+.bf-seat--booked {
+    background: #e3e9ee;
+    border-color: #cbd6de;
+    color: #8b9aa8;
+    text-decoration: line-through;
+    cursor: not-allowed;
+}
+.bf-seat--held {
+    background: #fff6d6;
+    border: 1.5px dashed var(--bf-yellow-dark);
+    color: var(--bf-warning);
+    cursor: not-allowed;
+}
+/* Số thứ tự hành khách đang giữ ghế này (nằm trong ô ghế để lưới không tràn ngang) */
+.bf-seat__tag {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 2px;
+    border-radius: 7px;
+    background: var(--bf-yellow);
+    color: var(--bf-navy);
+    font-size: 0.6rem;
+    font-weight: 800;
+    line-height: 14px;
+    text-align: center;
+}
+.bf-seat__tag:empty {
+    display: none;
+}
+.bf-seat-state {
+    padding: 28px 12px;
+    text-align: center;
+    font-size: 0.88rem;
+    color: var(--bf-muted);
+}
+.bf-seat-state--error {
+    color: var(--bf-danger);
+}
+
+/* ============================================================
+   5. TÓM TẮT VÀ KHỐI XÁC NHẬN
+   ============================================================ */
+.bf-seat-summary {
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(18, 54, 90, 0.05);
+}
+.bf-seat-summary__title {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--bf-navy);
+}
+.bf-seat-summary__leg {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--bf-line);
+}
+.bf-seat-summary__leg-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--bf-blue);
+    margin-bottom: 4px;
+}
+.bf-seat-summary__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.bf-seat-summary__list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 0;
+    font-size: 0.84rem;
+}
+.bf-seat-summary__seat {
+    color: var(--bf-muted);
+    font-weight: 600;
+    text-align: right;
+}
+.bf-seat-summary__seat.has-seat {
+    color: var(--bf-success);
+    font-weight: 700;
+}
+.bf-seat-summary__total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+    font-size: 0.92rem;
+    color: var(--bf-navy);
+}
+
+.bf-seat-actions {
+    background: #ffffff;
+    border: 1px solid #e2edf6;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 4px 20px rgba(18, 54, 90, 0.05);
+    position: sticky;
+    top: 88px;
+}
+.bf-seat-actions__fee {
+    font-size: 0.95rem;
+    color: var(--bf-navy);
+}
+.bf-seat-actions__buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+.bf-seat-actions__buttons .btn {
+    min-height: 44px;
+    font-weight: 700;
+}
+.bf-seat-actions__buttons .bf-btn-submit-passengers {
+    margin-top: 0; /* bỏ margin của nút dùng chung để hai nút thẳng hàng */
+}
+.bf-seat-actions__buttons .bf-btn-submit-passengers:disabled {
+    opacity: 0.7;
+    cursor: wait;
+    transform: none;
+}
+
+/* ============================================================
+   6. RESPONSIVE: điện thoại, thanh xác nhận cố định phía dưới
+   ============================================================ */
+@media (max-width: 991px) {
+    .bf-seat-page {
+        padding-bottom: 150px; /* chừa chỗ cho thanh cố định để không che nội dung và nút */
+    }
+    .bf-seat-actions {
+        position: fixed;
+        top: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1030;
+        border-radius: 14px 14px 0 0;
+        border-width: 1px 0 0;
+        padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+        box-shadow: 0 -6px 20px rgba(18, 54, 90, 0.14);
+    }
+    .bf-seat-actions__buttons {
+        flex-direction: row;
+        margin-top: 6px;
+    }
+    .bf-seat-actions__info {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0 10px;
+    }
+    .bf-seat-actions__fee {
+        font-size: 0.88rem;
+    }
+    .bf-seat-actions__free {
+        font-size: 0.74rem !important;
+    }
+    .bf-seat-actions__buttons {
+        gap: 6px;
+        margin-top: 4px;
+    }
+    .bf-seat-actions__buttons .bf-btn-submit-passengers {
+        flex: 1 1 50%;
+        min-height: 44px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    .bf-seat-actions__buttons .btn {
+        flex: 1 1 50%;
+        padding-left: 6px;
+        padding-right: 6px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 575px) {
+    .bf-seat-panel {
+        padding: 14px 10px;
+    }
+    .bf-seat-summary {
+        padding: 14px 12px;
+    }
+}
+
+/* Màn hình 320px: 6 ghế (40px) + lối đi + nhãn hàng vẫn vừa khung nội dung, không cuộn ngang */
+@media (max-width: 360px) {
+    .bf-seat-grid,
+    .bf-seat-row {
+        gap: 2px;
+    }
+    .bf-seat-row__label {
+        width: 20px;
+    }
+    .bf-seat-aisle {
+        width: 14px;
+    }
+    .bf-seat-panel {
+        padding: 12px 2px;
+    }
+}
+
+@media print {
+    .bf-seat-actions {
+        display: none;
+    }
+}
