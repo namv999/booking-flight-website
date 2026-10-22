@@ -4,6 +4,162 @@
 
 @section('styles')
 @vite(['resources/css/flights.css'])
+<style>
+/* Passport Risk Popup Modal */
+.bf-passport-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1060;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+.bf-passport-modal-overlay.closing {
+    opacity: 0;
+    visibility: hidden;
+}
+.bf-passport-modal-container {
+    width: 100%;
+    max-width: 600px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: modalEaseIn 0.35s ease-in-out forwards;
+    transform-origin: center center;
+}
+.bf-passport-modal-overlay.closing .bf-passport-modal-container {
+    animation: modalEaseOut 0.25s ease-in-out forwards;
+}
+@keyframes modalEaseIn {
+    0% { opacity: 0; transform: scale(0.92) translateY(16px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes modalEaseOut {
+    0% { opacity: 1; transform: scale(1) translateY(0); }
+    100% { opacity: 0; transform: scale(0.92) translateY(16px); }
+}
+.bf-passport-modal--yellow { border-top: 5px solid #f59e0b; }
+.bf-passport-modal--yellow .bf-passport-modal-icon-badge {
+    background: #fef3c7; color: #d97706; border: 1px solid #fde68a;
+}
+.bf-passport-modal--yellow .bf-passport-modal-title { color: #92400e; }
+.bf-passport-modal--yellow .bf-passport-modal-btn-confirm:not(:disabled) {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
+}
+.bf-passport-modal--yellow .bf-passport-modal-btn-confirm:not(:disabled):hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(217, 119, 6, 0.45);
+}
+.bf-passport-modal--red { border-top: 5px solid #ef4444; }
+.bf-passport-modal--red .bf-passport-modal-icon-badge {
+    background: #fee2e2; color: #dc2626; border: 1px solid #fecaca;
+}
+.bf-passport-modal--red .bf-passport-modal-title { color: #991b1b; }
+.bf-passport-modal--red .bf-passport-modal-btn-confirm:not(:disabled) {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+}
+.bf-passport-modal--red .bf-passport-modal-btn-confirm:not(:disabled):hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45);
+}
+.bf-passport-modal-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px 24px 16px;
+    background: #fafbfc;
+    border-bottom: 1px solid #edf2f7;
+}
+.bf-passport-modal-icon-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+.bf-passport-modal-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    line-height: 1.35;
+}
+.bf-passport-modal-subtitle {
+    font-size: 0.84rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.45;
+}
+.bf-passport-modal-body {
+    padding: 20px 24px;
+    max-height: 55vh;
+    overflow-y: auto;
+}
+.bf-passport-modal-checkbox-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 16px;
+    transition: all 0.2s ease;
+}
+.bf-passport-modal-checkbox-card:hover {
+    border-color: #cbd5e1;
+    background: #ffffff;
+}
+.bf-passport-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    background: #fafbfc;
+    border-top: 1px solid #edf2f7;
+}
+.bf-passport-modal-btn-confirm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 24px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: none;
+    transition: all 0.25s ease-in-out;
+    cursor: pointer;
+}
+.bf-passport-modal-btn-confirm:disabled {
+    background: #cbd5e1 !important;
+    color: #64748b !important;
+    cursor: not-allowed !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 0.7 !important;
+}
+</style>
 @endsection
 
 @section('content')
@@ -101,42 +257,18 @@
                     </div>
                 </div>
 
-                {{-- KHỐI CẢNH BÁO RỦI RO HỘ CHIẾU (NẾU CÓ) --}}
+                {{-- THÔNG BÁO HỖ TRỢ CẬP NHẬT THÔNG TIN HỘ CHIẾU (GIỮ TRÊN SITE) --}}
                 @if (isset($passportRisk['level']) && $passportRisk['level'] !== null)
-                    <div class="mb-4">
-                        <div class="alert alert-light border shadow-sm mb-3">
-                            <div class="d-flex align-items-center gap-2 text-muted small">
-                                <i class="bi bi-info-circle-fill text-primary"></i>
+                    <div class="alert alert-light border shadow-sm mb-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 text-muted small">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-info-circle-fill text-primary flex-shrink-0"></i>
                                 <span>Thông tin hộ chiếu có thể nhập sai hoặc vừa được gia hạn? Vui lòng liên hệ hotline 1900 1234 để được hỗ trợ cập nhật.</span>
                             </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 fw-semibold" id="btn-reopen-passport-modal" style="font-size: 0.78rem;">
+                                <i class="bi bi-shield-exclamation me-1"></i>Xem lại cảnh báo
+                            </button>
                         </div>
-
-                        @php
-                            $refDateStr = !empty($passportRisk['ref_date']) ? \Carbon\Carbon::parse($passportRisk['ref_date'])->format('d/m/Y') : '';
-                        @endphp
-
-                        @foreach ($passportRisk['items'] as $riskItem)
-                            @php
-                                $itemPassenger = $riskItem['passenger'];
-                                $itemExpiryStr = !empty($riskItem['expiry_date']) ? \Carbon\Carbon::parse($riskItem['expiry_date'])->format('d/m/Y') : '';
-                            @endphp
-
-                            @if ($riskItem['level'] === 'red')
-                                <div class="alert alert-danger d-flex align-items-start gap-2 mb-2" role="alert">
-                                    <i class="bi bi-x-octagon-fill fs-5 flex-shrink-0 mt-1"></i>
-                                    <div>
-                                        Hộ chiếu của <strong>{{ $itemPassenger->full_name }}</strong> hết hạn ngày <strong>{{ $itemExpiryStr }}</strong>, TRƯỚC khi hành trình quốc tế kết thúc ({{ $refDateStr }}). Hành khách có nguy cơ cao bị từ chối khởi hành hoặc nhập cảnh.
-                                    </div>
-                                </div>
-                            @elseif ($riskItem['level'] === 'yellow')
-                                <div class="alert alert-warning d-flex align-items-start gap-2 mb-2" role="alert">
-                                    <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0 mt-1"></i>
-                                    <div>
-                                        Hộ chiếu của <strong>{{ $itemPassenger->full_name }}</strong> còn hiệu lực đến <strong>{{ $itemExpiryStr }}</strong> nhưng chưa đủ 6 tháng kể từ ngày hạ cánh chặng quốc tế cuối ({{ $refDateStr }}). Một số quốc gia và hãng hàng không có thể từ chối nhập cảnh hoặc từ chối cho lên máy bay.
-                                    </div>
-                                </div>
-                            @endif
-                        @endforeach
                     </div>
                 @endif
 
@@ -145,12 +277,7 @@
                     @csrf
 
                     @if (isset($passportRisk['level']) && $passportRisk['level'] !== null)
-                        <div class="form-check my-3">
-                            <input class="form-check-input" type="checkbox" name="confirm_passport_risk" value="1" id="confirm_passport_risk" required>
-                            <label class="form-check-label fw-bold text-danger" for="confirm_passport_risk">
-                                Tôi đã đọc và hiểu rủi ro về hộ chiếu nêu trên và vẫn muốn tiếp tục thanh toán.
-                            </label>
-                        </div>
+                        <input class="form-check-input d-none" type="checkbox" name="confirm_passport_risk" value="1" id="confirm_passport_risk" {{ old('confirm_passport_risk') ? 'checked' : '' }} required>
                     @endif
 
                     <div class="bf-payment-card">
@@ -401,6 +528,81 @@
     </div>
 </div>
 
+{{-- POPUP BOX CẢNH BÁO RỦI RO HỘ CHIẾU --}}
+@if (isset($passportRisk['level']) && $passportRisk['level'] !== null)
+    @php
+        $refDateStr = !empty($passportRisk['ref_date']) ? \Carbon\Carbon::parse($passportRisk['ref_date'])->format('d/m/Y') : '';
+        $isRedRisk = $passportRisk['level'] === 'red';
+    @endphp
+
+    <div class="bf-passport-modal-overlay" id="bfPassportRiskOverlay">
+        <div class="bf-passport-modal-container {{ $isRedRisk ? 'bf-passport-modal--red' : 'bf-passport-modal--yellow' }}" id="bfPassportRiskModal" role="dialog" aria-modal="true" aria-labelledby="passportRiskModalTitle">
+            <div class="bf-passport-modal-header">
+                <div class="bf-passport-modal-icon-badge">
+                    @if ($isRedRisk)
+                        <i class="bi bi-x-octagon-fill"></i>
+                    @else
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    @endif
+                </div>
+                <div>
+                    <h3 class="bf-passport-modal-title" id="passportRiskModalTitle">
+                        @if ($isRedRisk)
+                            Cảnh báo: Hộ chiếu đã hết hạn
+                        @else
+                            Nhắc nhở: Kiểm tra thời hạn hộ chiếu
+                        @endif
+                    </h3>
+                    <p class="bf-passport-modal-subtitle">
+                        Vui lòng kiểm tra kỹ thông tin giấy tờ để tránh nguy cơ bị từ chối bay
+                    </p>
+                </div>
+            </div>
+
+            <div class="bf-passport-modal-body">
+                @foreach ($passportRisk['items'] as $riskItem)
+                    @php
+                        $itemPassenger = $riskItem['passenger'];
+                        $itemExpiryStr = !empty($riskItem['expiry_date']) ? \Carbon\Carbon::parse($riskItem['expiry_date'])->format('d/m/Y') : '';
+                    @endphp
+
+                    @if ($riskItem['level'] === 'red')
+                        <div class="alert alert-danger d-flex align-items-start gap-2 mb-3" role="alert">
+                            <i class="bi bi-x-octagon-fill fs-5 flex-shrink-0 mt-1"></i>
+                            <div>
+                                Hộ chiếu của <strong>{{ $itemPassenger->full_name }}</strong> hết hạn ngày <strong>{{ $itemExpiryStr }}</strong>, TRƯỚC khi hành trình quốc tế kết thúc ({{ $refDateStr }}). Hành khách có nguy cơ cao bị từ chối khởi hành hoặc nhập cảnh.
+                            </div>
+                        </div>
+                    @elseif ($riskItem['level'] === 'yellow')
+                        <div class="alert alert-warning d-flex align-items-start gap-2 mb-3" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0 mt-1"></i>
+                            <div>
+                                Hộ chiếu của <strong>{{ $itemPassenger->full_name }}</strong> còn hiệu lực đến <strong>{{ $itemExpiryStr }}</strong> nhưng chưa đủ 6 tháng kể từ ngày hạ cánh chặng quốc tế cuối ({{ $refDateStr }}). Một số quốc gia và hãng hàng không có thể từ chối nhập cảnh hoặc từ chối cho lên máy bay.
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
+
+                <div class="bf-passport-modal-checkbox-card">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="modal_confirm_passport_risk" {{ old('confirm_passport_risk') ? 'checked' : '' }}>
+                        <label class="form-check-label fw-bold {{ $isRedRisk ? 'text-danger' : 'text-warning-emphasis' }}" for="modal_confirm_passport_risk" style="cursor: pointer;">
+                            Tôi đã đọc và hiểu rủi ro về hộ chiếu nêu trên và vẫn muốn tiếp tục thanh toán.
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bf-passport-modal-footer">
+                <button type="button" class="bf-passport-modal-btn-confirm" id="btn-passport-acknowledge" disabled>
+                    <span>Tôi đã hiểu</span>
+                    <i class="bi bi-check2 ms-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+@endif
+
 {{-- MODAL THÔNG BÁO HẾT HẠN (TRAVELOKA STYLE) --}}
 <div class="modal fade" id="paymentExpiredModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paymentExpiredModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -427,4 +629,58 @@
 
 @section('scripts')
     @vite(['resources/js/payment.js'])
+    @if (isset($passportRisk['level']) && $passportRisk['level'] !== null)
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const passportOverlay = document.getElementById('bfPassportRiskOverlay');
+            const modalCheckbox = document.getElementById('modal_confirm_passport_risk');
+            const btnAcknowledge = document.getElementById('btn-passport-acknowledge');
+            const hiddenCheckbox = document.getElementById('confirm_passport_risk');
+            const btnReopen = document.getElementById('btn-reopen-passport-modal');
+
+            if (passportOverlay && modalCheckbox && btnAcknowledge) {
+                document.body.style.overflow = 'hidden';
+
+                modalCheckbox.addEventListener('change', function () {
+                    btnAcknowledge.disabled = !this.checked;
+                });
+
+                btnAcknowledge.addEventListener('click', function () {
+                    if (this.disabled) return;
+
+                    if (hiddenCheckbox) {
+                        hiddenCheckbox.checked = true;
+                    }
+
+                    passportOverlay.classList.add('closing');
+                    setTimeout(function () {
+                        passportOverlay.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }, 250);
+                });
+
+                if (btnReopen) {
+                    btnReopen.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        passportOverlay.classList.remove('closing');
+                        passportOverlay.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                    });
+                }
+
+                const paymentForm = document.getElementById('bf-payment-form');
+                if (paymentForm && hiddenCheckbox) {
+                    paymentForm.addEventListener('submit', function (e) {
+                        if (!hiddenCheckbox.checked) {
+                            e.preventDefault();
+                            passportOverlay.classList.remove('closing');
+                            passportOverlay.style.display = 'flex';
+                            document.body.style.overflow = 'hidden';
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+    @endif
 @endsection
