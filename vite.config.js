@@ -16,6 +16,7 @@ export default defineConfig({
                 'resources/js/auth.js',
                 'resources/js/dashboard.js',
                 'resources/js/payment.js',
+                'resources/js/passenger-autofill.js',
             ],
             refresh: true,
         }),
