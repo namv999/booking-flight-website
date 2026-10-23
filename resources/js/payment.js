@@ -115,4 +115,62 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 1000);
         }
     }
+
+    // 3. Quản lý Modal Popup cảnh báo hộ chiếu rủi ro (< 6 tháng hoặc hết hạn)
+    const passportOverlay = document.getElementById('bfPassportRiskOverlay');
+    const modalCheckbox = document.getElementById('modal_confirm_passport_risk');
+    const btnAcknowledge = document.getElementById('btn-passport-acknowledge');
+    const hiddenCheckbox = document.getElementById('confirm_passport_risk');
+    const btnReopen = document.getElementById('btn-reopen-passport-modal');
+
+    if (passportOverlay && modalCheckbox && btnAcknowledge) {
+        // Khóa cuộn trang khi modal đang mở
+        document.body.style.overflow = 'hidden';
+
+        // Lắng nghe sự kiện tick checkbox
+        modalCheckbox.addEventListener('change', function () {
+            btnAcknowledge.disabled = !this.checked;
+        });
+
+        // Xử lý khi bấm nút "Tôi đã hiểu"
+        btnAcknowledge.addEventListener('click', function () {
+            if (this.disabled) return;
+
+            // Đồng bộ trạng thái đã tick sang hidden input của form thanh toán
+            if (hiddenCheckbox) {
+                hiddenCheckbox.checked = true;
+            }
+
+            // Hiệu ứng đóng modal ease-in-out
+            passportOverlay.classList.add('closing');
+            setTimeout(function () {
+                passportOverlay.style.display = 'none';
+                document.body.style.overflow = '';
+            }, 250);
+        });
+
+        // Nút xem lại cảnh báo (trên dòng hotline site)
+        if (btnReopen) {
+            btnReopen.addEventListener('click', function (e) {
+                e.preventDefault();
+                passportOverlay.classList.remove('closing');
+                passportOverlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        // Chặn submit form nếu chưa xác nhận popup
+        const paymentForm = document.getElementById('bf-payment-form');
+        if (paymentForm && hiddenCheckbox) {
+            paymentForm.addEventListener('submit', function (e) {
+                if (!hiddenCheckbox.checked) {
+                    e.preventDefault();
+                    passportOverlay.classList.remove('closing');
+                    passportOverlay.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+        }
+    }
 });
+

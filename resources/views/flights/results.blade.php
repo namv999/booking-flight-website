@@ -377,7 +377,7 @@
                 trong ngày {{ $depDate->format('d/m/Y') }} khởi hành sau khi chặng trước hạ cánh,
                 với hạng vé <strong>{{ $fareClass->name }}</strong>.
             </p>
-            <a href="{{ $backUrl }}" class="bf-btn-empty-search">
+            <a href="{{ $backUrl }}" class="bf-btn-empty-search text-light">
                 <i class="bi bi-arrow-left" aria-hidden="true"></i> Chọn lại chuyến của chặng trước
             </a>
             @else
