@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AircraftController;
 use App\Http\Controllers\Admin\AirlineController;
 use App\Http\Controllers\Admin\AirportController;
+use App\Http\Controllers\Admin\BaggageAddonController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FareClassController;
 use App\Http\Controllers\Admin\FlightController;
@@ -34,6 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('saved-passengers/options', [SavedPassengerController::class, 'options'])->name('saved-passengers.options');
     Route::resource('saved-passengers', SavedPassengerController::class)->except('show');
 });
 
@@ -45,6 +47,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('aircrafts', AircraftController::class);
     Route::resource('airports', AirportController::class);
     Route::resource('fare-classes', FareClassController::class);
+    Route::resource('baggage-addons', BaggageAddonController::class)->except('show');
     Route::resource('flights', FlightController::class);
 });
 

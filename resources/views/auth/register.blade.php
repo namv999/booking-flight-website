@@ -22,7 +22,7 @@
                 <label class="bf-field"><span>Email</span><input id="register-email" type="email" name="email" value="{{ old('email') }}" placeholder="ban@example.com" required autocomplete="username"><x-input-error :messages="$errors->get('email')" class="bf-field__error" /></label>
                 <label class="bf-field"><span>Mật khẩu</span><span class="bf-password-field"><input id="register-password" type="password" name="password" placeholder="Tối thiểu 8 ký tự" required autocomplete="new-password"><button type="button" data-password-toggle="register-password" aria-label="Hiện mật khẩu">Hiện</button></span><x-input-error :messages="$errors->get('password')" class="bf-field__error" /></label>
                 <label class="bf-field"><span>Xác nhận mật khẩu</span><input id="register-password-confirmation" type="password" name="password_confirmation" placeholder="Nhập lại mật khẩu" required autocomplete="new-password"><x-input-error :messages="$errors->get('password_confirmation')" class="bf-field__error" /></label>
-                <label class="bf-checkbox"><input id="accept-terms" type="checkbox" required><span>Tôi đồng ý với <a href="#">điều khoản sử dụng</a> và chính sách bảo mật.</span></label>
+                <label class="bf-checkbox"><input id="accept-terms" type="checkbox" required><span>Tôi đồng ý với điều khoản sử dụng và chính sách bảo mật.</span></label>
                 <button class="bf-button bf-button--primary bf-button--block" type="submit">Tạo tài khoản</button>
             </form>
             <p class="bf-auth__switch">Đã là thành viên? <a href="{{ route('login') }}">Đăng nhập</a></p>

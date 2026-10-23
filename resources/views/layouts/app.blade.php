@@ -41,9 +41,9 @@
 
             <nav class="bf-navbar__nav" id="bf-main-navigation" aria-label="Điều hướng chính">
                 <a class="{{ request()->is('/') ? 'bf-navbar__link--active' : '' }}" href="/">Trang chủ</a>
-                <a href="#">Chuyến bay</a>
-                <a href="#">Khuyến mãi</a>
-                <a href="#">Hỗ trợ</a>
+                <a href="{{ route('home') }}">Chuyến bay</a>
+                <a href="{{ route('home') }}">Khuyến mãi</a>
+                <a href="tel:19001234">Hỗ trợ</a>
             </nav>
 
             <div class="bf-navbar__actions">
@@ -75,15 +75,15 @@
             </div>
             <div>
                 <h2>Khám phá</h2>
-                <a href="#">Vé máy bay</a>
-                <a href="#">Điểm đến</a>
-                <a href="#">Ưu đãi mới</a>
+                <a href="{{ route('home') }}">Vé máy bay</a>
+                <a href="{{ route('home') }}">Điểm đến</a>
+                <a href="{{ route('home') }}">Ưu đãi mới</a>
             </div>
             <div>
                 <h2>Hỗ trợ</h2>
-                <a href="#">Trung tâm trợ giúp</a>
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
+                <a href="tel:19001234">Trung tâm trợ giúp</a>
+                <span>Điều khoản sử dụng</span>
+                <span>Chính sách bảo mật</span>
             </div>
             <div>
                 <h2>Liên hệ</h2>

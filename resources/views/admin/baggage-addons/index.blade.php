@@ -12,6 +12,17 @@
         <a href="{{ route('admin.baggage-addons.create') }}" class="btn btn-primary">+ Thêm gói</a>
     </div>
 
+    <form method="GET" action="{{ route('admin.baggage-addons.index') }}" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Tìm theo tên gói..."
+                   value="{{ request('search') }}">
+            <button class="btn btn-outline-secondary" type="submit">Tìm</button>
+            @if (request()->filled('search'))
+                <a href="{{ route('admin.baggage-addons.index') }}" class="btn btn-outline-danger">Reset</a>
+            @endif
+        </div>
+    </form>
+
     <table class="table table-bordered">
         <thead>
             <tr>

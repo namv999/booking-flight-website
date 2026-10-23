@@ -6,13 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\BaggageAddonRequest;
 use App\Models\BaggageAddon;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BaggageAddonController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $baggageAddons = BaggageAddon::latest()->paginate(10);
+        $baggageAddons = BaggageAddon::query()
+            ->when($request->filled('search'), fn ($q) => $q->where('name', 'like', '%'.$request->search.'%'))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('admin.baggage-addons.index', compact('baggageAddons'));
     }

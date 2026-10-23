@@ -1,11 +1,16 @@
 @extends('layouts.app')
 
 @section('title', 'Thêm hồ sơ hành khách')
+@section('styles')
+    @vite(['resources/css/account.css'])
+@endsection
 
 @section('content')
-    <h1>Thêm hồ sơ hành khách</h1>
+<div class="bf-container py-4">
+    <h1 class="h3 mb-3">Thêm hồ sơ hành khách</h1>
 
     <form method="POST" action="{{ route('saved-passengers.store') }}">
         @include('saved-passengers._form')
     </form>
+</div>
 @endsection

@@ -39,7 +39,7 @@
                         <div class="bf-trip-card__flight"><span>VN 214</span><i></i><small>2 giờ 10 phút · Bay thẳng</small></div>
                         <div><strong>HAN</strong><span>Hà Nội</span><time>09:40</time></div>
                     </div>
-                    <div class="bf-trip-card__foot"><span>Thứ Sáu, 18 tháng 09 · Phổ thông</span><a href="#">Xem chi tiết →</a></div>
+                    <div class="bf-trip-card__foot"><span>Thứ Sáu, 18 tháng 09 · Phổ thông</span><a href="{{ route('booking-history.index') }}">Xem chi tiết →</a></div>
                 </article>
                 <article class="bf-trip-card" data-trip-status="upcoming">
                     <div class="bf-trip-card__head"><span class="bf-status bf-status--pending">Chờ thanh toán</span><small>Mã đặt chỗ: JCF4P9</small></div>
@@ -48,7 +48,7 @@
                         <div class="bf-trip-card__flight"><span>QH 105</span><i></i><small>1 giờ 25 phút · Bay thẳng</small></div>
                         <div><strong>BKK</strong><span>Bangkok</span><time>14:45</time></div>
                     </div>
-                    <div class="bf-trip-card__foot"><span>Chủ Nhật, 04 tháng 10 · Phổ thông</span><a href="#">Hoàn tất thanh toán →</a></div>
+                    <div class="bf-trip-card__foot"><span>Chủ Nhật, 04 tháng 10 · Phổ thông</span><a href="{{ route('booking-history.index') }}">Hoàn tất thanh toán →</a></div>
                 </article>
                 <article class="bf-trip-card" data-trip-status="completed" hidden>
                     <div class="bf-trip-card__head"><span class="bf-status">Đã hoàn thành</span><small>Mã đặt chỗ: JCF2H7</small></div>
@@ -57,7 +57,7 @@
                         <div class="bf-trip-card__flight"><span>VN 631</span><i></i><small>1 giờ 25 phút · Bay thẳng</small></div>
                         <div><strong>DAD</strong><span>Đà Nẵng</span><time>10:35</time></div>
                     </div>
-                    <div class="bf-trip-card__foot"><span>Thứ Hai, 20 tháng 07 · Phổ thông</span><a href="#">Đặt lại chuyến này →</a></div>
+                    <div class="bf-trip-card__foot"><span>Thứ Hai, 20 tháng 07 · Phổ thông</span><a href="{{ route('home') }}">Đặt lại chuyến này →</a></div>
                 </article>
             </div>
         </div>

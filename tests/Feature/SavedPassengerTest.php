@@ -157,4 +157,80 @@ class SavedPassengerTest extends TestCase
         $response = $this->get(route('saved-passengers.index'));
         $response->assertRedirect(route('login'));
     }
+
+    public function test_store_saves_full_passport_fields(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('saved-passengers.store'), [
+            'full_name' => 'Nguyen Van A',
+            'passenger_type_default' => 'adult',
+            'document_type' => 'passport',
+            'document_number' => 'C1234567',
+            'date_of_birth' => now()->subYears(30)->format('Y-m-d'),
+            'gender' => 'male',
+            'nationality' => 'VNM',
+            'document_issued_country' => 'VNM',
+            'document_issue_date' => now()->subYears(2)->format('Y-m-d'),
+            'document_expiry_date' => now()->addYears(8)->format('Y-m-d'),
+        ])->assertRedirect(route('saved-passengers.index'));
+
+        $saved = SavedPassenger::where('user_id', $user->id)->firstOrFail();
+
+        $this->assertSame('passport', $saved->document_type);
+        $this->assertSame('C1234567', $saved->document_number);
+        $this->assertSame('male', $saved->gender);
+        $this->assertSame('VNM', $saved->nationality);
+        $this->assertSame('VNM', $saved->document_issued_country);
+        $this->assertSame(now()->subYears(2)->format('Y-m-d'), $saved->document_issue_date->format('Y-m-d'));
+        $this->assertSame(now()->addYears(8)->format('Y-m-d'), $saved->document_expiry_date->format('Y-m-d'));
+        $this->assertSame('Vietnam (VNM)', $saved->nationality_label);
+        $this->assertSame('Nam', $saved->gender_label);
+    }
+
+    public function test_store_rejects_unknown_country_code(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('saved-passengers.store'), [
+            'full_name' => 'Nguyen Van A',
+            'passenger_type_default' => 'adult',
+            'nationality' => 'XXX',
+            'document_issued_country' => 'XXX',
+        ]);
+
+        $response->assertSessionHasErrors(['nationality', 'document_issued_country']);
+        $this->assertDatabaseCount('saved_passengers', 0);
+    }
+
+    public function test_edit_page_opens_for_legacy_profile_with_free_text_nationality(): void
+    {
+        $user = User::factory()->create();
+        $passenger = SavedPassenger::factory()->create([
+            'user_id' => $user->id,
+            'nationality' => 'Vietnam',
+            'document_issued_country' => null,
+            'gender' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('saved-passengers.edit', $passenger->id))
+            ->assertOk();
+    }
+
+    public function test_store_without_passport_fields_still_succeeds(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('saved-passengers.store'), [
+            'full_name' => 'Chi Co Truong Cu',
+            'passenger_type_default' => 'child',
+        ])->assertRedirect(route('saved-passengers.index'));
+
+        $this->assertDatabaseHas('saved_passengers', [
+            'user_id' => $user->id,
+            'full_name' => 'Chi Co Truong Cu',
+            'nationality' => null,
+        ]);
+    }
 }
