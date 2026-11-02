@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Models\Airport;
+use App\Models\Booking;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class PassportService
 {
@@ -23,6 +26,72 @@ class PassportService
         }
 
         return false;
+    }
+
+    // Đơn đã đặt có chặng quốc tế không (so quốc gia sân bay đi và đến của từng chặng, kể cả sân bay đã xóa mềm)
+    public function isInternationalBooking(Booking $booking): bool
+    {
+        $booking->loadMissing([
+            'bookingFlights.flight.departureAirport' => fn ($q) => $q->withTrashed(),
+            'bookingFlights.flight.arrivalAirport' => fn ($q) => $q->withTrashed(),
+        ]);
+
+        foreach ($booking->bookingFlights as $bookingFlight) {
+            $flight = $bookingFlight->flight;
+
+            if ($this->differentCountry($flight?->departureAirport, $flight?->arrivalAirport)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Bộ rule validate dữ liệu hộ chiếu của MỘT hành khách, dùng chung cho form đặt vé và form cập nhật.
+    // $prefix là tiền tố của key: 'adults.*.' cho form đặt vé, '' cho form cập nhật (field nằm ở gốc).
+    public function rules(string $prefix = '', bool $withDocumentType = true): array
+    {
+        $countries = array_keys(config('countries'));
+
+        $rules = [
+            "{$prefix}full_name" => ['required', 'string', 'max:150', 'regex:/^[A-Z][A-Z \'\-]*$/'],
+            "{$prefix}document_number" => ['required', 'string', 'regex:/^[A-Z0-9]{6,9}$/'],
+            "{$prefix}date_of_birth" => ['required', 'date', 'before_or_equal:today'],
+            "{$prefix}gender" => ['required', 'in:male,female'],
+            "{$prefix}nationality" => ['required', Rule::in($countries)],
+            "{$prefix}document_issued_country" => ['required', Rule::in($countries)],
+            "{$prefix}document_issue_date" => ['required', 'date', 'before_or_equal:today'],
+            "{$prefix}document_expiry_date" => ['required', 'date'],
+        ];
+
+        if ($withDocumentType) {
+            $rules["{$prefix}document_type"] = ['required', 'in:passport'];
+        }
+
+        return $rules;
+    }
+
+    // Thông báo lỗi tiếng Việt tương ứng với rules()
+    public function messages(string $prefix = '', bool $withDocumentType = true): array
+    {
+        $messages = [
+            "{$prefix}full_name.regex" => 'Họ tên phải viết không dấu theo hộ chiếu (chỉ chữ A-Z).',
+            "{$prefix}document_number.regex" => 'Số hộ chiếu gồm 6 đến 9 ký tự chữ và số.',
+            "{$prefix}nationality.in" => 'Quốc tịch không hợp lệ.',
+            "{$prefix}document_issued_country.in" => 'Quốc gia cấp không hợp lệ.',
+        ];
+
+        if ($withDocumentType) {
+            $messages["{$prefix}document_type.in"] = 'Chuyến bay quốc tế yêu cầu hộ chiếu.';
+        }
+
+        return $messages;
+    }
+
+    // Ngày hết hạn phải sau ngày cấp (kiểm tra ở hook after, vì rule after:field không ổn định với wildcard)
+    public function isExpiryAfterIssue(?string $issueDate, ?string $expiryDate): bool
+    {
+        return Carbon::parse($expiryDate)->gt(Carbon::parse($issueDate));
     }
 
     // Họ tên theo hộ chiếu: không dấu, chữ hoa, gom khoảng trắng

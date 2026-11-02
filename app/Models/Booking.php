@@ -37,6 +37,11 @@ class Booking extends Model
         return $this->hasMany(Passenger::class);
     }
 
+    public function passportUpdateRequests()
+    {
+        return $this->hasMany(PassportUpdateRequest::class);
+    }
+
     public function payment()
     {
         return $this->hasOne(Payment::class);

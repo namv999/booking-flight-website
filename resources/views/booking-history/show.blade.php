@@ -33,6 +33,11 @@
                     <li class="bf-step-divider completed"></li>
                     <li class="bf-step-item completed">
                         <span class="bf-step-circle"><i class="bi bi-check-lg"></i></span>
+                        <span class="d-none d-sm-inline">Chọn ghế</span>
+                    </li>
+                    <li class="bf-step-divider completed"></li>
+                    <li class="bf-step-item completed">
+                        <span class="bf-step-circle"><i class="bi bi-check-lg"></i></span>
                         <span class="d-none d-sm-inline">Thanh toán</span>
                     </li>
                     <li class="bf-step-divider completed"></li>
@@ -230,6 +235,9 @@
                                             <label>Chỗ ngồi (Seat)</label>
                                             @if ($seatNumber)
                                                 <span class="text-primary fw-bold fs-6">Ghế {{ $seatNumber }}</span>
+                                                @if ($ticket->is_self_selected)
+                                                    <span class="badge bg-light text-dark border ms-1">Ghế tự chọn</span>
+                                                @endif
                                             @elseif ($pType === 'infant')
                                                 <span class="text-muted small">Ngồi cùng người lớn</span>
                                             @elseif ($booking->status === 'cancelled')
@@ -253,7 +261,7 @@
 
                                         <div class="bf-eticket-field">
                                             <label>Hành lý</label>
-                                            <span>{{ $ticket->baggageAddon->name ?? 'Tiêu chuẩn (7kg xách tay)' }}</span>
+                                            <span>{{ $ticket->baggageAddon ? $ticket->baggageAddon->name.' (+'.$ticket->baggageAddon->weight_kg.'kg)' : 'Tiêu chuẩn (7kg xách tay)' }}</span>
                                         </div>
 
                                         <div class="bf-eticket-field">
@@ -266,6 +274,11 @@
                         </div>
                     </div>
                 @endforeach
+
+                {{-- 2b. CẬP NHẬT HỘ CHIẾU (đơn quốc tế đã thanh toán) --}}
+                @if ($showPassportUpdate)
+                    @include('booking-history.partials.passport-update')
+                @endif
 
                 {{-- 3. THÔNG TIN THANH TOÁN (NẾU CÓ) --}}
                 @if ($booking->payment)

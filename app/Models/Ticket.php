@@ -53,6 +53,6 @@ class Ticket extends Model
 
     public function baggageAddon()
     {
-        return $this->belongsTo(BaggageAddon::class);
+        return $this->belongsTo(BaggageAddon::class)->withTrashed();
     }
 }

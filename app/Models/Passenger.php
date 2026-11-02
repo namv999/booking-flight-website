@@ -44,6 +44,11 @@ class Passenger extends Model
         return $this->hasMany(Ticket::class);
     }
 
+    public function passportUpdateRequests()
+    {
+        return $this->hasMany(PassportUpdateRequest::class);
+    }
+
     public function companionTickets()
     {
         return $this->hasMany(

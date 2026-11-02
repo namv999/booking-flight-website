@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PassportService;
+use App\Services\PassportUpdateService;
+
 class BookingHistoryController extends Controller
 {
     public function index()
@@ -21,7 +24,7 @@ class BookingHistoryController extends Controller
     {
         $booking = auth()->user()->bookings()
             ->with([
-                'passengers',
+                'passengers.passportUpdateRequests' => fn ($q) => $q->latest('id'),
                 'payment',
                 'bookingFlights.flight.aircraft' => fn ($q) => $q->withTrashed(),
                 'bookingFlights.flight.aircraft.airline' => fn ($q) => $q->withTrashed(),
@@ -33,6 +36,10 @@ class BookingHistoryController extends Controller
             ])
             ->findOrFail($id);
 
-        return view('booking-history.show', compact('booking'));
+        // Cập nhật hộ chiếu chỉ áp dụng cho đơn quốc tế đã thanh toán; $passportUpdateError null = được phép gửi
+        $showPassportUpdate = $booking->status === 'paid' && app(PassportService::class)->isInternationalBooking($booking);
+        $passportUpdateError = $showPassportUpdate ? app(PassportUpdateService::class)->bookingError($booking) : null;
+
+        return view('booking-history.show', compact('booking', 'showPassportUpdate', 'passportUpdateError'));
     }
 }

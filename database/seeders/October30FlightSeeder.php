@@ -45,26 +45,18 @@ class October30FlightSeeder extends Seeder
             ['DAD', 'CXR', '13:00', '14:00'],
             ['CXR', 'PQC', '16:00', '17:20'],
             ['PQC', 'SGN', '20:00', '21:30'],
-            // International routes for passport and international booking flows.
-            ['SGN', 'BKK', '08:00', '09:30'],
-            ['BKK', 'SGN', '11:00', '12:30'],
-            ['SGN', 'NRT', '23:00', '07:00'],
-            // Use a distinct UTC departure time from SGN → BKK (08:00 Vietnam = 10:00 Japan).
-            ['NRT', 'SGN', '16:00', '20:00'],
         ];
 
         foreach ($flights as [$departureCode, $arrivalCode, $departureTime, $arrivalTime]) {
-            $departureAirport = Airport::where('iata_code', $departureCode)->firstOrFail();
-            $arrivalAirport = Airport::where('iata_code', $arrivalCode)->firstOrFail();
             $flight = Flight::updateOrCreate(
                 [
                     'aircraft_id' => $aircraft->id,
-                    'departure_time' => Carbon::parse("2026-10-30 {$departureTime}", $departureAirport->timezone)->utc(),
+                    'departure_time' => Carbon::parse("2026-10-30 {$departureTime}", 'Asia/Ho_Chi_Minh')->utc(),
                 ],
                 [
-                    'departure_airport_id' => $departureAirport->id,
-                    'arrival_airport_id' => $arrivalAirport->id,
-                    'arrival_time' => Carbon::parse("2026-10-30 {$arrivalTime}", $arrivalAirport->timezone)->utc(),
+                    'departure_airport_id' => Airport::where('iata_code', $departureCode)->firstOrFail()->id,
+                    'arrival_airport_id' => Airport::where('iata_code', $arrivalCode)->firstOrFail()->id,
+                    'arrival_time' => Carbon::parse("2026-10-30 {$arrivalTime}", 'Asia/Ho_Chi_Minh')->utc(),
                     'status' => 'scheduled',
                 ]
             );

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PassengerBookingRequest;
+use App\Models\BaggageAddon;
 use App\Models\Booking;
 use App\Models\BookingFlight;
+use App\Models\FareClass;
 use App\Models\Flight;
 use App\Models\FlightSeat;
 use App\Models\Passenger;
@@ -50,6 +52,8 @@ class BookingController extends Controller
             'pending' => $pending,
             'isInternational' => $passport->isInternational($pending),
             'countries' => config('countries'),
+            'baggageAddons' => BaggageAddon::orderBy('weight_kg')->get(), // SoftDeletes tự loại gói đã xóa
+            'freeBaggageKg' => FareClass::find($pending['fare_class_id'])?->checked_baggage_kg,
         ]);
     }
 
@@ -108,8 +112,19 @@ class BookingController extends Controller
 
         $seatsNeeded = (int) $pending['adults'] + (int) $pending['children'];
 
+        // Nạp các gói hành lý đã chọn một lần, trước transaction
+        $addonIds = collect($data['adults'])->merge($data['children'] ?? [])
+            ->pluck('baggage_addon_id')->filter()->unique();
+        $addons = BaggageAddon::whereIn('id', $addonIds)->get()->keyBy('id');
+
+        // Gói bị admin xóa giữa lúc validate và lúc tạo vé: báo khách chọn lại, không âm thầm bỏ gói
+        if ($addons->count() !== $addonIds->count()) {
+            return back()->withInput()
+                ->with('error', 'Gói hành lý bạn chọn không còn được cung cấp. Vui lòng chọn lại.');
+        }
+
         try {
-            $booking = DB::transaction(function () use ($pending, $data, $flightIds, $seatsNeeded) {
+            $booking = DB::transaction(function () use ($pending, $data, $flightIds, $seatsNeeded, $addons) {
                 // 1. FINAL check + ATOMIC hold cho MỌI chặng. Khóa theo flight_id tăng dần
                 // để hai booking nhiều chặng không khóa chéo nhau (deadlock)
                 $seatsByFlight = [];
@@ -155,14 +170,22 @@ class BookingController extends Controller
                     'total_amount' => 0,
                 ]);
 
+                $addonByPassenger = []; // passenger_id => BaggageAddon|null
+
                 $adults = [];
                 foreach (array_values($data['adults']) as $row) {
-                    $adults[] = $this->createPassenger($booking, $row, 'adult');
+                    $passenger = $this->createPassenger($booking, $row, 'adult');
+                    $adults[] = $passenger;
+                    $addonId = $row['baggage_addon_id'] ?? null;
+                    $addonByPassenger[$passenger->id] = $addonId ? $addons->get($addonId) : null;
                 }
 
                 $children = [];
                 foreach (array_values($data['children'] ?? []) as $row) {
-                    $children[] = $this->createPassenger($booking, $row, 'child');
+                    $passenger = $this->createPassenger($booking, $row, 'child');
+                    $children[] = $passenger;
+                    $addonId = $row['baggage_addon_id'] ?? null;
+                    $addonByPassenger[$passenger->id] = $addonId ? $addons->get($addonId) : null;
                 }
 
                 $infants = [];
@@ -187,14 +210,31 @@ class BookingController extends Controller
 
                     foreach ($adults as $adult) {
                         $seat = $seats[$seatIndex++];
-                        $ticket = $this->createTicket($bookingFlight, $adult, $seat->id, $seat->price);
+                        $addon = $addonByPassenger[$adult->id];
+                        $ticket = $this->createTicket(
+                            $bookingFlight,
+                            $adult,
+                            $seat->id,
+                            $seat->price + ($addon?->price ?? 0), // giá ghế + giá gói (tính cho MỖI chặng)
+                            null,
+                            $addon?->id
+                        );
+                        // Giá GHẾ GỐC, không gồm hành lý: vé em bé tính 10% trên giá này, KHÔNG lấy từ $ticket->price
                         $adultFarePrices[$adult->id] = $seat->price;
                         $totalAmount += $ticket->price;
                     }
 
                     foreach ($children as $child) {
                         $seat = $seats[$seatIndex++];
-                        $ticket = $this->createTicket($bookingFlight, $child, $seat->id, $seat->price);
+                        $addon = $addonByPassenger[$child->id];
+                        $ticket = $this->createTicket(
+                            $bookingFlight,
+                            $child,
+                            $seat->id,
+                            $seat->price + ($addon?->price ?? 0),
+                            null,
+                            $addon?->id
+                        );
                         $totalAmount += $ticket->price;
                     }
 
@@ -247,13 +287,14 @@ class BookingController extends Controller
         ]);
     }
 
-    private function createTicket(BookingFlight $bookingFlight, Passenger $passenger, ?int $seatId, $price, ?int $companionId = null): Ticket
+    private function createTicket(BookingFlight $bookingFlight, Passenger $passenger, ?int $seatId, $price, ?int $companionId = null, ?int $baggageAddonId = null): Ticket
     {
         return Ticket::create([
             'booking_flight_id' => $bookingFlight->id,
             'passenger_id' => $passenger->id,
             'flight_seat_id' => $seatId,
             'companion_adult_passenger_id' => $companionId,
+            'baggage_addon_id' => $baggageAddonId,
             'price' => $price,
             'ticket_code' => strtoupper(Str::random(8)),
         ]);

@@ -4,11 +4,14 @@ use App\Http\Controllers\Admin\AircraftController;
 use App\Http\Controllers\Admin\AirlineController;
 use App\Http\Controllers\Admin\AirportController;
 use App\Http\Controllers\Admin\BaggageAddonController;
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FareClassController;
 use App\Http\Controllers\Admin\FlightController;
+use App\Http\Controllers\Admin\PassportUpdateRequestController as AdminPassportUpdateRequestController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingHistoryController;
+use App\Http\Controllers\BookingPassportUpdateController;
 use App\Http\Controllers\FlightSearchController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaymentController;
@@ -49,6 +52,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('fare-classes', FareClassController::class);
     Route::resource('baggage-addons', BaggageAddonController::class)->except('show');
     Route::resource('flights', FlightController::class);
+    Route::resource('bookings', AdminBookingController::class)->only(['index', 'show']);
+    // Thao tác ghi duy nhất của phần quản lý đơn: duyệt hoặc từ chối yêu cầu cập nhật hộ chiếu
+    Route::post('passport-update-requests/{passportUpdateRequest}/approve', [AdminPassportUpdateRequestController::class, 'approve'])->name('passport-update-requests.approve');
+    Route::post('passport-update-requests/{passportUpdateRequest}/reject', [AdminPassportUpdateRequestController::class, 'reject'])->name('passport-update-requests.reject');
 });
 
 // ROUTE MODULE LUỒNG ĐẶT VÉ - TÌM KIẾM CHUYẾN BAY
@@ -63,6 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/payment/{booking}', [PaymentController::class, 'store'])->name('payment.store');
     Route::get('/booking-history', [BookingHistoryController::class, 'index'])->name('booking-history.index');
     Route::get('/booking-history/{id}', [BookingHistoryController::class, 'show'])->name('booking-history.show');
+    Route::post('/booking-history/{id}/passengers/{passenger}/passport-update', [BookingPassportUpdateController::class, 'store'])->name('booking-history.passport-update.store');
 });
 
 require __DIR__.'/auth.php';

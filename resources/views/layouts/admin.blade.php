@@ -29,17 +29,18 @@
                 <span class="bf-brand__copy"><strong>Jet Charter</strong><small>Admin workspace</small></span>
             </a>
             <nav class="bf-admin-nav" aria-label="Điều hướng quản trị">
-                <a class="bf-admin-nav__link--active" href="#"><span aria-hidden="true">01</span>Tổng quan</a>
-                <a href="#"><span aria-hidden="true">02</span>Chuyến bay</a>
-                <a href="#"><span aria-hidden="true">03</span>Đặt vé</a>
-                <a href="#"><span aria-hidden="true">04</span>Khách hàng</a>
-                <a href="#"><span aria-hidden="true">05</span>Khuyến mãi</a>
-                <a href="#"><span aria-hidden="true">06</span>Báo cáo</a>
+                <a class="{{ request()->routeIs('admin.dashboard') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.dashboard') }}"><span aria-hidden="true">01</span>Tổng quan</a>
+                <a class="{{ request()->routeIs('admin.flights.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.flights.index') }}"><span aria-hidden="true">02</span>Chuyến bay</a>
+                <a class="{{ request()->routeIs('admin.bookings.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.bookings.index') }}"><span aria-hidden="true">03</span>Đặt vé</a>
+                <a class="{{ request()->routeIs('admin.airlines.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.airlines.index') }}"><span aria-hidden="true">04</span>Hãng bay</a>
+                <a class="{{ request()->routeIs('admin.aircrafts.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.aircrafts.index') }}"><span aria-hidden="true">05</span>Máy bay</a>
+                <a class="{{ request()->routeIs('admin.airports.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.airports.index') }}"><span aria-hidden="true">06</span>Sân bay</a>
+                <a class="{{ request()->routeIs('admin.fare-classes.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.fare-classes.index') }}"><span aria-hidden="true">07</span>Hạng vé</a>
             </nav>
             <div class="bf-admin-sidebar__support">
                 <strong>Cần hỗ trợ?</strong>
                 <p>Liên hệ nhóm kỹ thuật nội bộ.</p>
-                <a href="#">Mở trung tâm hỗ trợ</a>
+                Mở trung tâm hỗ trợ
             </div>
         </aside>
 
@@ -57,7 +58,7 @@
                     <button class="bf-icon-button bf-notification-button" type="button" aria-label="Thông báo">
                         <span aria-hidden="true">!</span>
                     </button>
-                    <a class="bf-avatar" href="#" aria-label="Tài khoản quản trị">A</a>
+                    <a class="bf-avatar" href="{{ route('profile.edit') }}" aria-label="Tài khoản quản trị">A</a>
                 </div>
             </header>
             <main class="bf-admin-content">

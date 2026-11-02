@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Services\PassportService;
-use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -69,12 +68,15 @@ class PassengerBookingRequest extends FormRequest
             'adults.*.full_name' => ['required', 'string', 'max:150'],
             'adults.*.document_number' => ['nullable', 'string', 'max:30'],
             'adults.*.date_of_birth' => ['nullable', 'date'],
+            'adults.*.baggage_addon_id' => ['nullable', 'integer', Rule::exists('baggage_addons', 'id')->whereNull('deleted_at')],
 
             'children' => ['nullable', 'array'],
             'children.*.full_name' => ['required', 'string', 'max:150'],
             'children.*.document_number' => ['nullable', 'string', 'max:30'],
             'children.*.date_of_birth' => ['nullable', 'date'],
+            'children.*.baggage_addon_id' => ['nullable', 'integer', Rule::exists('baggage_addons', 'id')->whereNull('deleted_at')],
 
+            // Em bé KHÔNG có rule baggage_addon_id: validated() bỏ qua field này nên em bé không thể mua gói
             'infants' => ['nullable', 'array'],
             'infants.*.full_name' => ['required', 'string', 'max:150'],
             'infants.*.document_number' => ['nullable', 'string', 'max:30'],
@@ -96,28 +98,11 @@ class PassengerBookingRequest extends FormRequest
         // Quốc tế: ghi đè rule của họ tên, số giấy tờ, ngày sinh bằng bộ Passport (đủ mọi hành khách)
         if ($this->isInternational()) {
             foreach (['adults', 'children', 'infants'] as $group) {
-                $rules = array_merge($rules, $this->passportRules($group));
+                $rules = array_merge($rules, app(PassportService::class)->rules("$group.*."));
             }
         }
 
         return $rules;
-    }
-
-    private function passportRules(string $group): array
-    {
-        $countries = array_keys(config('countries'));
-
-        return [
-            "$group.*.full_name" => ['required', 'string', 'max:150', 'regex:/^[A-Z][A-Z \'\-]*$/'],
-            "$group.*.document_type" => ['required', 'in:passport'],
-            "$group.*.document_number" => ['required', 'string', 'regex:/^[A-Z0-9]{6,9}$/'],
-            "$group.*.date_of_birth" => ['required', 'date', 'before_or_equal:today'],
-            "$group.*.gender" => ['required', 'in:male,female'],
-            "$group.*.nationality" => ['required', Rule::in($countries)],
-            "$group.*.document_issued_country" => ['required', Rule::in($countries)],
-            "$group.*.document_issue_date" => ['required', 'date', 'before_or_equal:today'],
-            "$group.*.document_expiry_date" => ['required', 'date'],
-        ];
     }
 
     // So ngày hết hạn với ngày cấp trong hook (rule after:field không ổn định với wildcard)
@@ -130,7 +115,7 @@ class PassengerBookingRequest extends FormRequest
 
             foreach (['adults', 'children', 'infants'] as $group) {
                 foreach ($this->input($group, []) as $i => $row) {
-                    if (Carbon::parse($row['document_expiry_date'])->lte(Carbon::parse($row['document_issue_date']))) {
+                    if (! app(PassportService::class)->isExpiryAfterIssue($row['document_issue_date'], $row['document_expiry_date'])) {
                         $validator->errors()->add("$group.$i.document_expiry_date", 'Ngày hết hạn phải sau ngày cấp hộ chiếu.');
                     }
                 }
@@ -143,11 +128,9 @@ class PassengerBookingRequest extends FormRequest
         $messages = [];
 
         foreach (['adults', 'children', 'infants'] as $group) {
-            $messages["$group.*.full_name.regex"] = 'Họ tên phải viết không dấu theo hộ chiếu (chỉ chữ A-Z).';
-            $messages["$group.*.document_type.in"] = 'Chuyến bay quốc tế yêu cầu hộ chiếu.';
-            $messages["$group.*.document_number.regex"] = 'Số hộ chiếu gồm 6 đến 9 ký tự chữ và số.';
-            $messages["$group.*.nationality.in"] = 'Quốc tịch không hợp lệ.';
-            $messages["$group.*.document_issued_country.in"] = 'Quốc gia cấp không hợp lệ.';
+            $messages = array_merge($messages, app(PassportService::class)->messages("$group.*."));
+            $messages["$group.*.baggage_addon_id.exists"] = 'Gói hành lý không tồn tại hoặc đã ngừng cung cấp.';
+            $messages["$group.*.baggage_addon_id.integer"] = 'Gói hành lý không hợp lệ.';
         }
 
         return $messages;

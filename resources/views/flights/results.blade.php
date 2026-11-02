@@ -8,7 +8,7 @@
 
 @section('content')
 <div class="bf-results-page">
-    {{-- 1. THANH TIẾN TRÌNH 5 BƯỚC (BOOKING PROGRESS WIZARD) --}}
+    {{-- 1. THANH TIẾN TRÌNH 6 BƯỚC (BOOKING PROGRESS WIZARD) --}}
     <div class="bf-step-wizard">
         <div class="container">
             <ol class="bf-steps">
@@ -29,11 +29,16 @@
                 <li class="bf-step-divider"></li>
                 <li class="bf-step-item">
                     <span class="bf-step-circle">4</span>
-                    <span class="d-none d-sm-inline">Thanh toán</span>
+                    <span class="d-none d-sm-inline">Chọn ghế</span>
                 </li>
                 <li class="bf-step-divider"></li>
                 <li class="bf-step-item">
                     <span class="bf-step-circle">5</span>
+                    <span class="d-none d-sm-inline">Thanh toán</span>
+                </li>
+                <li class="bf-step-divider"></li>
+                <li class="bf-step-item">
+                    <span class="bf-step-circle">6</span>
                     <span class="d-none d-sm-inline">Hoàn tất</span>
                 </li>
             </ol>
@@ -377,7 +382,7 @@
                 trong ngày {{ $depDate->format('d/m/Y') }} khởi hành sau khi chặng trước hạ cánh,
                 với hạng vé <strong>{{ $fareClass->name }}</strong>.
             </p>
-            <a href="{{ $backUrl }}" class="bf-btn-empty-search text-light">
+            <a href="{{ $backUrl }}" class="bf-btn-empty-search">
                 <i class="bi bi-arrow-left" aria-hidden="true"></i> Chọn lại chuyến của chặng trước
             </a>
             @else
