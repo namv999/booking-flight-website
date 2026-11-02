@@ -582,23 +582,70 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     updatePassengerSummary();
 
-    // 5. NEWSLETTER FORM
+    // 5. NEWSLETTER FORM (Gửi tới endpoint thật)
     const newsletterForm = document.getElementById("newsletter-form");
     if (newsletterForm) {
         newsletterForm.addEventListener("submit", function (event) {
             event.preventDefault();
             const newsletterEmail = document.getElementById("newsletter-email");
             const newsletterMessage = document.getElementById("newsletter-message");
+            const emailVal = newsletterEmail ? newsletterEmail.value.trim() : "";
             
             newsletterMessage.className = "bf-form-message";
-            if (!newsletterEmail.value.trim() || !newsletterEmail.checkValidity()) {
+            if (!emailVal || !newsletterEmail.checkValidity()) {
                 newsletterMessage.textContent = "Vui lòng nhập một địa chỉ email hợp lệ.";
                 newsletterMessage.classList.add("bf-form-message--error");
                 return;
             }
-            newsletterMessage.textContent = "Cảm ơn bạn. Email đã được ghi nhận.";
-            newsletterMessage.classList.add("bf-form-message--success");
-            newsletterEmail.value = "";
+
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const actionUrl = newsletterForm.getAttribute("action") || "/newsletter/subscribe";
+
+            fetch(actionUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "X-CSRF-TOKEN": token
+                },
+                body: JSON.stringify({ email: emailVal })
+            })
+            .then(res => res.json())
+            .then(data => {
+                newsletterMessage.textContent = data.message || "Cảm ơn bạn. Email đã được ghi nhận.";
+                newsletterMessage.classList.add("bf-form-message--success");
+                newsletterEmail.value = "";
+            })
+            .catch(() => {
+                newsletterMessage.textContent = "Không thể gửi yêu cầu lúc này. Vui lòng thử lại sau.";
+                newsletterMessage.classList.add("bf-form-message--error");
+            });
         });
     }
+
+    // 6. ĐIỂM ĐẾN NỔI BẬT: BẤM ĐỂ CHỌN SÂN BAY ĐÍCH VÀ CUỘN VỀ SEARCH BOX
+    document.querySelectorAll("[data-destination-code]").forEach(function (card) {
+        card.addEventListener("click", function (e) {
+            e.preventDefault();
+            const code = this.dataset.destinationCode;
+            if (!code) return;
+
+            // Tìm option tương ứng trong menu chọn sân bay đến
+            const targetOption = document.querySelector(`#arrival-dropdown-menu [data-code="${code}"]`);
+            if (targetOption) {
+                const id = targetOption.getAttribute("data-id");
+                const city = targetOption.getAttribute("data-city") || "";
+                if (arrivalDisplay) arrivalDisplay.value = `${city} (${code})`;
+                if (arrivalAirport) arrivalAirport.value = id;
+            }
+
+            const searchBox = document.getElementById("search-box");
+            if (searchBox) {
+                searchBox.scrollIntoView({ behavior: "smooth", block: "start" });
+                if (departureDisplay && !departureDisplay.value) {
+                    departureDisplay.focus();
+                }
+            }
+        });
+    });
 });

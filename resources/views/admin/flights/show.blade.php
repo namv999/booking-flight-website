@@ -24,7 +24,13 @@
         </div>
     </div>
 
-    <a href="{{ route('admin.flights.edit', $flight) }}" class="btn btn-warning">Sửa</a>
-    <a href="{{ route('admin.flights.index') }}" class="btn btn-secondary">Quay lại danh sách</a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.flights.edit', $flight) }}" class="btn btn-primary d-inline-flex align-items-center">
+            <i class="bi bi-pencil me-1"></i> Chỉnh sửa
+        </a>
+        <a href="{{ route('admin.flights.index') }}" class="btn btn-outline-secondary d-inline-flex align-items-center">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+    </div>
 </div>
 @endsection

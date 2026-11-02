@@ -32,7 +32,9 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Lưu</button>
-        <a href="{{ route('admin.airlines.index') }}" class="btn btn-secondary">Quay lại</a>
+        <a href="{{ route('admin.airlines.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
     </form>
 </div>
 @endsection

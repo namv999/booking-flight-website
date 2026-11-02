@@ -94,7 +94,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('booking.passengers.store') }}" id="bf-passenger-form">
+                <form method="POST" action="{{ route('booking.passengers.next') }}" id="bf-passenger-form">
                     @csrf
 
                     {{-- 1. DANH SÁCH NGƯỜI LỚN --}}
@@ -736,10 +736,13 @@
                     {{-- NÚT SUBMIT FORM --}}
                     <div class="mt-4 mb-5">
                         <button type="submit" class="bf-btn-submit-passengers" id="bf-btn-submit-passengers">
-                            <span>Tiếp tục thanh toán</span>
+                            <span>Tiếp tục: Chọn ghế ngồi</span>
                             <i class="bi bi-arrow-right" aria-hidden="true"></i>
                         </button>
-                        <div class="text-center mt-2">
+                        <div class="text-center mt-3 d-flex flex-column align-items-center gap-1">
+                            <button type="submit" name="skip_seats" value="1" class="btn btn-link text-decoration-none text-muted small p-0">
+                                <i class="bi bi-skip-forward me-1"></i> Bỏ qua chọn ghế (xếp tự động miễn phí) & Đến thanh toán
+                            </button>
                             <small class="text-muted" style="font-size: 0.75rem;">
                                 <i class="bi bi-shield-check text-success me-1"></i> Bằng việc tiếp tục, bạn đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của Jet Charter.
                             </small>

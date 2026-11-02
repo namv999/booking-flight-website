@@ -14,25 +14,21 @@ use App\Http\Controllers\BookingHistoryController;
 use App\Http\Controllers\BookingPassportUpdateController;
 use App\Http\Controllers\FlightSearchController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SavedPassengerController;
 use App\Http\Controllers\SeatSelectionController;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\UserDashboardController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
 //     return view('home');
 // });
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 
-Route::get('/dashboard', function () {
-    if (Auth::user()->role === 'admin') {
-        return redirect()->route('admin.dashboard');
-    }
-
-    return view('dashboard.index');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [UserDashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -65,7 +61,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking/precheck', [SeatSelectionController::class, 'precheck'])->name('booking.precheck');
     Route::get('/booking/leg/{leg}', [FlightSearchController::class, 'leg'])->whereNumber('leg')->name('booking.leg');
     Route::get('/booking/passengers', [BookingController::class, 'create'])->name('booking.passengers.form');
+    Route::post('/booking/passengers/next', [BookingController::class, 'next'])->name('booking.passengers.next');
     Route::post('/booking/passengers', [BookingController::class, 'store'])->name('booking.passengers.store');
+    Route::get('/booking/seats', [SeatSelectionController::class, 'show'])->name('booking.seats.show');
+    Route::get('/booking/seats/map/{leg}', [SeatSelectionController::class, 'map'])->whereNumber('leg')->name('booking.seats.map');
+    Route::post('/booking/seats', [SeatSelectionController::class, 'store'])->name('booking.seats.store');
     Route::get('/payment/{booking}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/{booking}', [PaymentController::class, 'store'])->name('payment.store');
     Route::get('/booking-history', [BookingHistoryController::class, 'index'])->name('booking-history.index');

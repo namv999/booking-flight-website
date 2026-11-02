@@ -14,6 +14,7 @@ export default defineConfig({
                 'resources/css/seat-map.css',
                 'resources/js/layout.js',
                 'resources/js/home.js',
+                'resources/js/flights.js',
                 'resources/js/auth.js',
                 'resources/js/dashboard.js',
                 'resources/js/payment.js',

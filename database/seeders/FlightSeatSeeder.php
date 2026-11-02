@@ -58,7 +58,8 @@ class FlightSeatSeeder extends Seeder
                     FlightSeat::upsert(
                         $chunk,
                         ['flight_id', 'seat_id'],
-                        ['fare_class_id', 'price', 'status', 'held_by', 'held_until', 'updated_at']
+                        // Seeding again may not release seats that are held or booked.
+                        ['fare_class_id', 'price', 'updated_at']
                     );
                 }
             });

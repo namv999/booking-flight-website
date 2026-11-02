@@ -36,11 +36,12 @@
                 <a class="{{ request()->routeIs('admin.aircrafts.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.aircrafts.index') }}"><span aria-hidden="true">05</span>Máy bay</a>
                 <a class="{{ request()->routeIs('admin.airports.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.airports.index') }}"><span aria-hidden="true">06</span>Sân bay</a>
                 <a class="{{ request()->routeIs('admin.fare-classes.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.fare-classes.index') }}"><span aria-hidden="true">07</span>Hạng vé</a>
+                <a class="{{ request()->routeIs('admin.baggage-addons.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.baggage-addons.index') }}"><span aria-hidden="true">08</span>Gói hành lý</a>
             </nav>
             <div class="bf-admin-sidebar__support">
                 <strong>Cần hỗ trợ?</strong>
                 <p>Liên hệ nhóm kỹ thuật nội bộ.</p>
-                Mở trung tâm hỗ trợ
+                <a href="mailto:support@jetcharter.test" class="text-decoration-none">Mở trung tâm hỗ trợ &rarr;</a>
             </div>
         </aside>
 
@@ -55,10 +56,20 @@
                     <strong>Điều hành chuyến bay</strong>
                 </div>
                 <div class="bf-admin-topbar__actions">
-                    <button class="bf-icon-button bf-notification-button" type="button" aria-label="Thông báo">
-                        <span aria-hidden="true">!</span>
-                    </button>
-                    <a class="bf-avatar" href="{{ route('profile.edit') }}" aria-label="Tài khoản quản trị">A</a>
+                    <a href="{{ route('home') }}" target="_blank" class="btn btn-sm btn-outline-primary d-none d-sm-inline-flex align-items-center me-1" title="Mở trang chủ đặt vé">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Xem website
+                    </a>
+                    @php
+                        $pendingNoticeCount = class_exists(\App\Models\PassportUpdateRequest::class) ? \App\Models\PassportUpdateRequest::where('status', 'pending')->count() : 0;
+                    @endphp
+                    <a href="{{ route('admin.bookings.index') }}" class="bf-icon-button bf-notification-button text-decoration-none position-relative" title="{{ $pendingNoticeCount > 0 ? $pendingNoticeCount . ' yêu cầu hộ chiếu chờ duyệt' : 'Hệ thống vận hành bình thường' }}" aria-label="Thông báo">
+                        @if($pendingNoticeCount > 0)
+                            <span aria-hidden="true">{{ $pendingNoticeCount }}</span>
+                        @else
+                            <i class="bi bi-bell text-secondary"></i>
+                        @endif
+                    </a>
+                    <a class="bf-avatar" href="{{ route('profile.edit') }}" aria-label="Tài khoản quản trị">{{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}</a>
                 </div>
             </header>
             <main class="bf-admin-content">

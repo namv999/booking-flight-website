@@ -110,4 +110,4 @@
 </div>
 
 <button type="submit" class="btn btn-primary">Lưu</button>
-<a href="{{ route('saved-passengers.index') }}" class="btn btn-secondary">Hủy</a>
+<a href="{{ route('saved-passengers.index') }}" class="btn btn-outline-secondary">Hủy</a>

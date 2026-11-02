@@ -5,6 +5,7 @@
     min-height: 610px;
     overflow: hidden;
     background: var(--bf-navy);
+    color: #fff;
 }
 .bf-hero__image,
 .bf-hero__shade {

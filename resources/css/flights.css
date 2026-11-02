@@ -263,6 +263,17 @@
     background: var(--bf-sky);
     color: var(--bf-blue);
 }
+.bf-time-slot-btn.active,
+.bf-time-slot-btn.is-active {
+    border-color: var(--bf-blue) !important;
+    background: #eef7ff !important;
+    color: var(--bf-blue) !important;
+    box-shadow: 0 0 0 2px rgba(11, 107, 203, 0.2);
+}
+.bf-time-slot-btn.active strong,
+.bf-time-slot-btn.is-active strong {
+    color: var(--bf-blue) !important;
+}
 
 /* ============================================================
    4. FLIGHT LIST & CONTROLS
@@ -546,6 +557,7 @@
 }
 .bf-btn-select:hover {
     background: var(--bf-blue-dark);
+    color: #ffffff !important;
     box-shadow: 0 6px 16px rgba(18, 104, 179, 0.32);
     transform: translateY(-1px);
 }
@@ -871,6 +883,7 @@
 }
 .bf-btn-submit-passengers:hover {
     background: var(--bf-blue-dark);
+    color: #ffffff !important;
     box-shadow: 0 6px 18px rgba(18, 104, 179, 0.35);
     transform: translateY(-1px);
 }
@@ -902,6 +915,16 @@
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+/* Tailwind and Bootstrap both define `collapse`: Tailwind hides visibility,
+   which makes Bootstrap's expanded passport form remain invisible. */
+#passport-update .collapse {
+    visibility: visible;
+}
+
+#passport-update .collapse:not(.show) {
+    display: none;
 }
 
 /* Expiry Banner */
@@ -1075,6 +1098,7 @@
 }
 .bf-btn-pay-success:hover {
     background: #11674d;
+    color: #ffffff !important;
     box-shadow: 0 6px 18px rgba(22, 128, 95, 0.35);
     transform: translateY(-1px);
 }
@@ -1187,6 +1211,7 @@
 }
 .bf-btn-modal-home:hover {
     background: var(--bf-blue-dark);
+    color: #ffffff !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 14px rgba(18, 104, 179, 0.3);
 }

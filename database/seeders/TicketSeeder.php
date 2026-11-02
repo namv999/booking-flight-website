@@ -12,6 +12,15 @@ class TicketSeeder extends Seeder
 {
     public function run(): void
     {
+        // Repair seat status if a prior seeding run reset a ticketed seat to available.
+        FlightSeat::whereHas('ticket')
+            ->where('status', 'available')
+            ->update([
+                'status' => 'booked',
+                'held_by' => null,
+                'held_until' => null,
+            ]);
+
         $baggageAddon = BaggageAddon::orderBy('id')->first();
 
         if (! $baggageAddon) {
@@ -52,7 +61,7 @@ class TicketSeeder extends Seeder
                             '0',
                             STR_PAD_LEFT
                         ),
-                        isSelfSelected: true,
+                        isSelfSelected: false,
                         baggageAddonId: $baggageAddon->id,
                         flightId: $bookingFlight->flight_id
                     );
@@ -130,6 +139,7 @@ class TicketSeeder extends Seeder
          */
         $flightSeat = FlightSeat::where('flight_id', $flightId)
             ->where('status', 'available')
+            ->whereDoesntHave('ticket')
             ->orderBy('id')
             ->first();
 

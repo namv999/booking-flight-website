@@ -142,7 +142,7 @@
             @php $cfDep = \Carbon\Carbon::parse($cf->departure_time); @endphp
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 {{ ! $loop->last ? 'mb-2' : '' }}">
                 <div>
-                    <span class="badge bg-secondary me-1">Chặng {{ $i + 1 }}</span>
+                    <span class="badge bg-primary text-white me-1">Chặng {{ $i + 1 }}</span>
                     <strong>{{ $cf->departureAirport->iata_code }} → {{ $cf->arrivalAirport->iata_code }}</strong>
                     <span class="text-muted small ms-2">
                         {{ $cfDep->format('H:i d/m/Y') }} · {{ $cf->aircraft->airline->name ?? '' }}
@@ -163,7 +163,7 @@
                         <h2 class="bf-filter-card__title">
                             <i class="bi bi-funnel-fill text-primary" aria-hidden="true"></i> Bộ lọc
                         </h2>
-                        <a href="javascript:void(0)" class="bf-filter-card__reset" onclick="location.reload()">Đặt lại</a>
+                        <a href="javascript:void(0)" class="bf-filter-card__reset" id="bf-filter-reset">Đặt lại</a>
                     </div>
 
                     {{-- Lọc Hãng hàng không --}}
@@ -172,27 +172,42 @@
                             <span>Hãng hàng không</span>
                             <i class="bi bi-airplane" aria-hidden="true"></i>
                         </div>
-                        <label class="bf-filter-option">
-                            <span class="d-flex align-items-center">
-                                <input type="checkbox" checked>
-                                <span>Vietnam Airlines</span>
-                            </span>
-                            <span class="bf-filter-badge">VN</span>
-                        </label>
-                        <label class="bf-filter-option">
-                            <span class="d-flex align-items-center">
-                                <input type="checkbox" checked>
-                                <span>VietJet Air</span>
-                            </span>
-                            <span class="bf-filter-badge">VJ</span>
-                        </label>
-                        <label class="bf-filter-option">
-                            <span class="d-flex align-items-center">
-                                <input type="checkbox" checked>
-                                <span>Bamboo Airways</span>
-                            </span>
-                            <span class="bf-filter-badge">QH</span>
-                        </label>
+                        @php
+                            $availableAirlines = $flights->pluck('aircraft.airline')->filter()->unique('id')->values();
+                        @endphp
+                        @if ($availableAirlines->isNotEmpty())
+                            @foreach ($availableAirlines as $al)
+                                <label class="bf-filter-option">
+                                    <span class="d-flex align-items-center">
+                                        <input type="checkbox" class="bf-airline-checkbox" value="{{ $al->name }}" checked>
+                                        <span>{{ $al->name }}</span>
+                                    </span>
+                                    <span class="bf-filter-badge">{{ $al->iata_code }}</span>
+                                </label>
+                            @endforeach
+                        @else
+                            <label class="bf-filter-option">
+                                <span class="d-flex align-items-center">
+                                    <input type="checkbox" class="bf-airline-checkbox" value="Vietnam Airlines" checked>
+                                    <span>Vietnam Airlines</span>
+                                </span>
+                                <span class="bf-filter-badge">VN</span>
+                            </label>
+                            <label class="bf-filter-option">
+                                <span class="d-flex align-items-center">
+                                    <input type="checkbox" class="bf-airline-checkbox" value="VietJet Air" checked>
+                                    <span>VietJet Air</span>
+                                </span>
+                                <span class="bf-filter-badge">VJ</span>
+                            </label>
+                            <label class="bf-filter-option">
+                                <span class="d-flex align-items-center">
+                                    <input type="checkbox" class="bf-airline-checkbox" value="Bamboo Airways" checked>
+                                    <span>Bamboo Airways</span>
+                                </span>
+                                <span class="bf-filter-badge">QH</span>
+                            </label>
+                        @endif
                     </div>
 
                     {{-- Lọc Điểm dừng --}}
@@ -202,7 +217,7 @@
                         </div>
                         <label class="bf-filter-option">
                             <span class="d-flex align-items-center">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" id="bf-filter-direct" checked>
                                 <span>Bay thẳng</span>
                             </span>
                             <span class="bf-filter-badge text-success">Ưu tiên</span>
@@ -216,19 +231,19 @@
                             <i class="bi bi-clock" aria-hidden="true"></i>
                         </div>
                         <div class="bf-time-slots">
-                            <div class="bf-time-slot-btn">
+                            <div class="bf-time-slot-btn" data-time-slot="early-morning" role="button" tabindex="0">
                                 <strong>Sáng sớm</strong>
                                 <span>00:00 - 06:00</span>
                             </div>
-                            <div class="bf-time-slot-btn">
+                            <div class="bf-time-slot-btn" data-time-slot="morning" role="button" tabindex="0">
                                 <strong>Buổi sáng</strong>
                                 <span>06:00 - 12:00</span>
                             </div>
-                            <div class="bf-time-slot-btn">
+                            <div class="bf-time-slot-btn" data-time-slot="afternoon" role="button" tabindex="0">
                                 <strong>Buổi chiều</strong>
                                 <span>12:00 - 18:00</span>
                             </div>
-                            <div class="bf-time-slot-btn">
+                            <div class="bf-time-slot-btn" data-time-slot="evening" role="button" tabindex="0">
                                 <strong>Buổi tối</strong>
                                 <span>18:00 - 24:00</span>
                             </div>
@@ -249,158 +264,182 @@
                 {{-- Toolbar đếm số lượng + Sắp xếp nhanh --}}
                 <div class="bf-results-toolbar">
                     <div class="bf-results-count">
-                        Tìm thấy <strong>{{ $flights->total() }}</strong> chuyến bay phù hợp
+                        Tìm thấy <strong id="bf-count-display">{{ $flights->total() }}</strong> chuyến bay phù hợp
                     </div>
                     <div class="bf-sort-group d-none d-sm-flex">
                         <span class="text-muted small">Sắp xếp:</span>
-                        <span class="bf-sort-pill active">
+                        <span class="bf-sort-pill active" data-sort="price" role="button" tabindex="0">
                             <i class="bi bi-sort-numeric-down me-1"></i>Giá thấp nhất
                         </span>
-                        <span class="bf-sort-pill">
+                        <span class="bf-sort-pill" data-sort="time" role="button" tabindex="0">
                             <i class="bi bi-clock-history me-1"></i>Giờ cất cánh
                         </span>
                     </div>
                 </div>
 
                 {{-- VÒNG LẶP RENDER CÁC CHUYẾN BAY --}}
-                @forelse ($flights as $flight)
-                @php
-                $depTime = \Carbon\Carbon::parse($flight->departure_time);
-                $arrTime = \Carbon\Carbon::parse($flight->arrival_time);
-                $diffMinutes = $depTime->diffInMinutes($arrTime);
-                $hours = intdiv($diffMinutes, 60);
-                $mins = $diffMinutes % 60;
-                $durationText = ($hours > 0 ? "{$hours}h " : "") . ($mins > 0 ? "{$mins}m" : "00m");
-                $airlineName = $flight->aircraft->airline->name ?? 'Hãng hàng không';
-                $aircraftModel = $flight->aircraft->model ?? 'Aircraft';
-                $firstLetter = strtoupper(substr($airlineName, 0, 1));
-                @endphp
-                <article class="bf-flight-card" aria-label="Chuyến bay {{ $airlineName }}">
-                    {{-- Hàng trên: Hãng bay & Trạng thái --}}
-                    <div class="bf-flight-airline">
-                        <div class="bf-airline-info">
-                            <div class="bf-airline-logo-badge" aria-hidden="true">
-                                {{ $firstLetter }}
+                <div id="bf-flight-list">
+                    {{-- Thông báo khi bộ lọc không khớp chuyến nào --}}
+                    <div id="bf-no-matching-flights" class="bf-empty-card" style="display: none;">
+                        <div class="bf-empty-icon-box">
+                            <i class="bi bi-funnel" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp với bộ lọc</h3>
+                        <p class="bf-empty-desc">
+                            Không có chuyến bay nào khớp với hãng bay, điểm dừng hoặc khung giờ đã chọn.
+                            Vui lòng thử bỏ chọn bớt tiêu chí lọc hoặc đặt lại bộ lọc.
+                        </p>
+                        <button type="button" class="btn btn-primary btn-sm px-3 py-2 rounded-pill mt-2" id="bf-filter-reset-empty">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại bộ lọc
+                        </button>
+                    </div>
+
+                    @forelse ($flights as $flight)
+                    @php
+                    $depTime = \Carbon\Carbon::parse($flight->departure_time);
+                    $arrTime = \Carbon\Carbon::parse($flight->arrival_time);
+                    $diffMinutes = $depTime->diffInMinutes($arrTime);
+                    $hours = intdiv($diffMinutes, 60);
+                    $mins = $diffMinutes % 60;
+                    $durationText = ($hours > 0 ? "{$hours}h " : "") . ($mins > 0 ? "{$mins}m" : "00m");
+                    $airlineName = $flight->aircraft->airline->name ?? 'Hãng hàng không';
+                    $aircraftModel = $flight->aircraft->model ?? 'Aircraft';
+                    $firstLetter = strtoupper(substr($airlineName, 0, 1));
+                    @endphp
+                    <article class="bf-flight-card"
+                             data-flight-id="{{ $flight->id }}"
+                             data-airline="{{ $airlineName }}"
+                             data-price="{{ (float) $flight->min_price }}"
+                             data-dep-hour="{{ (int) $depTime->format('H') }}"
+                             data-dep-time="{{ $depTime->timestamp }}"
+                             data-stops="direct"
+                             aria-label="Chuyến bay {{ $airlineName }}">
+                        {{-- Hàng trên: Hãng bay & Trạng thái --}}
+                        <div class="bf-flight-airline">
+                            <div class="bf-airline-info">
+                                <div class="bf-airline-logo-badge" aria-hidden="true">
+                                    {{ $firstLetter }}
+                                </div>
+                                <div>
+                                    <div class="bf-airline-name">{{ $airlineName }}</div>
+                                    <div class="bf-airline-aircraft">{{ $aircraftModel }} &bull; Mã: #FL-{{ str_pad($flight->id, 4, '0', STR_PAD_LEFT) }}</div>
+                                </div>
                             </div>
+
                             <div>
-                                <div class="bf-airline-name">{{ $airlineName }}</div>
-                                <div class="bf-airline-aircraft">{{ $aircraftModel }} &bull; Mã: #FL-{{ str_pad($flight->id, 4, '0', STR_PAD_LEFT) }}</div>
+                                @if ($flight->status === 'delayed')
+                                <span class="bf-flight-status-badge bf-flight-status-badge--delayed">
+                                    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Hoãn giờ bay (Delayed)
+                                </span>
+                                @else
+                                <span class="bf-flight-status-badge bf-flight-status-badge--scheduled">
+                                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i> Đúng giờ (Scheduled)
+                                </span>
+                                @endif
                             </div>
                         </div>
 
-                        <div>
-                            @if ($flight->status === 'delayed')
-                            <span class="bf-flight-status-badge bf-flight-status-badge--delayed">
-                                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Hoãn giờ bay (Delayed)
-                            </span>
-                            @else
-                            <span class="bf-flight-status-badge bf-flight-status-badge--scheduled">
-                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i> Đúng giờ (Scheduled)
-                            </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- Thân card: Hành trình & Giá vé / Nút chọn --}}
-                    <div class="row align-items-center g-3 bf-flight-card-body">
-                        {{-- Cột trái: Giờ bay & Trục chặng --}}
-                        <div class="col-lg-8">
-                            <div class="bf-flight-route-grid">
-                                {{-- Điểm đi --}}
-                                <div class="bf-flight-endpoint">
-                                    <div class="bf-flight-time">{{ $depTime->format('H:i') }}</div>
-                                    <div class="bf-flight-code">{{ $flight->departureAirport->iata_code }}</div>
-                                    <div class="bf-flight-city">{{ $flight->departureAirport->city }}</div>
-                                </div>
-
-                                {{-- Trục đường bay --}}
-                                <div class="bf-flight-timeline">
-                                    <div class="bf-flight-duration">{{ $durationText }}</div>
-                                    <div class="bf-flight-track">
-                                        <i class="bi bi-airplane bf-flight-track-plane" aria-hidden="true"></i>
+                        {{-- Thân card: Hành trình & Giá vé / Nút chọn --}}
+                        <div class="row align-items-center g-3 bf-flight-card-body">
+                            {{-- Cột trái: Giờ bay & Trục chặng --}}
+                            <div class="col-lg-8">
+                                <div class="bf-flight-route-grid">
+                                    {{-- Điểm đi --}}
+                                    <div class="bf-flight-endpoint">
+                                        <div class="bf-flight-time">{{ $depTime->format('H:i') }}</div>
+                                        <div class="bf-flight-code">{{ $flight->departureAirport->iata_code }}</div>
+                                        <div class="bf-flight-city">{{ $flight->departureAirport->city }}</div>
                                     </div>
-                                    <div class="bf-flight-type">Bay thẳng</div>
-                                </div>
 
-                                {{-- Điểm đến --}}
-                                <div class="bf-flight-endpoint bf-flight-endpoint--arrival">
-                                    <div class="bf-flight-time">{{ $arrTime->format('H:i') }}</div>
-                                    <div class="bf-flight-code">{{ $flight->arrivalAirport->iata_code }}</div>
-                                    <div class="bf-flight-city">{{ $flight->arrivalAirport->city }}</div>
+                                    {{-- Trục đường bay --}}
+                                    <div class="bf-flight-timeline">
+                                        <div class="bf-flight-duration">{{ $durationText }}</div>
+                                        <div class="bf-flight-track">
+                                            <i class="bi bi-airplane bf-flight-track-plane" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="bf-flight-type">Bay thẳng</div>
+                                    </div>
+
+                                    {{-- Điểm đến --}}
+                                    <div class="bf-flight-endpoint bf-flight-endpoint--arrival">
+                                        <div class="bf-flight-time">{{ $arrTime->format('H:i') }}</div>
+                                        <div class="bf-flight-code">{{ $flight->arrivalAirport->iata_code }}</div>
+                                        <div class="bf-flight-city">{{ $flight->arrivalAirport->city }}</div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {{-- Cột phải: Giá tiền, số ghế và Action POST booking.precheck --}}
-                        <div class="col-lg-4">
-                            <div class="bf-flight-pricing-block">
-                                <span class="bf-fare-badge">Hạng {{ $fareClass->name }}</span>
+                            {{-- Cột phải: Giá tiền, số ghế và Action POST booking.precheck --}}
+                            <div class="col-lg-4">
+                                <div class="bf-flight-pricing-block">
+                                    <span class="bf-fare-badge">Hạng {{ $fareClass->name }}</span>
 
-                                <div class="bf-flight-price-wrap">
-                                    <span class="bf-price-prefix">Giá từ </span>
-                                    <span class="bf-flight-price">{{ number_format($flight->min_price, 0, ',', '.') }}</span>
-                                    <span class="bf-flight-price-unit"> VND</span>
-                                </div>
+                                    <div class="bf-flight-price-wrap">
+                                        <span class="bf-price-prefix">Giá từ </span>
+                                        <span class="bf-flight-price">{{ number_format($flight->min_price, 0, ',', '.') }}</span>
+                                        <span class="bf-flight-price-unit"> VND</span>
+                                    </div>
 
-                                @if ($flight->available_seats <= 5)
+                                    @if ($flight->available_seats <= 5)
                                     <div class="bf-seats-indicator bf-seats-indicator--urgent">
-                                    <i class="bi bi-fire text-danger" aria-hidden="true"></i>
-                                    <span>Chỉ còn {{ $flight->available_seats }} ghế!</span>
-                            </div>
-                            @else
-                            <div class="bf-seats-indicator">
-                                <i class="bi bi-check2 text-success" aria-hidden="true"></i>
-                                <span>Còn {{ $flight->available_seats }} ghế trống</span>
-                            </div>
-                            @endif
+                                        <i class="bi bi-fire text-danger" aria-hidden="true"></i>
+                                        <span>Chỉ còn {{ $flight->available_seats }} ghế!</span>
+                                    </div>
+                                    @else
+                                    <div class="bf-seats-indicator">
+                                        <i class="bi bi-check2 text-success" aria-hidden="true"></i>
+                                        <span>Còn {{ $flight->available_seats }} ghế trống</span>
+                                    </div>
+                                    @endif
 
-                            <form action="{{ route('booking.precheck') }}" method="POST" class="w-100">
-                                @csrf
-                                <input type="hidden" name="flight_id" value="{{ $flight->id }}">
-                                <input type="hidden" name="leg" value="{{ $legIndex }}">
+                                    <form action="{{ route('booking.precheck') }}" method="POST" class="w-100">
+                                        @csrf
+                                        <input type="hidden" name="flight_id" value="{{ $flight->id }}">
+                                        <input type="hidden" name="leg" value="{{ $legIndex }}">
 
-                                <button type="submit" class="bf-btn-select">
-                                    <span>Chọn chuyến</span>
-                                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                                </button>
-                            </form>
+                                        <button type="submit" class="bf-btn-select">
+                                            <span>Chọn chuyến</span>
+                                            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
+                    </article>
+                    @empty
+                    {{-- 4. TRẠNG THÁI KHÔNG TÌM THẤY KẾT QUẢ (EMPTY STATE) --}}
+                    <div class="bf-empty-card">
+                        <div class="bf-empty-icon-box">
+                            <i class="bi bi-airplane" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp</h3>
+                        @if ($legIndex > 0)
+                        <p class="bf-empty-desc">
+                            Không có chuyến bay nào từ <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
+                            đến <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
+                            trong ngày {{ $depDate->format('d/m/Y') }} khởi hành sau khi chặng trước hạ cánh,
+                            với hạng vé <strong>{{ $fareClass->name }}</strong>.
+                        </p>
+                        <a href="{{ $backUrl }}" class="bf-btn-empty-search">
+                            <i class="bi bi-arrow-left" aria-hidden="true"></i> Chọn lại chuyến của chặng trước
+                        </a>
+                        @else
+                        <p class="bf-empty-desc">
+                            Rất tiếc, hiện tại không có chuyến bay nào từ
+                            <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
+                            đến
+                            <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
+                            trong ngày {{ $depDate->format('d/m/Y') }} với hạng vé
+                            <strong>{{ $fareClass->name }}</strong>.
+                            Bạn vui lòng thử chọn ngày bay khác hoặc thay đổi tiêu chí tìm kiếm.
+                        </p>
+                        <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search text-light">
+                            <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm ngày khác
+                        </a>
+                        @endif
                     </div>
-        </div>
-        </article>
-        @empty
-        {{-- 4. TRẠNG THÁI KHÔNG TÌM THẤY KẾT QUẢ (EMPTY STATE) --}}
-        <div class="bf-empty-card">
-            <div class="bf-empty-icon-box">
-                <i class="bi bi-airplane" aria-hidden="true"></i>
-            </div>
-            <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp</h3>
-            @if ($legIndex > 0)
-            <p class="bf-empty-desc">
-                Không có chuyến bay nào từ <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
-                đến <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
-                trong ngày {{ $depDate->format('d/m/Y') }} khởi hành sau khi chặng trước hạ cánh,
-                với hạng vé <strong>{{ $fareClass->name }}</strong>.
-            </p>
-            <a href="{{ $backUrl }}" class="bf-btn-empty-search">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i> Chọn lại chuyến của chặng trước
-            </a>
-            @else
-            <p class="bf-empty-desc">
-                Rất tiếc, hiện tại không có chuyến bay nào từ
-                <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
-                đến
-                <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
-                trong ngày {{ $depDate->format('d/m/Y') }} với hạng vé
-                <strong>{{ $fareClass->name }}</strong>.
-                Bạn vui lòng thử chọn ngày bay khác hoặc thay đổi tiêu chí tìm kiếm.
-            </p>
-            <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search text-light">
-                <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm ngày khác
-            </a>
-            @endif
-        </div>
-        @endforelse
+                    @endforelse
+                </div>
 
         {{-- 5. PHÂN TRANG (PAGINATION) --}}
         @if ($flights->hasPages())
@@ -412,4 +451,8 @@
     </div>
 </div>
 </div>
+@endsection
+
+@section('scripts')
+@vite(['resources/js/flights.js'])
 @endsection

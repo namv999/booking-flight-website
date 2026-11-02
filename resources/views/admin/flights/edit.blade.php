@@ -75,7 +75,9 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Cập nhật</button>
-        <a href="{{ route('admin.flights.index') }}" class="btn btn-secondary">Quay lại</a>
+        <a href="{{ route('admin.flights.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
     </form>
 </div>
 @endsection

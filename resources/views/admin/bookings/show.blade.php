@@ -45,14 +45,16 @@
         <div class="d-flex align-items-center gap-3">
             <h2 class="mb-0">Đơn đặt vé #BK-{{ str_pad($booking->id, 5, '0', STR_PAD_LEFT) }}</h2>
             @if($booking->status === 'paid')
-                <span class="badge bg-success">Đã thanh toán</span>
+                <span class="badge bg-success text-white">Đã thanh toán</span>
             @elseif($booking->status === 'cancelled')
-                <span class="badge bg-secondary">Đã hủy / Hết hạn</span>
+                <span class="badge bg-secondary text-white">Đã hủy / Hết hạn</span>
             @else
                 <span class="badge bg-warning text-dark">Chờ thanh toán</span>
             @endif
         </div>
-        <a href="{{ route('admin.bookings.index') }}" class="btn btn-secondary">Quay lại danh sách</a>
+        <a href="{{ route('admin.bookings.index') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-1 shadow-sm">
+            <i class="bi bi-arrow-left"></i> Quay lại danh sách
+        </a>
     </div>
 
     @if (session('passport_status'))
@@ -96,8 +98,8 @@
                 : null;
             $flightStatus = match ($flight?->status) {
                 'delayed' => ['Hoãn / trễ', 'bg-warning text-dark'],
-                'cancelled' => ['Đã hủy', 'bg-danger'],
-                default => ['Đúng lịch', 'bg-primary'],
+                'cancelled' => ['Đã hủy', 'bg-danger text-white'],
+                default => ['Đúng lịch', 'bg-primary text-white'],
             };
         @endphp
 
@@ -265,8 +267,8 @@
             };
         };
         $requestBadge = fn ($status) => match ($status) {
-            'approved' => ['bg-success', 'Đã duyệt'],
-            'rejected' => ['bg-danger', 'Đã từ chối'],
+            'approved' => ['bg-success text-white', 'Đã duyệt'],
+            'rejected' => ['bg-danger text-white', 'Đã từ chối'],
             default => ['bg-warning text-dark', 'Đang chờ duyệt'],
         };
     @endphp
@@ -371,8 +373,8 @@
                 @php
                     $payment = $booking->payment;
                     [$payBadgeClass, $payBadgeText] = match ($payment->status) {
-                        'success' => ['bg-success', 'Thành công'],
-                        'failed' => ['bg-danger', 'Thất bại'],
+                        'success' => ['bg-success text-white', 'Thành công'],
+                        'failed' => ['bg-danger text-white', 'Thất bại'],
                         default => ['bg-warning text-dark', 'Đang xử lý'],
                     };
                     $methodLabel = match ($payment->method) {

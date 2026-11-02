@@ -40,18 +40,67 @@
             </button>
 
             <nav class="bf-navbar__nav" id="bf-main-navigation" aria-label="Điều hướng chính">
-                <a class="{{ request()->is('/') ? 'bf-navbar__link--active' : '' }}" href="/">Trang chủ</a>
-                <a href="{{ route('home') }}">Chuyến bay</a>
-                <a href="{{ route('home') }}">Khuyến mãi</a>
+                <a class="{{ request()->is('/') ? 'bf-navbar__link--active' : '' }}" href="{{ route('home') }}">Trang chủ</a>
+                <a href="{{ route('home') }}#search-box">Tìm chuyến bay</a>
+                @auth
+                    <a class="{{ request()->routeIs('dashboard') ? 'bf-navbar__link--active' : '' }}" href="{{ route('dashboard') }}">Chuyến đi của tôi</a>
+                    <a class="{{ request()->routeIs('saved-passengers.*') ? 'bf-navbar__link--active' : '' }}" href="{{ route('saved-passengers.index') }}">Hồ sơ hành khách</a>
+                @endauth
+                <a href="{{ route('home') }}#offers">Ưu đãi</a>
                 <a href="tel:19001234">Hỗ trợ</a>
             </nav>
 
             <div class="bf-navbar__actions">
                 @auth
-                    <a class="bf-button bf-button--ghost" href="{{ route('dashboard') }}">Chuyến đi của tôi</a>
-                    <a class="bf-avatar" href="{{ route('profile.edit') }}" aria-label="Mở hồ sơ cá nhân">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                    </a>
+                    <a class="bf-button bf-button--ghost d-none d-lg-inline-flex" href="{{ route('dashboard') }}">Chuyến đi của tôi</a>
+                    <div class="dropdown">
+                        <button class="bf-avatar border-0" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu tài khoản">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userMenuDropdown">
+                            <li class="px-3 py-2 border-bottom">
+                                <div class="fw-bold text-dark">{{ Auth::user()->name }}</div>
+                                <div class="text-muted small text-truncate" style="max-width: 200px;">{{ Auth::user()->email }}</div>
+                            </li>
+                            @if (Auth::user()->role === 'admin')
+                                <li>
+                                    <a class="dropdown-item py-2" href="{{ route('admin.dashboard') }}">
+                                        <i class="bi bi-speedometer2 me-2 text-primary"></i>Trang quản trị
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                            @endif
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ route('dashboard') }}">
+                                    <i class="bi bi-airplane me-2 text-primary"></i>Chuyến đi của tôi
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ route('booking-history.index') }}">
+                                    <i class="bi bi-clock-history me-2 text-primary"></i>Lịch sử đặt vé
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ route('saved-passengers.index') }}">
+                                    <i class="bi bi-people me-2 text-primary"></i>Hồ sơ hành khách
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2" href="{{ route('profile.edit') }}">
+                                    <i class="bi bi-person-gear me-2 text-primary"></i>Cài đặt tài khoản
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}" class="m-0">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item py-2 text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 @else
                     <a class="bf-button bf-button--ghost" href="{{ route('login') }}">Đăng nhập</a>
                     <a class="bf-button bf-button--primary" href="{{ route('register') }}">Tạo tài khoản</a>
@@ -75,15 +124,15 @@
             </div>
             <div>
                 <h2>Khám phá</h2>
-                <a href="{{ route('home') }}">Vé máy bay</a>
-                <a href="{{ route('home') }}">Điểm đến</a>
-                <a href="{{ route('home') }}">Ưu đãi mới</a>
+                <a href="{{ route('home') }}#search-box">Vé máy bay</a>
+                <a href="{{ route('home') }}#destinations">Điểm đến</a>
+                <a href="{{ route('home') }}#offers">Ưu đãi mới</a>
             </div>
             <div>
-                <h2>Hỗ trợ</h2>
-                <a href="tel:19001234">Trung tâm trợ giúp</a>
-                <span>Điều khoản sử dụng</span>
-                <span>Chính sách bảo mật</span>
+                <h2>Dịch vụ & Hỗ trợ</h2>
+                <a href="{{ route('dashboard') }}">Chuyến đi của tôi</a>
+                <a href="{{ route('booking-history.index') }}">Lịch sử đặt vé</a>
+                <a href="tel:19001234">Trung tâm trợ giúp 24/7</a>
             </div>
             <div>
                 <h2>Liên hệ</h2>

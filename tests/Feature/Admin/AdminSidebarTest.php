@@ -50,7 +50,7 @@ class AdminSidebarTest extends TestCase
         $links = $this->sidebarLinks($html);
 
         $this->assertSame(
-            ['Tổng quan', 'Chuyến bay', 'Đặt vé', 'Hãng bay', 'Máy bay', 'Sân bay', 'Hạng vé'],
+            ['Tổng quan', 'Chuyến bay', 'Đặt vé', 'Hãng bay', 'Máy bay', 'Sân bay', 'Hạng vé', 'Gói hành lý'],
             array_column($links, 'label')
         );
         $this->assertSame([
@@ -61,6 +61,7 @@ class AdminSidebarTest extends TestCase
             route('admin.aircrafts.index'),
             route('admin.airports.index'),
             route('admin.fare-classes.index'),
+            route('admin.baggage-addons.index'),
         ], array_column($links, 'href'));
     }
 
@@ -71,7 +72,7 @@ class AdminSidebarTest extends TestCase
         preg_match('/<nav class="bf-admin-nav".*?<\/nav>/s', $html, $nav);
         preg_match_all('/<span aria-hidden="true">(\d+)<\/span>/', $nav[0], $m);
 
-        $this->assertSame(['01', '02', '03', '04', '05', '06', '07'], $m[1]);
+        $this->assertSame(['01', '02', '03', '04', '05', '06', '07', '08'], $m[1]);
     }
 
     public function test_every_sidebar_link_and_avatar_opens_a_real_page(): void
@@ -80,9 +81,6 @@ class AdminSidebarTest extends TestCase
         $html = $this->page($admin);
 
         foreach ($this->sidebarLinks($html) as $link) {
-            if ($link['href'] === route('admin.dashboard')) {
-                continue; // xem ghi chú ở page(): chỉ kiểm tra href, không GET được trên SQLite
-            }
             $this->actingAs($admin)->get($link['href'])->assertOk();
         }
 
@@ -117,6 +115,7 @@ class AdminSidebarTest extends TestCase
             'Máy bay' => route('admin.aircrafts.index'),
             'Sân bay' => route('admin.airports.index'),
             'Hạng vé' => route('admin.fare-classes.index'),
+            'Gói hành lý' => route('admin.baggage-addons.index'),
             // trang con (show / edit) vẫn đánh dấu đúng mục cha
             'Hãng bay ' => route('admin.airlines.edit', $airline),
             'Máy bay ' => route('admin.aircrafts.show', $aircraft),

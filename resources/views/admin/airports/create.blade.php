@@ -36,8 +36,10 @@
     @error('timezone') <div class="invalid-feedback">{{ $message }}</div> @enderror
 </div>
 
-        <button type="submit" class="btn btn-success">Lưu</button>
-        <a href="{{ route('admin.airports.index') }}" class="btn btn-secondary">Quay lại</a>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a href="{{ route('admin.airports.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
+        </a>
     </form>
 </div>
 @endsection

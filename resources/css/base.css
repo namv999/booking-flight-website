@@ -52,9 +52,59 @@ img {
     font-size: 16px;
     line-height: 1.6;
 }
-.bf-body a {
+.bf-body a:not(.btn):not(.badge) {
     color: inherit;
     text-decoration: none;
+}
+.bf-body a.btn,
+.bf-body .btn {
+    text-decoration: none;
+}
+.bf-body a.btn-primary,
+.bf-body .btn-primary {
+    color: #fff !important;
+}
+.bf-body a.btn-secondary,
+.bf-body .btn-secondary {
+    color: #fff !important;
+    background-color: #5c636a;
+    border-color: #565e64;
+}
+.bf-body a.btn-secondary:hover,
+.bf-body .btn-secondary:hover {
+    color: #fff !important;
+    background-color: #495057;
+    border-color: #495057;
+}
+.bf-body a.btn-outline-secondary,
+.bf-body .btn-outline-secondary {
+    color: #495057 !important;
+    border-color: #ced4da;
+    background-color: #fff;
+}
+.bf-body a.btn-outline-secondary:hover,
+.bf-body .btn-outline-secondary:hover {
+    color: #fff !important;
+    background-color: #5c636a;
+    border-color: #5c636a;
+}
+.bf-body a.btn-danger,
+.bf-body .btn-danger {
+    color: #fff !important;
+}
+.bf-body a.btn-success,
+.bf-body .btn-success {
+    color: #fff !important;
+}
+.bf-body a.btn-dark,
+.bf-body .btn-dark {
+    color: #fff !important;
+}
+.badge.bg-secondary {
+    color: #fff !important;
+}
+.badge.bg-dark {
+    color: #fff !important;
 }
 .bf-main {
     min-height: 58vh;
@@ -218,6 +268,7 @@ img {
 }
 .bf-button--primary:hover {
     background: var(--bf-blue-dark);
+    color: #fff !important;
 }
 .bf-navbar__actions .bf-button--primary {
     border-color: #0b5fa7;
@@ -229,6 +280,7 @@ img {
 .bf-navbar__actions .bf-button--primary:hover {
     border-color: #084c86;
     background: #084c86;
+    color: #fff !important;
 }
 .bf-button--accent {
     background: var(--bf-yellow);

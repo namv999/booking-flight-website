@@ -482,4 +482,30 @@ class FlightSearchTest extends TestCase
         $response->assertOk();
         $this->assertEquals($flight->id, $response->viewData('flights')->first()->id);
     }
+
+    public function test_results_view_contains_interactive_filter_elements_and_data_attributes(): void
+    {
+        $dep = Airport::factory()->create();
+        $arr = Airport::factory()->create();
+        $fare = FareClass::factory()->create();
+        $flight = $this->makeFlightWithSeat($dep, $arr, $fare);
+
+        $response = $this->get(route(
+            'flights.search.results',
+            $this->searchParams($dep, $arr, $fare)
+        ));
+
+        $response->assertOk();
+        $response->assertSee('id="bf-flight-list"', false);
+        $response->assertSee('id="bf-count-display"', false);
+        $response->assertSee('id="bf-no-matching-flights"', false);
+        $response->assertSee('id="bf-filter-reset"', false);
+        $response->assertSee('id="bf-filter-direct"', false);
+        $response->assertSee('bf-airline-checkbox', false);
+        $response->assertSee('data-time-slot="morning"', false);
+        $response->assertSee('data-flight-id="'.$flight->id.'"', false);
+        $response->assertSee('data-airline="', false);
+        $response->assertSee('data-price="1500000"', false);
+        $response->assertSee('data-stops="direct"', false);
+    }
 }
