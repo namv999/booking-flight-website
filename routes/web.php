@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/payment/{booking}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/{booking}', [PaymentController::class, 'store'])->name('payment.store');
     Route::get('/booking-history', [BookingHistoryController::class, 'index'])->name('booking-history.index');
+    Route::get('/booking-history/{id}/pdf', [BookingHistoryController::class, 'pdf'])->whereNumber('id')->name('booking-history.pdf');
     Route::get('/booking-history/{id}', [BookingHistoryController::class, 'show'])->name('booking-history.show');
     Route::post('/booking-history/{id}/passengers/{passenger}/passport-update', [BookingPassportUpdateController::class, 'store'])->name('booking-history.passport-update.store');
 });

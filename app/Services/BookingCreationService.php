@@ -47,6 +47,7 @@ class BookingCreationService
         $orderedFlights = Flight::with(['departureAirport', 'arrivalAirport'])
             ->whereIn('id', $flightIds)
             ->orderBy('departure_time')
+            ->orderBy('id')
             ->get();
 
         if ($orderedFlights->count() !== $flightIds->count()) {
@@ -81,6 +82,23 @@ class BookingCreationService
                 $legSelected = $selectedSeats[$legIndex] ?? [];
                 $claimedInThisLeg = [];
                 $passengerSeats = [];
+
+                // Lock all manually selected seats in ascending ID order before
+                // validating any of them, so concurrent bookings use one lock order.
+                $chosenIds = collect($legSelected['adults'] ?? [])
+                    ->merge($legSelected['children'] ?? [])
+                    ->filter()
+                    ->map(fn ($id) => (int) $id)
+                    ->unique()
+                    ->sort()
+                    ->values();
+
+                if ($chosenIds->isNotEmpty()) {
+                    FlightSeat::whereIn('id', $chosenIds)
+                        ->orderBy('id')
+                        ->lockForUpdate()
+                        ->get();
+                }
 
                 // 1. Validate specifically chosen seats
                 foreach ($passengerData['adults'] as $pIdx => $adultRow) {
@@ -232,7 +250,8 @@ class BookingCreationService
                 ];
             }
 
-            // Create BookingFlights and Tickets in ascending order of flight_id (prevents deadlocks and matches schema convention)
+            // Persist BookingFlights and Tickets by flight_id for stable data.
+            // Seat locks were acquired above by departure_time, then flight ID, and seat ID.
             $totalAmount = 0;
             $flightsSortedById = $orderedFlights->sortBy('id')->values();
 

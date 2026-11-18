@@ -261,4 +261,123 @@ class SeatSelectionFlowTest extends TestCase
         $this->assertFalse($ticket->is_self_selected);
         $this->assertEquals(1000000, $ticket->price);
     }
+
+    public function test_store_rejects_seat_ids_with_invalid_input_type(): void
+    {
+        $user = User::factory()->create();
+        $fareClass = FareClass::factory()->create();
+        [$flight] = $this->createFlightWithSeats($fareClass, 4);
+        session([
+            'pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 0),
+            'pending_passengers' => ['adults' => [['full_name' => 'Pham Van D']]],
+        ]);
+
+        $response = $this->actingAs($user)->post(route('booking.seats.store'), [
+            'seats' => 'not-an-array',
+        ]);
+
+        $response->assertSessionHasErrors('seats');
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
+    public function test_store_rejects_the_same_seat_selected_for_two_passengers(): void
+    {
+        $user = User::factory()->create();
+        $fareClass = FareClass::factory()->create();
+        [$flight, $seats] = $this->createFlightWithSeats($fareClass, 4);
+        session([
+            'pending_selection' => $this->pendingSelection($flight, $fareClass, 2, 0, 0),
+            'pending_passengers' => [
+                'adults' => [
+                    ['full_name' => 'Pham Van D'],
+                    ['full_name' => 'Nguyen Van E'],
+                ],
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->post(route('booking.seats.store'), [
+            'seats' => [0 => ['adults' => [0 => $seats[0]->id, 1 => $seats[0]->id]]],
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
+    public function test_store_rejects_a_seat_from_another_flight(): void
+    {
+        $user = User::factory()->create();
+        $fareClass = FareClass::factory()->create();
+        [$flight] = $this->createFlightWithSeats($fareClass, 2);
+        $otherFlight = Flight::factory()->create([
+            'aircraft_id' => $flight->aircraft_id,
+            'departure_airport_id' => $flight->departure_airport_id,
+            'arrival_airport_id' => $flight->arrival_airport_id,
+        ]);
+        $otherSeat = FlightSeat::factory()->create([
+            'flight_id' => $otherFlight->id,
+            'fare_class_id' => $fareClass->id,
+        ]);
+        session([
+            'pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 0),
+            'pending_passengers' => ['adults' => [['full_name' => 'Pham Van D']]],
+        ]);
+
+        $response = $this->actingAs($user)->post(route('booking.seats.store'), [
+            'seats' => [0 => ['adults' => [0 => $otherSeat->id]]],
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
+    public function test_store_rejects_booked_and_held_seats(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $fareClass = FareClass::factory()->create();
+        [$flight, $seats] = $this->createFlightWithSeats($fareClass, 3);
+        $seats[0]->update(['status' => 'booked']);
+        $seats[1]->update([
+            'status' => 'held',
+            'held_by' => $otherUser->id,
+            'held_until' => now()->addMinutes(10),
+        ]);
+        session([
+            'pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 0),
+            'pending_passengers' => ['adults' => [['full_name' => 'Pham Van D']]],
+        ]);
+
+        foreach ([$seats[0], $seats[1]] as $seat) {
+            $response = $this->actingAs($user)->post(route('booking.seats.store'), [
+                'seats' => [0 => ['adults' => [0 => $seat->id]]],
+            ]);
+
+            $response->assertRedirect();
+            $response->assertSessionHas('error');
+            $this->assertDatabaseCount('bookings', 0);
+        }
+    }
+
+    public function test_store_rejects_a_seat_from_another_fare_class(): void
+    {
+        $user = User::factory()->create();
+        $fareClass = FareClass::factory()->create();
+        $otherFareClass = FareClass::factory()->create();
+        [$flight, $seats] = $this->createFlightWithSeats($fareClass, 2);
+        $seats[0]->update(['fare_class_id' => $otherFareClass->id]);
+        session([
+            'pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 0),
+            'pending_passengers' => ['adults' => [['full_name' => 'Pham Van D']]],
+        ]);
+
+        $response = $this->actingAs($user)->post(route('booking.seats.store'), [
+            'seats' => [0 => ['adults' => [0 => $seats[0]->id]]],
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+        $this->assertDatabaseCount('bookings', 0);
+    }
 }

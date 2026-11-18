@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\BookingPaidMail;
 use App\Models\Booking;
 use App\Models\BookingFlight;
 use App\Models\Flight;
@@ -11,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase
@@ -80,6 +82,38 @@ class PaymentTest extends TestCase
         $this->assertSame('booked', $data['seat']->status);
         $this->assertNull($data['seat']->held_by);
         $this->assertNull($data['seat']->held_until);
+    }
+
+    public function test_successful_payment_sends_booking_confirmation_email(): void
+    {
+        Mail::fake();
+        $user = User::factory()->create();
+        $data = $this->makePendingBookingWithSeat($user);
+
+        $this->actingAs($user)->post(route('payment.store', $data['booking']), [
+            'method' => 'the_tin_dung',
+            'simulate_result' => 'success',
+        ]);
+
+        Mail::assertSent(BookingPaidMail::class, fn (BookingPaidMail $mail) => $mail->bookingId === $data['booking']->id);
+    }
+
+    public function test_successful_payment_is_rejected_if_held_seat_belongs_to_another_user(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $data = $this->makePendingBookingWithSeat($user);
+        $data['seat']->update(['held_by' => $otherUser->id]);
+
+        $response = $this->actingAs($user)->post(route('payment.store', $data['booking']), [
+            'method' => 'the_tin_dung',
+            'simulate_result' => 'success',
+        ]);
+
+        $response->assertRedirect(route('home'));
+        $response->assertSessionHas('error');
+        $this->assertSame('pending', $data['booking']->fresh()->status);
+        $this->assertDatabaseCount('payments', 0);
     }
 
     public function test_failed_payment_keeps_booking_pending_and_seat_unchanged(): void

@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\BookingPaidMail;
 use App\Models\Booking;
 use App\Models\FlightSeat;
 use App\Models\Payment;
+use App\Models\Ticket;
 use App\Services\BookingExpiryService;
 use App\Services\PassportRiskService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
@@ -87,44 +90,91 @@ class PaymentController extends Controller
             'confirm_passport_risk.accepted' => 'Vui lòng xác nhận bạn đã đọc cảnh báo về hộ chiếu trước khi thanh toán.',
         ]);
 
-        DB::transaction(function () use ($validated, $booking) {
+        $isSuccess = $validated['simulate_result'] === 'success';
+
+        $outcome = DB::transaction(function () use ($validated, $booking, $isSuccess) {
+            $locked = Booking::whereKey($booking->id)->lockForUpdate()->first();
+
+            if (! $locked || $locked->status !== 'pending') {
+                return 'not_pending';
+            }
+
+            $expiresAt = $locked->created_at->addMinutes(config('booking.seat_hold_minutes'));
+            if (now()->greaterThanOrEqualTo($expiresAt)) {
+                return 'expired';
+            }
+
+            $seatIds = collect();
+
+            if ($isSuccess) {
+                $bookingFlightIds = $locked->bookingFlights()->pluck('id');
+                $tickets = Ticket::whereIn('booking_flight_id', $bookingFlightIds)->get();
+                $seatIds = $tickets->pluck('flight_seat_id')->filter()->values();
+                $seats = FlightSeat::whereIn('flight_seats.id', $seatIds)
+                    ->join('flights', 'flights.id', '=', 'flight_seats.flight_id')
+                    ->orderBy('flights.departure_time')
+                    ->orderBy('flight_seats.flight_id')
+                    ->orderBy('flight_seats.id')
+                    ->lockForUpdate()
+                    ->get('flight_seats.*');
+
+                $needSeat = $tickets->whereNull('companion_adult_passenger_id')->count();
+                $seatLost = $seats->count() !== $needSeat
+                    || $seats->contains(fn ($seat) => $seat->status !== 'held'
+                        || (int) $seat->held_by !== (int) $locked->user_id);
+
+                if ($seatLost) {
+                    return 'seat_lost';
+                }
+            }
+
             Payment::updateOrCreate(
-                ['booking_id' => $booking->id],
+                ['booking_id' => $locked->id],
                 [
-                    'amount' => $booking->total_amount,
+                    'amount' => $locked->total_amount,
                     'method' => $validated['method'],
-                    'status' => $validated['simulate_result'] === 'success' ? 'success' : 'failed',
+                    'status' => $isSuccess ? 'success' : 'failed',
                     'transaction_code' => strtoupper(Str::random(12)),
-                    'paid_at' => $validated['simulate_result'] === 'success' ? now() : null,
+                    'paid_at' => $isSuccess ? now() : null,
                 ]
             );
 
-            if ($validated['simulate_result'] === 'success') {
-                $booking->update(['status' => 'paid']);
-
-                // Ghế đã thanh toán -> chuyển hẳn sang booked, không còn "held" nữa
-                // (held_by/held_until không còn ý nghĩa với ghế đã bán, xóa theo)
-                $flightSeatIds = $booking->bookingFlights()
-                    ->with('tickets')
-                    ->get()
-                    ->pluck('tickets')
-                    ->flatten()
-                    ->pluck('flight_seat_id')
-                    ->filter()
-                    ->values();
-
-                if ($flightSeatIds->isNotEmpty()) {
-                    FlightSeat::whereIn('id', $flightSeatIds)
-                        ->update([
-                            'status' => 'booked',
-                            'held_by' => null,
-                            'held_until' => null,
-                        ]);
-                }
+            if ($isSuccess) {
+                $locked->update(['status' => 'paid']);
+                FlightSeat::whereIn('id', $seatIds)->update([
+                    'status' => 'booked',
+                    'held_by' => null,
+                    'held_until' => null,
+                ]);
             }
+
+            return $isSuccess ? 'paid' : 'failed';
         });
 
-        if ($validated['simulate_result'] === 'success') {
+        if ($outcome === 'expired') {
+            $this->expiryService->cancelIfExpired($booking);
+
+            return redirect()->route('booking-history.show', $booking)
+                ->with('error', 'Phiên đặt vé của bạn đã hết hạn. Ghế đã được giải phóng, vui lòng đặt lại.');
+        }
+
+        if ($outcome === 'not_pending') {
+            return redirect()->route('booking-history.show', $booking)
+                ->with('error', 'Booking không còn ở trạng thái chờ thanh toán.');
+        }
+
+        if ($outcome === 'seat_lost') {
+            return redirect()->route('home')
+                ->with('error', 'Ghế của bạn không còn được giữ. Vui lòng đặt lại.');
+        }
+
+        if ($outcome === 'paid') {
+            try {
+                Mail::to(auth()->user())->send(new BookingPaidMail($booking->id));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+
             return redirect()->route('booking-history.show', $booking)
                 ->with('status', 'Thanh toán thành công! Mã booking #'.$booking->id);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SeatSelectionRequest;
 use App\Models\FareClass;
 use App\Models\Flight;
 use App\Models\FlightSeat;
@@ -220,7 +221,7 @@ class SeatSelectionController extends Controller
     /**
      * Nhận lựa chọn ghế và hoàn tất đặt vé
      */
-    public function store(Request $request, BookingCreationService $bookingService): RedirectResponse
+    public function store(SeatSelectionRequest $request, BookingCreationService $bookingService): RedirectResponse
     {
         $pending = session('pending_selection');
         $passengerData = session('pending_passengers');
@@ -235,7 +236,7 @@ class SeatSelectionController extends Controller
                 ->with('error', 'Vui lòng hoàn thành thông tin hành khách trước khi chọn ghế.');
         }
 
-        $selectedSeats = $request->input('seats', []);
+        $selectedSeats = $request->validated()['seats'] ?? [];
 
         try {
             $booking = $bookingService->create($pending, $passengerData, $selectedSeats, auth()->user());

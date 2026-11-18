@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\PassportService;
 use App\Services\PassportUpdateService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingHistoryController extends Controller
 {
@@ -41,5 +42,23 @@ class BookingHistoryController extends Controller
         $passportUpdateError = $showPassportUpdate ? app(PassportUpdateService::class)->bookingError($booking) : null;
 
         return view('booking-history.show', compact('booking', 'showPassportUpdate', 'passportUpdateError'));
+    }
+
+    public function pdf(int $id)
+    {
+        $booking = auth()->user()->bookings()
+            ->where('status', 'paid')
+            ->with([
+                'bookingFlights.flight.aircraft' => fn ($query) => $query->withTrashed(),
+                'bookingFlights.flight.aircraft.airline' => fn ($query) => $query->withTrashed(),
+                'bookingFlights.flight.departureAirport' => fn ($query) => $query->withTrashed(),
+                'bookingFlights.flight.arrivalAirport' => fn ($query) => $query->withTrashed(),
+                'bookingFlights.tickets.passenger',
+                'bookingFlights.tickets.flightSeat.seat',
+            ])
+            ->findOrFail($id);
+
+        return Pdf::loadView('booking-history.ticket-pdf', compact('booking'))
+            ->download('ve-booking-'.$booking->id.'.pdf');
     }
 }

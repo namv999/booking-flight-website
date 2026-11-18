@@ -9,6 +9,8 @@
 /.idea
 /.nova
 /.phpunit.cache
+## Local run guide may contain machine-specific setup details.
+/HUONG_DAN_CHAY.md
 /.vscode
 /.zed
 /auth.json

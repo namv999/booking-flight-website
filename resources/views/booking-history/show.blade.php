@@ -361,6 +361,9 @@
                     {{-- NÚT HÀNH ĐỘNG CHÍNH --}}
                     <div class="mt-4 d-flex flex-column gap-2 bf-print-hide">
                         @if ($booking->status === 'paid')
+                            <a href="{{ route('booking-history.pdf', $booking->id) }}" class="btn btn-primary w-100 py-2 fw-bold">
+                                <i class="bi bi-file-earmark-pdf me-2"></i>Tải vé PDF
+                            </a>
                             <button type="button" class="btn btn-primary w-100 py-2 fw-bold" onclick="window.print()">
                                 <i class="bi bi-printer me-2"></i>In vé điện tử / Lưu PDF
                             </button>

@@ -117,6 +117,34 @@ class BookingHistoryTest extends TestCase
         $response->assertNotFound();
     }
 
+    public function test_owner_can_download_pdf_for_paid_booking(): void
+    {
+        $user = User::factory()->create();
+        $booking = $this->makeBookingWithFullRelations($user, ['status' => 'paid']);
+
+        $response = $this->actingAs($user)->get(route('booking-history.pdf', $booking->id));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $response->assertDownload('ve-booking-'.$booking->id.'.pdf');
+    }
+
+    public function test_pdf_is_not_available_to_another_user_or_for_pending_booking(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $paidBooking = $this->makeBookingWithFullRelations($owner, ['status' => 'paid']);
+        $pendingBooking = $this->makeBookingWithFullRelations($owner, ['status' => 'pending']);
+
+        $this->actingAs($otherUser)
+            ->get(route('booking-history.pdf', $paidBooking->id))
+            ->assertNotFound();
+
+        $this->actingAs($owner)
+            ->get(route('booking-history.pdf', $pendingBooking->id))
+            ->assertNotFound();
+    }
+
     public function test_show_loads_data_even_when_airline_is_soft_deleted(): void
     {
         $user = User::factory()->create();
