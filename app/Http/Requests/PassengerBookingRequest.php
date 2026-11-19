@@ -66,21 +66,30 @@ class PassengerBookingRequest extends FormRequest
         $rules = [
             'adults' => ['required', 'array', 'min:1'],
             'adults.*.full_name' => ['required', 'string', 'max:150'],
+            'adults.*.document_type' => ['nullable', 'string', 'in:national_id,passport'],
             'adults.*.document_number' => ['nullable', 'string', 'max:30'],
-            'adults.*.date_of_birth' => ['nullable', 'date'],
+            'adults.*.date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'adults.*.gender' => ['nullable', 'in:male,female'],
+            'adults.*.document_issue_date' => ['nullable', 'date', 'before_or_equal:today'],
             'adults.*.baggage_addon_id' => ['nullable', 'integer', Rule::exists('baggage_addons', 'id')->whereNull('deleted_at')],
 
             'children' => ['nullable', 'array'],
             'children.*.full_name' => ['required', 'string', 'max:150'],
+            'children.*.document_type' => ['nullable', 'string', 'in:national_id,passport'],
             'children.*.document_number' => ['nullable', 'string', 'max:30'],
-            'children.*.date_of_birth' => ['nullable', 'date'],
+            'children.*.date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'children.*.gender' => ['nullable', 'in:male,female'],
+            'children.*.document_issue_date' => ['nullable', 'date', 'before_or_equal:today'],
             'children.*.baggage_addon_id' => ['nullable', 'integer', Rule::exists('baggage_addons', 'id')->whereNull('deleted_at')],
 
             // Em bé KHÔNG có rule baggage_addon_id: validated() bỏ qua field này nên em bé không thể mua gói
             'infants' => ['nullable', 'array'],
             'infants.*.full_name' => ['required', 'string', 'max:150'],
+            'infants.*.document_type' => ['nullable', 'string', 'in:national_id,passport'],
             'infants.*.document_number' => ['nullable', 'string', 'max:30'],
-            'infants.*.date_of_birth' => ['nullable', 'date'],
+            'infants.*.date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'infants.*.gender' => ['nullable', 'in:male,female'],
+            'infants.*.document_issue_date' => ['nullable', 'date', 'before_or_equal:today'],
             'infants.*.companion_adult_index' => [
                 'required',
                 'integer',

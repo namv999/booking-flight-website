@@ -135,8 +135,8 @@
             <div class="fw-bold small text-muted text-uppercase mb-2">Chuyến bạn đã chọn</div>
             @foreach ($chosenFlights as $i => $cf)
             @php
-                $cfDep = \Carbon\Carbon::parse($cf->getRawOriginal('departure_time'), 'UTC')
-                    ->setTimezone($cf->departureAirport->timezone);
+            $cfDep = \Carbon\Carbon::parse($cf->getRawOriginal('departure_time'), 'UTC')
+            ->setTimezone($cf->departureAirport->timezone);
             @endphp
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 {{ ! $loop->last ? 'mb-2' : '' }}">
                 <div>
@@ -171,7 +171,7 @@
                                         <i class="bi bi-funnel-fill text-primary" aria-hidden="true"></i> Bộ lọc
                                     </h2>
                                     @if ($hasActiveFilters || $filters['sort'] !== 'price_asc')
-                                        <a href="{{ $filterAction }}" class="bf-filter-card__reset">Đặt lại</a>
+                                    <a href="{{ $filterAction }}" class="bf-filter-card__reset">Đặt lại</a>
                                     @endif
                                 </div>
 
@@ -181,7 +181,7 @@
                                         <span class="d-flex align-items-center gap-1">
                                             <span>Hãng hàng không</span>
                                             @if (!empty($filters['airlines']))
-                                                <span class="badge bg-primary text-white rounded-pill px-2 py-0" style="font-size: 0.7rem;">{{ count($filters['airlines']) }}</span>
+                                            <span class="badge bg-primary text-white rounded-pill px-2 py-0" style="font-size: 0.7rem;">{{ count($filters['airlines']) }}</span>
                                             @endif
                                         </span>
                                         <i class="bi bi-airplane" aria-hidden="true"></i>
@@ -190,19 +190,19 @@
                                     <div class="bf-airline-dropdown" id="bf-airline-dropdown">
                                         {{-- Trigger button --}}
                                         <button type="button"
-                                                class="bf-airline-trigger {{ !empty($filters['airlines']) ? 'has-selection' : '' }}"
-                                                id="bf-airline-trigger"
-                                                aria-expanded="false"
-                                                aria-controls="bf-airline-menu"
-                                                aria-label="Chọn hãng hàng không">
+                                            class="bf-airline-trigger {{ !empty($filters['airlines']) ? 'has-selection' : '' }}"
+                                            id="bf-airline-trigger"
+                                            aria-expanded="false"
+                                            aria-controls="bf-airline-menu"
+                                            aria-label="Chọn hãng hàng không">
                                             <span class="bf-airline-trigger__text" id="bf-airline-trigger-text">
                                                 @if (empty($filters['airlines']))
-                                                    <span><i class="bi bi-airplane-engines text-primary me-2"></i><strong class="text-dark">Tất cả hãng bay</strong> <span class="text-secondary fw-semibold small">({{ $facets['airlines']->count() }})</span></span>
+                                                <span><i class="bi bi-airplane-engines text-primary me-2"></i><strong class="text-dark">Tất cả hãng bay</strong> <span class="text-secondary fw-semibold small">({{ $facets['airlines']->count() }})</span></span>
                                                 @else
-                                                    <span class="bf-airline-trigger__selected">
-                                                        <i class="bi bi-check2-circle text-primary me-1"></i>
-                                                        <strong class="text-primary">Đã chọn {{ count($filters['airlines']) }} hãng</strong>
-                                                    </span>
+                                                <span class="bf-airline-trigger__selected">
+                                                    <i class="bi bi-check2-circle text-primary me-1"></i>
+                                                    <strong class="text-primary">Đã chọn {{ count($filters['airlines']) }} hãng</strong>
+                                                </span>
                                                 @endif
                                             </span>
                                             <i class="bi bi-chevron-down bf-airline-trigger__arrow" aria-hidden="true"></i>
@@ -214,15 +214,15 @@
                                             <div class="bf-airline-search-bar">
                                                 <i class="bi bi-search bf-airline-search-bar__icon" aria-hidden="true"></i>
                                                 <input type="text"
-                                                       class="bf-airline-search-input"
-                                                       id="bf-airline-search-input"
-                                                       placeholder="Gõ tìm hãng (VN, Vietjet, Bamboo...)"
-                                                       autocomplete="off"
-                                                       aria-label="Tìm kiếm hãng bay theo tên hoặc mã">
+                                                    class="bf-airline-search-input"
+                                                    id="bf-airline-search-input"
+                                                    placeholder="Gõ tìm hãng (VN, Vietjet, Bamboo...)"
+                                                    autocomplete="off"
+                                                    aria-label="Tìm kiếm hãng bay theo tên hoặc mã">
                                                 <button type="button"
-                                                        class="bf-airline-search-clear d-none"
-                                                        id="bf-airline-search-clear"
-                                                        aria-label="Xóa từ khóa tìm kiếm">
+                                                    class="bf-airline-search-clear d-none"
+                                                    id="bf-airline-search-clear"
+                                                    aria-label="Xóa từ khóa tìm kiếm">
                                                     <i class="bi bi-x-circle-fill"></i>
                                                 </button>
                                             </div>
@@ -242,36 +242,36 @@
                                             {{-- Scrollable List of Airline Items --}}
                                             <div class="bf-airline-list" id="bf-airline-list" role="listbox" aria-multiselectable="true">
                                                 @forelse ($facets['airlines'] as $al)
-                                                    @php
-                                                        $isChecked = in_array($al['code'], $filters['airlines']);
-                                                        $codeUpper = strtoupper($al['code']);
-                                                        $badgeBg = '#eef3f7';
-                                                        $badgeColor = '#12365a';
-                                                        if ($codeUpper === 'VN') { $badgeBg = '#e0f2fe'; $badgeColor = '#0369a1'; }
-                                                        elseif ($codeUpper === 'VJ') { $badgeBg = '#fee2e2'; $badgeColor = '#b91c1c'; }
-                                                        elseif ($codeUpper === 'QH') { $badgeBg = '#dcfce7'; $badgeColor = '#15803d'; }
-                                                        elseif ($codeUpper === 'VU') { $badgeBg = '#fef3c7'; $badgeColor = '#b45309'; }
-                                                    @endphp
-                                                    <label class="bf-airline-option {{ $isChecked ? 'is-checked' : '' }}"
-                                                           data-airline-code="{{ strtolower($al['code']) }}"
-                                                           data-airline-name="{{ strtolower($al['name']) }}"
-                                                           role="option"
-                                                           aria-selected="{{ $isChecked ? 'true' : 'false' }}">
-                                                        <div class="d-flex align-items-center gap-2 flex-grow-1 overflow-hidden">
-                                                            <input type="checkbox"
-                                                                   class="bf-airline-checkbox"
-                                                                   name="airlines[]"
-                                                                   value="{{ $al['code'] }}"
-                                                                   {{ $isChecked ? 'checked' : '' }}>
-                                                            <span class="bf-airline-badge" style="background-color: {{ $badgeBg }}; color: {{ $badgeColor }};">
-                                                                {{ $al['code'] }}
-                                                            </span>
-                                                            <span class="bf-airline-title text-truncate" title="{{ $al['name'] }}">{{ $al['name'] }}</span>
-                                                        </div>
-                                                        <span class="bf-airline-count-pill">{{ $al['count'] }}</span>
-                                                    </label>
+                                                @php
+                                                $isChecked = in_array($al['code'], $filters['airlines']);
+                                                $codeUpper = strtoupper($al['code']);
+                                                $badgeBg = '#eef3f7';
+                                                $badgeColor = '#12365a';
+                                                if ($codeUpper === 'VN') { $badgeBg = '#e0f2fe'; $badgeColor = '#0369a1'; }
+                                                elseif ($codeUpper === 'VJ') { $badgeBg = '#fee2e2'; $badgeColor = '#b91c1c'; }
+                                                elseif ($codeUpper === 'QH') { $badgeBg = '#dcfce7'; $badgeColor = '#15803d'; }
+                                                elseif ($codeUpper === 'VU') { $badgeBg = '#fef3c7'; $badgeColor = '#b45309'; }
+                                                @endphp
+                                                <label class="bf-airline-option {{ $isChecked ? 'is-checked' : '' }}"
+                                                    data-airline-code="{{ strtolower($al['code']) }}"
+                                                    data-airline-name="{{ strtolower($al['name']) }}"
+                                                    role="option"
+                                                    aria-selected="{{ $isChecked ? 'true' : 'false' }}">
+                                                    <div class="d-flex align-items-center gap-2 flex-grow-1 overflow-hidden">
+                                                        <input type="checkbox"
+                                                            class="bf-airline-checkbox"
+                                                            name="airlines[]"
+                                                            value="{{ $al['code'] }}"
+                                                            {{ $isChecked ? 'checked' : '' }}>
+                                                        <span class="bf-airline-badge" style="background-color: {{ $badgeBg }}; color: {{ $badgeColor }};">
+                                                            {{ $al['code'] }}
+                                                        </span>
+                                                        <span class="bf-airline-title text-truncate" title="{{ $al['name'] }}">{{ $al['name'] }}</span>
+                                                    </div>
+                                                    <span class="bf-airline-count-pill">{{ $al['count'] }}</span>
+                                                </label>
                                                 @empty
-                                                    <div class="text-secondary small fst-italic p-3 text-center">Không có dữ liệu hãng bay</div>
+                                                <div class="text-secondary small fst-italic p-3 text-center">Không có dữ liệu hãng bay</div>
                                                 @endforelse
 
                                                 <div class="bf-airline-no-result d-none" id="bf-airline-no-result">
@@ -284,28 +284,28 @@
 
                                     {{-- Selected Airlines Badges/Chips below trigger for direct removal --}}
                                     @if (!empty($filters['airlines']))
-                                        <div class="bf-airline-chips mt-2 d-flex flex-wrap gap-1">
-                                            @foreach ($filters['airlines'] as $alCode)
-                                                @php
-                                                    $alMatch = $facets['airlines']->firstWhere('code', $alCode);
-                                                    $alName = $alMatch['name'] ?? $alCode;
-                                                    $remAirlines = array_values(array_diff($filters['airlines'], [$alCode]));
-                                                    $remQuery = request()->query();
-                                                    if (empty($remAirlines)) {
-                                                        unset($remQuery['airlines']);
-                                                    } else {
-                                                        $remQuery['airlines'] = $remAirlines;
-                                                    }
-                                                    unset($remQuery['page']);
-                                                @endphp
-                                                <a href="{{ $filterAction . (empty($remQuery) ? '' : '?' . http_build_query($remQuery)) }}"
-                                                   class="bf-airline-mini-chip"
-                                                   title="Bỏ chọn {{ $alName }}">
-                                                    <span>{{ $alName }}</span>
-                                                    <i class="bi bi-x" aria-hidden="true"></i>
-                                                </a>
-                                            @endforeach
-                                        </div>
+                                    <div class="bf-airline-chips mt-2 d-flex flex-wrap gap-1">
+                                        @foreach ($filters['airlines'] as $alCode)
+                                        @php
+                                        $alMatch = $facets['airlines']->firstWhere('code', $alCode);
+                                        $alName = $alMatch['name'] ?? $alCode;
+                                        $remAirlines = array_values(array_diff($filters['airlines'], [$alCode]));
+                                        $remQuery = request()->query();
+                                        if (empty($remAirlines)) {
+                                        unset($remQuery['airlines']);
+                                        } else {
+                                        $remQuery['airlines'] = $remAirlines;
+                                        }
+                                        unset($remQuery['page']);
+                                        @endphp
+                                        <a href="{{ $filterAction . (empty($remQuery) ? '' : '?' . http_build_query($remQuery)) }}"
+                                            class="bf-airline-mini-chip"
+                                            title="Bỏ chọn {{ $alName }}">
+                                            <span>{{ $alName }}</span>
+                                            <i class="bi bi-x" aria-hidden="true"></i>
+                                        </a>
+                                        @endforeach
+                                    </div>
                                     @endif
                                 </div>
 
@@ -320,26 +320,26 @@
                                             <div class="col-6">
                                                 <label for="bf-price-min" class="form-label text-muted mb-1" style="font-size: 0.75rem;">Thấp nhất</label>
                                                 <input type="number"
-                                                       id="bf-price-min"
-                                                       name="price_min"
-                                                       class="form-control form-control-sm bf-price-input"
-                                                       placeholder="{{ $facets['price_min'] !== null ? $facets['price_min'] : '' }}"
-                                                       value="{{ $filters['price_min'] ?? '' }}"
-                                                       min="0"
-                                                       step="10000"
-                                                       aria-label="Giá tối thiểu">
+                                                    id="bf-price-min"
+                                                    name="price_min"
+                                                    class="form-control form-control-sm bf-price-input"
+                                                    placeholder="{{ $facets['price_min'] !== null ? $facets['price_min'] : '' }}"
+                                                    value="{{ $filters['price_min'] ?? '' }}"
+                                                    min="0"
+                                                    step="10000"
+                                                    aria-label="Giá tối thiểu">
                                             </div>
                                             <div class="col-6">
                                                 <label for="bf-price-max" class="form-label text-muted mb-1" style="font-size: 0.75rem;">Cao nhất</label>
                                                 <input type="number"
-                                                       id="bf-price-max"
-                                                       name="price_max"
-                                                       class="form-control form-control-sm bf-price-input"
-                                                       placeholder="{{ $facets['price_max'] !== null ? $facets['price_max'] : '' }}"
-                                                       value="{{ $filters['price_max'] ?? '' }}"
-                                                       min="0"
-                                                       step="10000"
-                                                       aria-label="Giá tối đa">
+                                                    id="bf-price-max"
+                                                    name="price_max"
+                                                    class="form-control form-control-sm bf-price-input"
+                                                    placeholder="{{ $facets['price_max'] !== null ? $facets['price_max'] : '' }}"
+                                                    value="{{ $filters['price_max'] ?? '' }}"
+                                                    min="0"
+                                                    step="10000"
+                                                    aria-label="Giá tối đa">
                                             </div>
                                         </div>
                                         <button type="submit" class="btn btn-outline-primary btn-sm w-100 rounded-pill">
@@ -356,18 +356,18 @@
                                     </div>
                                     <div class="bf-time-slots">
                                         @foreach ($timeSlotOptions as $slotKey => $slot)
-                                            <div class="bf-time-slot-item">
-                                                <input type="checkbox"
-                                                       class="bf-time-slot-input"
-                                                       id="dep-slot-{{ $slotKey }}"
-                                                       name="dep_time[]"
-                                                       value="{{ $slotKey }}"
-                                                       {{ in_array($slotKey, $filters['dep_time']) ? 'checked' : '' }}>
-                                                <label class="bf-time-slot-btn" for="dep-slot-{{ $slotKey }}">
-                                                    <strong>{{ $slot['label'] }}</strong>
-                                                    <span>{{ sprintf('%02d:00 - %02d:00', $slot['from'], $slot['to']) }}</span>
-                                                </label>
-                                            </div>
+                                        <div class="bf-time-slot-item">
+                                            <input type="checkbox"
+                                                class="bf-time-slot-input"
+                                                id="dep-slot-{{ $slotKey }}"
+                                                name="dep_time[]"
+                                                value="{{ $slotKey }}"
+                                                {{ in_array($slotKey, $filters['dep_time']) ? 'checked' : '' }}>
+                                            <label class="bf-time-slot-btn" for="dep-slot-{{ $slotKey }}">
+                                                <strong>{{ $slot['label'] }}</strong>
+                                                <span>{{ sprintf('%02d:00 - %02d:00', $slot['from'], $slot['to']) }}</span>
+                                            </label>
+                                        </div>
                                         @endforeach
                                     </div>
                                 </div>
@@ -380,18 +380,18 @@
                                     </div>
                                     <div class="bf-time-slots">
                                         @foreach ($timeSlotOptions as $slotKey => $slot)
-                                            <div class="bf-time-slot-item">
-                                                <input type="checkbox"
-                                                       class="bf-time-slot-input"
-                                                       id="arr-slot-{{ $slotKey }}"
-                                                       name="arr_time[]"
-                                                       value="{{ $slotKey }}"
-                                                       {{ in_array($slotKey, $filters['arr_time']) ? 'checked' : '' }}>
-                                                <label class="bf-time-slot-btn" for="arr-slot-{{ $slotKey }}">
-                                                    <strong>{{ $slot['label'] }}</strong>
-                                                    <span>{{ sprintf('%02d:00 - %02d:00', $slot['from'], $slot['to']) }}</span>
-                                                </label>
-                                            </div>
+                                        <div class="bf-time-slot-item">
+                                            <input type="checkbox"
+                                                class="bf-time-slot-input"
+                                                id="arr-slot-{{ $slotKey }}"
+                                                name="arr_time[]"
+                                                value="{{ $slotKey }}"
+                                                {{ in_array($slotKey, $filters['arr_time']) ? 'checked' : '' }}>
+                                            <label class="bf-time-slot-btn" for="arr-slot-{{ $slotKey }}">
+                                                <strong>{{ $slot['label'] }}</strong>
+                                                <span>{{ sprintf('%02d:00 - %02d:00', $slot['from'], $slot['to']) }}</span>
+                                            </label>
+                                        </div>
                                         @endforeach
                                     </div>
                                 </div>
@@ -414,17 +414,17 @@
                 <div class="bf-results-toolbar d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div class="d-flex align-items-center gap-2">
                         <button type="button"
-                                class="btn btn-outline-primary btn-sm d-md-none rounded-pill px-3 py-1 d-inline-flex align-items-center gap-2"
-                                data-bs-toggle="offcanvas"
-                                data-bs-target="#bfFilterOffcanvas"
-                                aria-controls="bfFilterOffcanvas">
+                            class="btn btn-outline-primary btn-sm d-md-none rounded-pill px-3 py-1 d-inline-flex align-items-center gap-2"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#bfFilterOffcanvas"
+                            aria-controls="bfFilterOffcanvas">
                             <i class="bi bi-funnel-fill"></i>
                             <span>Bộ lọc</span>
                             @php
-                                $activeCount = count($filters['airlines']) + count($filters['dep_time']) + count($filters['arr_time']) + ($filters['price_min'] !== null ? 1 : 0) + ($filters['price_max'] !== null ? 1 : 0);
+                            $activeCount = count($filters['airlines']) + count($filters['dep_time']) + count($filters['arr_time']) + ($filters['price_min'] !== null ? 1 : 0) + ($filters['price_max'] !== null ? 1 : 0);
                             @endphp
                             @if ($activeCount > 0)
-                                <span class="badge bg-primary text-white rounded-pill">{{ $activeCount }}</span>
+                            <span class="badge bg-primary text-white rounded-pill">{{ $activeCount }}</span>
                             @endif
                         </button>
                         <div class="bf-results-count">
@@ -435,128 +435,128 @@
                     <div class="bf-sort-group d-flex flex-wrap align-items-center gap-2">
                         <span class="text-muted small">Sắp xếp:</span>
                         @foreach ($sortOptions as $sortKey => $sortLabel)
-                            <div class="bf-sort-item">
-                                <input type="radio"
-                                       class="bf-sort-input"
-                                       name="sort"
-                                       id="sort-{{ $sortKey }}"
-                                       value="{{ $sortKey }}"
-                                       form="bf-filter-form"
-                                       {{ $filters['sort'] === $sortKey ? 'checked' : '' }}>
-                                <label class="bf-sort-pill" for="sort-{{ $sortKey }}">
-                                    @if ($sortKey === 'price_asc')
-                                        <i class="bi bi-sort-numeric-down me-1"></i>
-                                    @elseif ($sortKey === 'price_desc')
-                                        <i class="bi bi-sort-numeric-down-alt me-1"></i>
-                                    @elseif ($sortKey === 'departure_asc' || $sortKey === 'arrival_asc')
-                                        <i class="bi bi-clock me-1"></i>
-                                    @elseif ($sortKey === 'departure_desc')
-                                        <i class="bi bi-clock-history me-1"></i>
-                                    @elseif ($sortKey === 'duration_asc')
-                                        <i class="bi bi-lightning-charge me-1"></i>
-                                    @endif
-                                    {{ $sortLabel }}
-                                </label>
-                            </div>
+                        <div class="bf-sort-item">
+                            <input type="radio"
+                                class="bf-sort-input"
+                                name="sort"
+                                id="sort-{{ $sortKey }}"
+                                value="{{ $sortKey }}"
+                                form="bf-filter-form"
+                                {{ $filters['sort'] === $sortKey ? 'checked' : '' }}>
+                            <label class="bf-sort-pill" for="sort-{{ $sortKey }}">
+                                @if ($sortKey === 'price_asc')
+                                <i class="bi bi-sort-numeric-down me-1"></i>
+                                @elseif ($sortKey === 'price_desc')
+                                <i class="bi bi-sort-numeric-down-alt me-1"></i>
+                                @elseif ($sortKey === 'departure_asc' || $sortKey === 'arrival_asc')
+                                <i class="bi bi-clock me-1"></i>
+                                @elseif ($sortKey === 'departure_desc')
+                                <i class="bi bi-clock-history me-1"></i>
+                                @elseif ($sortKey === 'duration_asc')
+                                <i class="bi bi-lightning-charge me-1"></i>
+                                @endif
+                                {{ $sortLabel }}
+                            </label>
+                        </div>
                         @endforeach
                     </div>
                 </div>
 
                 {{-- Chips bộ lọc đang bật --}}
                 @if ($hasActiveFilters)
-                    <div class="bf-filter-chips">
-                        <span class="text-muted small me-1"><i class="bi bi-funnel me-1"></i>Đang lọc:</span>
+                <div class="bf-filter-chips">
+                    <span class="text-muted small me-1"><i class="bi bi-funnel me-1"></i>Đang lọc:</span>
 
-                        {{-- Chips cho hãng bay --}}
-                        @foreach ($filters['airlines'] as $alCode)
-                            @php
-                                $alMatch = $facets['airlines']->firstWhere('code', $alCode);
-                                $alName = $alMatch['name'] ?? $alCode;
-                                $remAirlines = array_values(array_diff($filters['airlines'], [$alCode]));
-                                $newQuery = request()->query();
-                                if (empty($remAirlines)) {
-                                    unset($newQuery['airlines']);
-                                } else {
-                                    $newQuery['airlines'] = $remAirlines;
-                                }
-                                unset($newQuery['page']);
-                            @endphp
-                            <a href="{{ $filterAction . (empty($newQuery) ? '' : '?' . http_build_query($newQuery)) }}"
-                               class="bf-filter-chip"
-                               title="Bỏ lọc {{ $alName }}">
-                                <span>{{ $alName }}</span>
-                                <i class="bi bi-x-lg" aria-hidden="true"></i>
-                            </a>
-                        @endforeach
+                    {{-- Chips cho hãng bay --}}
+                    @foreach ($filters['airlines'] as $alCode)
+                    @php
+                    $alMatch = $facets['airlines']->firstWhere('code', $alCode);
+                    $alName = $alMatch['name'] ?? $alCode;
+                    $remAirlines = array_values(array_diff($filters['airlines'], [$alCode]));
+                    $newQuery = request()->query();
+                    if (empty($remAirlines)) {
+                    unset($newQuery['airlines']);
+                    } else {
+                    $newQuery['airlines'] = $remAirlines;
+                    }
+                    unset($newQuery['page']);
+                    @endphp
+                    <a href="{{ $filterAction . (empty($newQuery) ? '' : '?' . http_build_query($newQuery)) }}"
+                        class="bf-filter-chip"
+                        title="Bỏ lọc {{ $alName }}">
+                        <span>{{ $alName }}</span>
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </a>
+                    @endforeach
 
-                        {{-- Chip cho giá --}}
-                        @if ($filters['price_min'] !== null || $filters['price_max'] !== null)
-                            @php
-                                $priceQuery = request()->except(['price_min', 'price_max', 'page']);
-                                $priceLabel = '';
-                                if ($filters['price_min'] !== null && $filters['price_max'] !== null) {
-                                    $priceLabel = number_format($filters['price_min'], 0, ',', '.') . ' - ' . number_format($filters['price_max'], 0, ',', '.') . ' VND';
-                                } elseif ($filters['price_min'] !== null) {
-                                    $priceLabel = 'Từ ' . number_format($filters['price_min'], 0, ',', '.') . ' VND';
-                                } else {
-                                    $priceLabel = 'Đến ' . number_format($filters['price_max'], 0, ',', '.') . ' VND';
-                                }
-                            @endphp
-                            <a href="{{ $filterAction . (empty($priceQuery) ? '' : '?' . http_build_query($priceQuery)) }}"
-                               class="bf-filter-chip"
-                               title="Bỏ lọc khoảng giá">
-                                <span>{{ $priceLabel }}</span>
-                                <i class="bi bi-x-lg" aria-hidden="true"></i>
-                            </a>
-                        @endif
+                    {{-- Chip cho giá --}}
+                    @if ($filters['price_min'] !== null || $filters['price_max'] !== null)
+                    @php
+                    $priceQuery = request()->except(['price_min', 'price_max', 'page']);
+                    $priceLabel = '';
+                    if ($filters['price_min'] !== null && $filters['price_max'] !== null) {
+                    $priceLabel = number_format($filters['price_min'], 0, ',', '.') . ' - ' . number_format($filters['price_max'], 0, ',', '.') . ' VND';
+                    } elseif ($filters['price_min'] !== null) {
+                    $priceLabel = 'Từ ' . number_format($filters['price_min'], 0, ',', '.') . ' VND';
+                    } else {
+                    $priceLabel = 'Đến ' . number_format($filters['price_max'], 0, ',', '.') . ' VND';
+                    }
+                    @endphp
+                    <a href="{{ $filterAction . (empty($priceQuery) ? '' : '?' . http_build_query($priceQuery)) }}"
+                        class="bf-filter-chip"
+                        title="Bỏ lọc khoảng giá">
+                        <span>{{ $priceLabel }}</span>
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </a>
+                    @endif
 
-                        {{-- Chips cho giờ cất cánh --}}
-                        @foreach ($filters['dep_time'] as $slotKey)
-                            @php
-                                $slotLabel = $timeSlotOptions[$slotKey]['label'] ?? $slotKey;
-                                $remDep = array_values(array_diff($filters['dep_time'], [$slotKey]));
-                                $depQuery = request()->query();
-                                if (empty($remDep)) {
-                                    unset($depQuery['dep_time']);
-                                } else {
-                                    $depQuery['dep_time'] = $remDep;
-                                }
-                                unset($depQuery['page']);
-                            @endphp
-                            <a href="{{ $filterAction . (empty($depQuery) ? '' : '?' . http_build_query($depQuery)) }}"
-                               class="bf-filter-chip"
-                               title="Bỏ lọc giờ cất cánh {{ $slotLabel }}">
-                                <span>Đi: {{ $slotLabel }}</span>
-                                <i class="bi bi-x-lg" aria-hidden="true"></i>
-                            </a>
-                        @endforeach
+                    {{-- Chips cho giờ cất cánh --}}
+                    @foreach ($filters['dep_time'] as $slotKey)
+                    @php
+                    $slotLabel = $timeSlotOptions[$slotKey]['label'] ?? $slotKey;
+                    $remDep = array_values(array_diff($filters['dep_time'], [$slotKey]));
+                    $depQuery = request()->query();
+                    if (empty($remDep)) {
+                    unset($depQuery['dep_time']);
+                    } else {
+                    $depQuery['dep_time'] = $remDep;
+                    }
+                    unset($depQuery['page']);
+                    @endphp
+                    <a href="{{ $filterAction . (empty($depQuery) ? '' : '?' . http_build_query($depQuery)) }}"
+                        class="bf-filter-chip"
+                        title="Bỏ lọc giờ cất cánh {{ $slotLabel }}">
+                        <span>Đi: {{ $slotLabel }}</span>
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </a>
+                    @endforeach
 
-                        {{-- Chips cho giờ hạ cánh --}}
-                        @foreach ($filters['arr_time'] as $slotKey)
-                            @php
-                                $slotLabel = $timeSlotOptions[$slotKey]['label'] ?? $slotKey;
-                                $remArr = array_values(array_diff($filters['arr_time'], [$slotKey]));
-                                $arrQuery = request()->query();
-                                if (empty($remArr)) {
-                                    unset($arrQuery['arr_time']);
-                                } else {
-                                    $arrQuery['arr_time'] = $remArr;
-                                }
-                                unset($arrQuery['page']);
-                            @endphp
-                            <a href="{{ $filterAction . (empty($arrQuery) ? '' : '?' . http_build_query($arrQuery)) }}"
-                               class="bf-filter-chip"
-                               title="Bỏ lọc giờ hạ cánh {{ $slotLabel }}">
-                                <span>Đến: {{ $slotLabel }}</span>
-                                <i class="bi bi-x-lg" aria-hidden="true"></i>
-                            </a>
-                        @endforeach
+                    {{-- Chips cho giờ hạ cánh --}}
+                    @foreach ($filters['arr_time'] as $slotKey)
+                    @php
+                    $slotLabel = $timeSlotOptions[$slotKey]['label'] ?? $slotKey;
+                    $remArr = array_values(array_diff($filters['arr_time'], [$slotKey]));
+                    $arrQuery = request()->query();
+                    if (empty($remArr)) {
+                    unset($arrQuery['arr_time']);
+                    } else {
+                    $arrQuery['arr_time'] = $remArr;
+                    }
+                    unset($arrQuery['page']);
+                    @endphp
+                    <a href="{{ $filterAction . (empty($arrQuery) ? '' : '?' . http_build_query($arrQuery)) }}"
+                        class="bf-filter-chip"
+                        title="Bỏ lọc giờ hạ cánh {{ $slotLabel }}">
+                        <span>Đến: {{ $slotLabel }}</span>
+                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                    </a>
+                    @endforeach
 
-                        {{-- Link xóa toàn bộ bộ lọc --}}
-                        <a href="{{ $filterAction }}" class="bf-filter-chip bf-filter-chip--clear">
-                            Đặt lại tất cả
-                        </a>
-                    </div>
+                    {{-- Link xóa toàn bộ bộ lọc --}}
+                    <a href="{{ $filterAction }}" class="bf-filter-chip bf-filter-chip--clear">
+                        Đặt lại tất cả
+                    </a>
+                </div>
                 @endif
 
                 {{-- VÒNG LẶP RENDER CÁC CHUYẾN BAY --}}
@@ -564,9 +564,9 @@
                     @forelse ($flights as $flight)
                     @php
                     $depTime = \Carbon\Carbon::parse($flight->getRawOriginal('departure_time'), 'UTC')
-                        ->setTimezone($flight->departureAirport->timezone);
+                    ->setTimezone($flight->departureAirport->timezone);
                     $arrTime = \Carbon\Carbon::parse($flight->getRawOriginal('arrival_time'), 'UTC')
-                        ->setTimezone($flight->arrivalAirport->timezone);
+                    ->setTimezone($flight->arrivalAirport->timezone);
                     $diffMinutes = $depTime->diffInMinutes($arrTime);
                     $hours = intdiv($diffMinutes, 60);
                     $mins = $diffMinutes % 60;
@@ -576,8 +576,8 @@
                     $firstLetter = strtoupper(substr($airlineName, 0, 1));
                     @endphp
                     <article class="bf-flight-card"
-                             data-flight-id="{{ $flight->id }}"
-                             aria-label="Chuyến bay {{ $airlineName }}">
+                        data-flight-id="{{ $flight->id }}"
+                        aria-label="Chuyến bay {{ $airlineName }}">
                         {{-- Hàng trên: Hãng bay & Trạng thái --}}
                         <div class="bf-flight-airline">
                             <div class="bf-airline-info">
@@ -645,81 +645,81 @@
                                     </div>
 
                                     @if ($flight->available_seats <= 5)
-                                    <div class="bf-seats-indicator bf-seats-indicator--urgent">
+                                        <div class="bf-seats-indicator bf-seats-indicator--urgent">
                                         <i class="bi bi-fire text-danger" aria-hidden="true"></i>
                                         <span>Chỉ còn {{ $flight->available_seats }} ghế!</span>
-                                    </div>
-                                    @else
-                                    <div class="bf-seats-indicator">
-                                        <i class="bi bi-check2 text-success" aria-hidden="true"></i>
-                                        <span>Còn {{ $flight->available_seats }} ghế trống</span>
-                                    </div>
-                                    @endif
-
-                                    <form action="{{ route('booking.precheck') }}" method="POST" class="w-100">
-                                        @csrf
-                                        <input type="hidden" name="flight_id" value="{{ $flight->id }}">
-                                        <input type="hidden" name="leg" value="{{ $legIndex }}">
-
-                                        <button type="submit" class="bf-btn-select">
-                                            <span>Chọn chuyến</span>
-                                            <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                                        </button>
-                                    </form>
                                 </div>
+                                @else
+                                <div class="bf-seats-indicator">
+                                    <i class="bi bi-check2 text-success" aria-hidden="true"></i>
+                                    <span>Còn {{ $flight->available_seats }} ghế trống</span>
+                                </div>
+                                @endif
+
+                                <form action="{{ route('booking.precheck') }}" method="POST" class="w-100">
+                                    @csrf
+                                    <input type="hidden" name="flight_id" value="{{ $flight->id }}">
+                                    <input type="hidden" name="leg" value="{{ $legIndex }}">
+
+                                    <button type="submit" class="bf-btn-select">
+                                        <span>Chọn chuyến</span>
+                                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                    </article>
-                    @empty
-                    {{-- 4. TRẠNG THÁI KHÔNG TÌM THẤY KẾT QUẢ (EMPTY STATE - 3 NHÁNH) --}}
-                    <div class="bf-empty-card">
-                        @if ($hasActiveFilters && ($facets['total'] ?? 0) > 0)
-                        <div class="bf-empty-icon-box">
-                            <i class="bi bi-funnel" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="bf-empty-title">Không có chuyến nào khớp bộ lọc</h3>
-                        <p class="bf-empty-desc">
-                            Không có chuyến bay nào khớp với hãng bay, mức giá hoặc khung giờ đã chọn.
-                            Vui lòng thử điều chỉnh lại tiêu chí hoặc đặt lại bộ lọc.
-                        </p>
-                        <a href="{{ $filterAction }}" class="btn btn-primary btn-sm px-4 py-2 rounded-pill mt-2">
-                            <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại bộ lọc
-                        </a>
-                        @elseif ($legIndex > 0)
-                        <div class="bf-empty-icon-box">
-                            <i class="bi bi-airplane" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp</h3>
-                        <p class="bf-empty-desc">
-                            Không có chuyến bay nào từ <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
-                            đến <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
-                            trong ngày {{ $depDate->format('d/m/Y') }} khởi hành sau khi chặng trước hạ cánh,
-                            với hạng vé <strong>{{ $fareClass->name }}</strong>.
-                        </p>
-                        <a href="{{ $backUrl }}" class="bf-btn-empty-search">
-                            <i class="bi bi-arrow-left" aria-hidden="true"></i> Chọn lại chuyến của chặng trước
-                        </a>
-                        @else
-                        <div class="bf-empty-icon-box">
-                            <i class="bi bi-airplane" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp</h3>
-                        <p class="bf-empty-desc">
-                            Rất tiếc, hiện tại không có chuyến bay nào từ
-                            <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
-                            đến
-                            <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
-                            trong ngày {{ $depDate->format('d/m/Y') }} với hạng vé
-                            <strong>{{ $fareClass->name }}</strong>.
-                            Bạn vui lòng thử chọn ngày bay khác hoặc thay đổi tiêu chí tìm kiếm.
-                        </p>
-                        <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search text-light">
-                            <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm ngày khác
-                        </a>
-                        @endif
-                    </div>
-                    @endforelse
                 </div>
+                </article>
+                @empty
+                {{-- 4. TRẠNG THÁI KHÔNG TÌM THẤY KẾT QUẢ (EMPTY STATE - 3 NHÁNH) --}}
+                <div class="bf-empty-card">
+                    @if ($hasActiveFilters && ($facets['total'] ?? 0) > 0)
+                    <div class="bf-empty-icon-box">
+                        <i class="bi bi-funnel" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="bf-empty-title">Không có chuyến nào khớp bộ lọc</h3>
+                    <p class="bf-empty-desc">
+                        Không có chuyến bay nào khớp với hãng bay, mức giá hoặc khung giờ đã chọn.
+                        Vui lòng thử điều chỉnh lại tiêu chí hoặc đặt lại bộ lọc.
+                    </p>
+                    <a href="{{ $filterAction }}" class="btn btn-primary btn-sm px-4 py-2 rounded-pill mt-2">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại bộ lọc
+                    </a>
+                    @elseif ($legIndex > 0)
+                    <div class="bf-empty-icon-box">
+                        <i class="bi bi-airplane" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp</h3>
+                    <p class="bf-empty-desc">
+                        Không có chuyến bay nào từ <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
+                        đến <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
+                        trong ngày {{ $depDate->format('d/m/Y') }} khởi hành sau khi chặng trước hạ cánh,
+                        với hạng vé <strong>{{ $fareClass->name }}</strong>.
+                    </p>
+                    <a href="{{ $backUrl }}" class="bf-btn-empty-search text-light">
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i> Chọn lại chuyến của chặng trước
+                    </a>
+                    @else
+                    <div class="bf-empty-icon-box">
+                        <i class="bi bi-airplane" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp</h3>
+                    <p class="bf-empty-desc">
+                        Rất tiếc, hiện tại không có chuyến bay nào từ
+                        <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
+                        đến
+                        <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
+                        trong ngày {{ $depDate->format('d/m/Y') }} với hạng vé
+                        <strong>{{ $fareClass->name }}</strong>.
+                        Bạn vui lòng thử chọn ngày bay khác hoặc thay đổi tiêu chí tìm kiếm.
+                    </p>
+                    <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search text-light">
+                        <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm ngày khác
+                    </a>
+                    @endif
+                </div>
+                @endforelse
+        </div>
 
         {{-- 5. PHÂN TRANG (PAGINATION) --}}
         @if ($flights->hasPages())

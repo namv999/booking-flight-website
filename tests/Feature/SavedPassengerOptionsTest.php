@@ -136,4 +136,32 @@ class SavedPassengerOptionsTest extends TestCase
 
         $this->assertSame(['Le A', 'Tran B'], $names);
     }
+
+    public function test_options_returns_both_cccd_and_passport_keys(): void
+    {
+        $user = User::factory()->create();
+        SavedPassenger::factory()->create([
+            'user_id' => $user->id,
+            'full_name' => 'Nguyen Van An',
+            'gender' => 'male',
+            'cccd_number' => '079201000001',
+            'cccd_issue_date' => '2021-06-15',
+            'passport_number' => 'C1000001',
+            'passport_issued_country' => 'VNM',
+            'passport_issue_date' => '2022-01-10',
+            'passport_expiry_date' => '2032-01-10',
+        ]);
+
+        $response = $this->actingAs($user)->getJson(route('saved-passengers.options'));
+
+        $response->assertOk();
+        $item = $response->json('0');
+
+        $this->assertSame('079201000001', $item['cccd_number']);
+        $this->assertSame('2021-06-15', $item['cccd_issue_date']);
+        $this->assertSame('C1000001', $item['passport_number']);
+        $this->assertSame('VNM', $item['passport_issued_country']);
+        $this->assertSame('2022-01-10', $item['passport_issue_date']);
+        $this->assertSame('2032-01-10', $item['passport_expiry_date']);
+    }
 }

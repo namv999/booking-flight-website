@@ -40,32 +40,42 @@
 
         const nameInput = byId('name');
         const docInput = byId('doc');
+        const dobInput = byId('dob');
+        const issueDateInput = byId('issue_date');
         const issuedCountry = byId('issued_country'); // chỉ có khi hành trình quốc tế
         const isInternational = issuedCountry !== null;
 
-        // 3 ô luôn có
+        // 1. Các trường chung luôn có cả nội địa và quốc tế: Họ tên, Ngày sinh, Giới tính
         setValue(nameInput, profile.full_name);
-        setValue(byId('dob'), profile.date_of_birth);
+        setValue(dobInput, profile.date_of_birth);
 
-        // Form quốc tế yêu cầu SỐ HỘ CHIẾU: không nhét số CCCD vào đó
-        const docValue = isInternational && profile.document_type === 'national_id'
-            ? ''
-            : profile.document_number;
-        setValue(docInput, docValue);
+        const male = byId('gender_male');
+        const female = byId('gender_female');
+        if (male && female && profile.gender) {
+            male.checked = profile.gender === 'male';
+            female.checked = profile.gender === 'female';
+        }
 
-        // Các ô hộ chiếu: chỉ điền nếu tồn tại trong DOM
+        // 2. Điền giấy tờ tùy theo bay quốc tế hay nội địa
         if (isInternational) {
-            const male = byId('gender_male');
-            const female = byId('gender_female');
-            if (male && female) {
-                male.checked = profile.gender === 'male';
-                female.checked = profile.gender === 'female';
-            }
+            // Bay quốc tế: Ưu tiên lấy thông tin Hộ chiếu
+            const passNum = profile.passport_number || (profile.document_type === 'passport' ? profile.document_number : '');
+            const passCountry = profile.passport_issued_country || (profile.document_type === 'passport' ? profile.document_issued_country : profile.nationality);
+            const passIssue = profile.passport_issue_date || (profile.document_type === 'passport' ? profile.document_issue_date : '');
+            const passExpiry = profile.passport_expiry_date || profile.document_expiry_date;
 
-            setSelect(byId('nat'), profile.nationality);
-            setSelect(issuedCountry, profile.document_issued_country);
-            setValue(byId('issue_date'), profile.document_issue_date);
-            setValue(byId('expiry_date'), profile.document_expiry_date);
+            setValue(docInput, passNum);
+            setSelect(byId('nat'), profile.nationality || 'VNM');
+            setSelect(issuedCountry, passCountry || 'VNM');
+            setValue(issueDateInput, passIssue);
+            setValue(byId('expiry_date'), passExpiry);
+        } else {
+            // Bay nội địa: Điền thông tin CCCD (Số CCCD & Ngày cấp CCCD)
+            const cccdNum = profile.cccd_number || (profile.document_type === 'national_id' ? profile.document_number : (profile.passport_number ? '' : profile.document_number));
+            const cccdIssue = profile.cccd_issue_date || (profile.document_type === 'national_id' ? profile.document_issue_date : '');
+
+            setValue(docInput, cccdNum);
+            setValue(issueDateInput, cccdIssue);
         }
 
         // Gán value bằng JS không tự bắn blur, nên bắn tay để script chuẩn hóa
@@ -101,6 +111,9 @@
 
         function populate(select, profiles) {
             const wanted = GROUP_TYPE[select.dataset.autofillGroup];
+            const prefix = select.dataset.autofillGroup + '_' + select.dataset.autofillIndex;
+            const isInternational = document.getElementById(prefix + '_issued_country') !== null;
+
             const matched = profiles.filter(function (p) {
                 return p.passenger_type_default === wanted;
             });
@@ -114,9 +127,18 @@
             matched.forEach(function (p) {
                 const option = document.createElement('option');
                 option.value = String(p.id);
-                option.textContent = p.document_number
-                    ? p.full_name + ' (' + p.document_number + ')'
-                    : p.full_name;
+
+                const cccd = p.cccd_number || (p.document_type === 'national_id' ? p.document_number : null);
+                const passport = p.passport_number || (p.document_type === 'passport' ? p.document_number : null);
+
+                let docLabel = '';
+                if (isInternational) {
+                    docLabel = passport ? ' (HC: ' + passport + ')' : (cccd ? ' (CCCD: ' + cccd + ')' : '');
+                } else {
+                    docLabel = cccd ? ' (CCCD: ' + cccd + ')' : (passport ? ' (HC: ' + passport + ')' : '');
+                }
+
+                option.textContent = p.full_name + docLabel;
                 select.appendChild(option);
             });
         }

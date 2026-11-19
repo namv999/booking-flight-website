@@ -233,4 +233,56 @@ class SavedPassengerTest extends TestCase
             'nationality' => null,
         ]);
     }
+
+    public function test_create_view_renders_both_cccd_and_passport_inputs_without_document_type_dropdown(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('saved-passengers.create'));
+
+        $response->assertOk();
+        $response->assertSee('name="full_name"', false);
+        $response->assertSee('name="date_of_birth"', false);
+        $response->assertSee('name="gender"', false);
+        $response->assertSee('name="nationality"', false);
+        $response->assertSee('name="cccd_number"', false);
+        $response->assertSee('name="cccd_issue_date"', false);
+        $response->assertSee('name="passport_number"', false);
+        $response->assertSee('name="passport_issued_country"', false);
+        $response->assertSee('name="passport_issue_date"', false);
+        $response->assertSee('name="passport_expiry_date"', false);
+        $response->assertDontSee('name="document_type"', false);
+    }
+
+    public function test_store_saves_both_cccd_and_passport_in_same_profile(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('saved-passengers.store'), [
+            'full_name' => 'Tran Thi Mai',
+            'date_of_birth' => '1995-08-20',
+            'gender' => 'female',
+            'nationality' => 'VNM',
+            'passenger_type_default' => 'adult',
+            'relationship' => 'self',
+            'cccd_number' => '079195000999',
+            'cccd_issue_date' => '2021-04-10',
+            'passport_number' => 'C9876543',
+            'passport_issued_country' => 'VNM',
+            'passport_issue_date' => '2022-06-15',
+            'passport_expiry_date' => '2032-06-15',
+        ]);
+
+        $response->assertRedirect(route('saved-passengers.index'));
+
+        $saved = SavedPassenger::where('user_id', $user->id)->firstOrFail();
+        $this->assertSame('Tran Thi Mai', $saved->full_name);
+        $this->assertSame('female', $saved->gender);
+        $this->assertSame('079195000999', $saved->cccd_number);
+        $this->assertSame('2021-04-10', $saved->cccd_issue_date->format('Y-m-d'));
+        $this->assertSame('C9876543', $saved->passport_number);
+        $this->assertSame('2022-06-15', $saved->passport_issue_date->format('Y-m-d'));
+        $this->assertSame('2032-06-15', $saved->passport_expiry_date->format('Y-m-d'));
+        $this->assertSame('VNM', $saved->passport_issued_country);
+    }
 }

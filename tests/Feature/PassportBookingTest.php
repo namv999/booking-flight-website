@@ -169,8 +169,8 @@ class PassportBookingTest extends TestCase
 
         $passenger = Passenger::firstOrFail();
         $this->assertSame('Nguyen Van A', $passenger->full_name); // không bị chuẩn hóa
-        $this->assertNull($passenger->gender);                    // field Passport bị bỏ qua khi nội địa
-        $this->assertNull($passenger->nationality);
+        $this->assertSame('male', $passenger->gender);            // giới tính được lưu cho chuyến bay nội địa
+        $this->assertNull($passenger->nationality);               // trường hộ chiếu quốc tế bị bỏ qua khi nội địa
     }
 
     public function test_is_international_detects_country_difference(): void
@@ -268,8 +268,10 @@ class PassportBookingTest extends TestCase
         $this->actingAs($user)->get(route('booking.passengers.form'))
             ->assertOk()
             ->assertSee('adults[0][full_name]', false)
-            ->assertDontSee('adults[0][gender]', false)
+            ->assertSee('adults[0][gender]', false)
+            ->assertSee('adults[0][document_issue_date]', false)
             ->assertDontSee('adults[0][nationality]', false)
+            ->assertDontSee('adults[0][document_issued_country]', false)
             ->assertDontSee('adults[0][document_expiry_date]', false);
     }
 }

@@ -249,6 +249,7 @@
                                     </div>
                                 </div>
                             @else
+                                <input type="hidden" name="adults[{{ $i }}][document_type]" value="national_id">
                                 <div class="row g-3">
                                     <div class="col-12 col-md-6">
                                         <label class="form-label fw-bold small text-navy" for="adults_{{ $i }}_name">
@@ -261,30 +262,76 @@
                                                value="{{ old("adults.$i.full_name") }}"
                                                placeholder="Ví dụ: NGUYEN VAN A"
                                                required>
-                                        <div class="form-text small text-muted" style="font-size: 0.74rem;">Như trên giấy tờ tùy thân (CCCD/Hộ chiếu)</div>
+                                        <div class="form-text small text-muted" style="font-size: 0.74rem;">Viết theo CCCD (ví dụ: NGUYEN VAN A)</div>
                                     </div>
 
-                                    <div class="col-12 col-md-3">
+                                    <div class="col-12 col-md-6">
                                         <label class="form-label fw-bold small text-navy" for="adults_{{ $i }}_doc">
-                                            Số CCCD / Hộ chiếu
+                                            Số CCCD / CMND <span class="text-danger">*</span>
                                         </label>
                                         <input type="text"
-                                               class="form-control bf-input @error("adults.$i.document_number") is-invalid @enderror"
+                                               class="form-control bf-input font-monospace @error("adults.$i.document_number") is-invalid @enderror"
                                                id="adults_{{ $i }}_doc"
                                                name="adults[{{ $i }}][document_number]"
                                                value="{{ old("adults.$i.document_number") }}"
-                                               placeholder="001234567890">
+                                               placeholder="Ví dụ: 001234567890"
+                                               required>
+                                        <div class="form-text small text-muted" style="font-size: 0.74rem;">12 số Căn cước công dân hoặc 9 số CMND</div>
                                     </div>
 
-                                    <div class="col-12 col-md-3">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label fw-bold small text-navy d-block">
+                                            Giới tính <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="d-flex align-items-center gap-3 pt-1">
+                                            <div class="form-check">
+                                                <input class="form-check-input @error("adults.$i.gender") is-invalid @enderror"
+                                                       type="radio"
+                                                       name="adults[{{ $i }}][gender]"
+                                                       id="adults_{{ $i }}_gender_male"
+                                                       value="male"
+                                                       {{ old("adults.$i.gender") === 'male' ? 'checked' : '' }}
+                                                       required>
+                                                <label class="form-check-label small" for="adults_{{ $i }}_gender_male">Nam</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input @error("adults.$i.gender") is-invalid @enderror"
+                                                       type="radio"
+                                                       name="adults[{{ $i }}][gender]"
+                                                       id="adults_{{ $i }}_gender_female"
+                                                       value="female"
+                                                       {{ old("adults.$i.gender") === 'female' ? 'checked' : '' }}
+                                                       required>
+                                                <label class="form-check-label small" for="adults_{{ $i }}_gender_female">Nữ</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
                                         <label class="form-label fw-bold small text-navy" for="adults_{{ $i }}_dob">
-                                            Ngày sinh
+                                            Ngày sinh <span class="text-danger">*</span>
                                         </label>
                                         <input type="date"
                                                class="form-control bf-input @error("adults.$i.date_of_birth") is-invalid @enderror"
                                                id="adults_{{ $i }}_dob"
                                                name="adults[{{ $i }}][date_of_birth]"
-                                               value="{{ old("adults.$i.date_of_birth") }}">
+                                               value="{{ old("adults.$i.date_of_birth") }}"
+                                               max="{{ date('Y-m-d') }}"
+                                               required>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label fw-bold small text-navy" for="adults_{{ $i }}_issue_date">
+                                            Ngày cấp CCCD <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="date"
+                                               class="form-control bf-input @error("adults.$i.document_issue_date") is-invalid @enderror"
+                                               id="adults_{{ $i }}_issue_date"
+                                               name="adults[{{ $i }}][document_issue_date]"
+                                               value="{{ old("adults.$i.document_issue_date") }}"
+                                               max="{{ date('Y-m-d') }}"
+                                               required>
+                                        <div class="form-text small text-muted" style="font-size: 0.74rem;">Ghi trên mặt sau thẻ CCCD</div>
                                     </div>
                                 </div>
                             @endif
@@ -449,6 +496,7 @@
                                         </div>
                                     </div>
                                 @else
+                                    <input type="hidden" name="children[{{ $i }}][document_type]" value="national_id">
                                     <div class="row g-3">
                                         <div class="col-12 col-md-6">
                                             <label class="form-label fw-bold small text-navy" for="children_{{ $i }}_name">
@@ -461,30 +509,76 @@
                                                    value="{{ old("children.$i.full_name") }}"
                                                    placeholder="Ví dụ: NGUYEN VAN B"
                                                    required>
-                                            <div class="form-text small text-muted" style="font-size: 0.74rem;">Như trên giấy khai sinh hoặc hộ chiếu</div>
+                                            <div class="form-text small text-muted" style="font-size: 0.74rem;">Như trên giấy khai sinh hoặc CCCD</div>
                                         </div>
 
-                                        <div class="col-12 col-md-3">
+                                        <div class="col-12 col-md-6">
                                             <label class="form-label fw-bold small text-navy" for="children_{{ $i }}_doc">
-                                                Số giấy tờ (nếu có)
+                                                Số CCCD / Số định danh / GKS <span class="text-danger">*</span>
                                             </label>
                                             <input type="text"
-                                                   class="form-control bf-input @error("children.$i.document_number") is-invalid @enderror"
+                                                   class="form-control bf-input font-monospace @error("children.$i.document_number") is-invalid @enderror"
                                                    id="children_{{ $i }}_doc"
                                                    name="children[{{ $i }}][document_number]"
                                                    value="{{ old("children.$i.document_number") }}"
-                                                   placeholder="Số định danh / GKS">
+                                                   placeholder="Số định danh cá nhân / CCCD / GKS"
+                                                   required>
+                                            <div class="form-text small text-muted" style="font-size: 0.74rem;">Số định danh trên GKS hoặc số thẻ CCCD</div>
                                         </div>
 
-                                        <div class="col-12 col-md-3">
+                                        <div class="col-12 col-md-4">
+                                            <label class="form-label fw-bold small text-navy d-block">
+                                                Giới tính <span class="text-danger">*</span>
+                                            </label>
+                                            <div class="d-flex align-items-center gap-3 pt-1">
+                                                <div class="form-check">
+                                                    <input class="form-check-input @error("children.$i.gender") is-invalid @enderror"
+                                                           type="radio"
+                                                           name="children[{{ $i }}][gender]"
+                                                           id="children_{{ $i }}_gender_male"
+                                                           value="male"
+                                                           {{ old("children.$i.gender") === 'male' ? 'checked' : '' }}
+                                                           required>
+                                                    <label class="form-check-label small" for="children_{{ $i }}_gender_male">Nam</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input @error("children.$i.gender") is-invalid @enderror"
+                                                           type="radio"
+                                                           name="children[{{ $i }}][gender]"
+                                                           id="children_{{ $i }}_gender_female"
+                                                           value="female"
+                                                           {{ old("children.$i.gender") === 'female' ? 'checked' : '' }}
+                                                           required>
+                                                    <label class="form-check-label small" for="children_{{ $i }}_gender_female">Nữ</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-4">
                                             <label class="form-label fw-bold small text-navy" for="children_{{ $i }}_dob">
-                                                Ngày sinh
+                                                Ngày sinh <span class="text-danger">*</span>
                                             </label>
                                             <input type="date"
                                                    class="form-control bf-input @error("children.$i.date_of_birth") is-invalid @enderror"
                                                    id="children_{{ $i }}_dob"
                                                    name="children[{{ $i }}][date_of_birth]"
-                                                   value="{{ old("children.$i.date_of_birth") }}">
+                                                   value="{{ old("children.$i.date_of_birth") }}"
+                                                   max="{{ date('Y-m-d') }}"
+                                                   required>
+                                        </div>
+
+                                        <div class="col-12 col-md-4">
+                                            <label class="form-label fw-bold small text-navy" for="children_{{ $i }}_issue_date">
+                                                Ngày cấp <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="date"
+                                                   class="form-control bf-input @error("children.$i.document_issue_date") is-invalid @enderror"
+                                                   id="children_{{ $i }}_issue_date"
+                                                   name="children[{{ $i }}][document_issue_date]"
+                                                   value="{{ old("children.$i.document_issue_date") }}"
+                                                   max="{{ date('Y-m-d') }}"
+                                                   required>
+                                            <div class="form-text small text-muted" style="font-size: 0.74rem;">Ngày cấp CCCD hoặc ngày đăng ký khai sinh</div>
                                         </div>
                                     </div>
                                 @endif
@@ -673,6 +767,7 @@
                                         </div>
                                     </div>
                                 @else
+                                    <input type="hidden" name="infants[{{ $i }}][document_type]" value="national_id">
                                     <div class="row g-3">
                                         <div class="col-12 col-md-6">
                                             <label class="form-label fw-bold small text-navy" for="infants_{{ $i }}_name">
@@ -687,27 +782,72 @@
                                                    required>
                                         </div>
 
-                                        <div class="col-12 col-md-3">
+                                        <div class="col-12 col-md-6">
                                             <label class="form-label fw-bold small text-navy" for="infants_{{ $i }}_doc">
-                                                Số giấy khai sinh
+                                                Số định danh / Số giấy khai sinh <span class="text-danger">*</span>
                                             </label>
                                             <input type="text"
-                                                   class="form-control bf-input @error("infants.$i.document_number") is-invalid @enderror"
+                                                   class="form-control bf-input font-monospace @error("infants.$i.document_number") is-invalid @enderror"
                                                    id="infants_{{ $i }}_doc"
                                                    name="infants[{{ $i }}][document_number]"
                                                    value="{{ old("infants.$i.document_number") }}"
-                                                   placeholder="GKS">
+                                                   placeholder="Số định danh cá nhân / GKS"
+                                                   required>
                                         </div>
 
-                                        <div class="col-12 col-md-3">
+                                        <div class="col-12 col-md-4">
+                                            <label class="form-label fw-bold small text-navy d-block">
+                                                Giới tính <span class="text-danger">*</span>
+                                            </label>
+                                            <div class="d-flex align-items-center gap-3 pt-1">
+                                                <div class="form-check">
+                                                    <input class="form-check-input @error("infants.$i.gender") is-invalid @enderror"
+                                                           type="radio"
+                                                           name="infants[{{ $i }}][gender]"
+                                                           id="infants_{{ $i }}_gender_male"
+                                                           value="male"
+                                                           {{ old("infants.$i.gender") === 'male' ? 'checked' : '' }}
+                                                           required>
+                                                    <label class="form-check-label small" for="infants_{{ $i }}_gender_male">Nam</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input @error("infants.$i.gender") is-invalid @enderror"
+                                                           type="radio"
+                                                           name="infants[{{ $i }}][gender]"
+                                                           id="infants_{{ $i }}_gender_female"
+                                                           value="female"
+                                                           {{ old("infants.$i.gender") === 'female' ? 'checked' : '' }}
+                                                           required>
+                                                    <label class="form-check-label small" for="infants_{{ $i }}_gender_female">Nữ</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-md-4">
                                             <label class="form-label fw-bold small text-navy" for="infants_{{ $i }}_dob">
-                                                Ngày sinh
+                                                Ngày sinh <span class="text-danger">*</span>
                                             </label>
                                             <input type="date"
                                                    class="form-control bf-input @error("infants.$i.date_of_birth") is-invalid @enderror"
                                                    id="infants_{{ $i }}_dob"
                                                    name="infants[{{ $i }}][date_of_birth]"
-                                                   value="{{ old("infants.$i.date_of_birth") }}">
+                                                   value="{{ old("infants.$i.date_of_birth") }}"
+                                                   max="{{ date('Y-m-d') }}"
+                                                   required>
+                                        </div>
+
+                                        <div class="col-12 col-md-4">
+                                            <label class="form-label fw-bold small text-navy" for="infants_{{ $i }}_issue_date">
+                                                Ngày cấp <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="date"
+                                                   class="form-control bf-input @error("infants.$i.document_issue_date") is-invalid @enderror"
+                                                   id="infants_{{ $i }}_issue_date"
+                                                   name="infants[{{ $i }}][document_issue_date]"
+                                                   value="{{ old("infants.$i.document_issue_date") }}"
+                                                   max="{{ date('Y-m-d') }}"
+                                                   required>
+                                            <div class="form-text small text-muted" style="font-size: 0.74rem;">Ngày đăng ký khai sinh hoặc cấp thẻ</div>
                                         </div>
 
                                         <div class="col-12">

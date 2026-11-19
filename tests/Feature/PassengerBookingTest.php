@@ -416,4 +416,80 @@ class PassengerBookingTest extends TestCase
         $response->assertSessionHas('error', 'Số lượng hành khách không khớp với lựa chọn ban đầu. Vui lòng thử lại.');
         $this->assertDatabaseCount('bookings', 0);
     }
+
+    public function test_domestic_booking_renders_full_info_fields_including_gender_cccd_issue_date(): void
+    {
+        $user = User::factory()->create();
+        $flight = Flight::factory()->create();
+        $fareClass = FareClass::factory()->create();
+
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 1, 1)]);
+
+        $response = $this->actingAs($user)->get(route('booking.passengers.form'));
+
+        $response->assertOk();
+
+        // Adults
+        $response->assertSee('name="adults[0][document_type]" value="national_id"', false);
+        $response->assertSee('adults[0][full_name]', false);
+        $response->assertSee('adults[0][document_number]', false);
+        $response->assertSee('adults[0][gender]', false);
+        $response->assertSee('adults[0][date_of_birth]', false);
+        $response->assertSee('adults[0][document_issue_date]', false);
+
+        // Children
+        $response->assertSee('name="children[0][document_type]" value="national_id"', false);
+        $response->assertSee('children[0][full_name]', false);
+        $response->assertSee('children[0][document_number]', false);
+        $response->assertSee('children[0][gender]', false);
+        $response->assertSee('children[0][date_of_birth]', false);
+        $response->assertSee('children[0][document_issue_date]', false);
+
+        // Infants
+        $response->assertSee('name="infants[0][document_type]" value="national_id"', false);
+        $response->assertSee('infants[0][full_name]', false);
+        $response->assertSee('infants[0][document_number]', false);
+        $response->assertSee('infants[0][gender]', false);
+        $response->assertSee('infants[0][date_of_birth]', false);
+        $response->assertSee('infants[0][document_issue_date]', false);
+        $response->assertSee('infants[0][companion_adult_index]', false);
+    }
+
+    public function test_domestic_booking_saves_full_fields_cccd_issue_date_and_gender(): void
+    {
+        $user = User::factory()->create();
+        $flight = Flight::factory()->create();
+        $fareClass = FareClass::factory()->create();
+        $seat = FlightSeat::factory()->create([
+            'flight_id' => $flight->id,
+            'fare_class_id' => $fareClass->id,
+            'price' => 1500000,
+            'status' => 'available',
+        ]);
+
+        session(['pending_selection' => $this->pendingSelection($flight, $fareClass, 1, 0, 0)]);
+
+        $response = $this->actingAs($user)->post(route('booking.passengers.store'), [
+            'adults' => [[
+                'full_name' => 'Nguyen Van An',
+                'document_type' => 'national_id',
+                'document_number' => '079201000001',
+                'date_of_birth' => '1998-05-12',
+                'gender' => 'male',
+                'document_issue_date' => '2021-06-15',
+            ]],
+            'children' => [],
+            'infants' => [],
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $passenger = Passenger::firstOrFail();
+
+        $this->assertSame('Nguyen Van An', $passenger->full_name);
+        $this->assertSame('national_id', $passenger->document_type);
+        $this->assertSame('079201000001', $passenger->document_number);
+        $this->assertSame('1998-05-12', $passenger->date_of_birth->format('Y-m-d'));
+        $this->assertSame('male', $passenger->gender);
+        $this->assertSame('2021-06-15', $passenger->document_issue_date->format('Y-m-d'));
+    }
 }

@@ -63,13 +63,32 @@
                         <tr>
                             <td class="ps-4">
                                 <strong class="text-navy">{{ $passenger->full_name }}</strong>
+                                @if ($passenger->gender_label)
+                                    <span class="text-muted small d-block">{{ $passenger->gender_label }}</span>
+                                @endif
                             </td>
                             <td>
-                                @if ($passenger->document_number)
+                                @php
+                                    $cccd = $passenger->cccd_number ?? ($passenger->document_type === 'national_id' ? $passenger->document_number : null);
+                                    $passport = $passenger->passport_number ?? ($passenger->document_type === 'passport' ? $passenger->document_number : null);
+                                @endphp
+                                @if ($cccd || $passport)
+                                    @if ($cccd)
+                                        <div class="mb-1">
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace">
+                                                CCCD: {{ $cccd }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                    @if ($passport)
+                                        <div>
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace">
+                                                HC: {{ $passport }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                @elseif ($passenger->document_number)
                                     <span class="font-monospace">{{ $passenger->document_number }}</span>
-                                    <span class="text-muted small d-block" style="font-size: 0.75rem;">
-                                        {{ $passenger->document_type === 'passport' ? 'Hộ chiếu' : 'CCCD / Định danh' }}
-                                    </span>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
