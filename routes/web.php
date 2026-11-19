@@ -56,10 +56,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 // ROUTE MODULE LUỒNG ĐẶT VÉ - TÌM KIẾM CHUYẾN BAY
 Route::get('/flights/results', [FlightSearchController::class, 'results'])->name('flights.search.results');
+Route::get('/booking/leg/{leg}', [FlightSearchController::class, 'leg'])->whereNumber('leg')->name('booking.leg');
 
 Route::middleware('auth')->group(function () {
     Route::post('/booking/precheck', [SeatSelectionController::class, 'precheck'])->name('booking.precheck');
-    Route::get('/booking/leg/{leg}', [FlightSearchController::class, 'leg'])->whereNumber('leg')->name('booking.leg');
     Route::get('/booking/passengers', [BookingController::class, 'create'])->name('booking.passengers.form');
     Route::post('/booking/passengers/next', [BookingController::class, 'next'])->name('booking.passengers.next');
     Route::post('/booking/passengers', [BookingController::class, 'store'])->name('booking.passengers.store');

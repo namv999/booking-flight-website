@@ -204,8 +204,8 @@
     box-shadow: 0 10px 28px rgba(18, 54, 90, 0.09);
 }
 .bf-stat-card > span {
-    color: var(--bf-muted);
-    font-size: 0.76rem;
+    color: #1e293b;
+    font-size: 0.82rem;
     font-weight: 700;
 }
 .bf-stat-card strong {
@@ -216,8 +216,9 @@
 }
 .bf-stat-card small {
     margin-top: auto;
-    color: var(--bf-muted);
-    font-size: 0.7rem;
+    color: #334155;
+    font-size: 0.76rem;
+    font-weight: 600;
 }
 .bf-dashboard__layout {
     display: grid;

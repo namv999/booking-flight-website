@@ -1,196 +1,206 @@
-// resources/js/flights.js - Xử lý lọc và sắp xếp trực tiếp trên trang kết quả tìm kiếm chuyến bay
+// resources/js/flights.js - Xử lý bộ lọc, dropdown hãng bay tìm kiếm & sắp xếp chuyến bay
 document.addEventListener("DOMContentLoaded", function () {
-    const flightContainer = document.getElementById("bf-flight-list");
-    if (!flightContainer) {
+    const filterForm = document.getElementById("bf-filter-form");
+    if (!filterForm) {
         return;
     }
 
-    const cards = Array.from(flightContainer.querySelectorAll(".bf-flight-card"));
-    if (cards.length === 0) {
-        return;
-    }
+    /* ============================================================
+       1. AUTO-SUBMIT CHO KHUNG GIỜ VÀ SẮP XẾP
+       ============================================================ */
+    const autoSubmitElements = document.querySelectorAll(
+        '#bf-filter-form input[name="dep_time[]"], ' +
+        '#bf-filter-form input[name="arr_time[]"], ' +
+        'input[name="sort"][form="bf-filter-form"]'
+    );
 
-    const airlineCheckboxes = document.querySelectorAll(".bf-airline-checkbox");
-    const directCheckbox = document.getElementById("bf-filter-direct");
-    const timeSlotButtons = document.querySelectorAll(".bf-time-slot-btn");
-    const resetButtons = document.querySelectorAll("#bf-filter-reset, #bf-filter-reset-empty");
-    const sortPills = document.querySelectorAll(".bf-sort-pill");
-    const countDisplay = document.getElementById("bf-count-display");
-    const emptyNotice = document.getElementById("bf-no-matching-flights");
-
-    let currentSort = "price"; // "price" | "time"
-    const activeTimeSlots = new Set();
-
-    function hourMatchesSlot(hour, slot) {
-        switch (slot) {
-            case "early-morning":
-                return hour >= 0 && hour < 6;
-            case "morning":
-                return hour >= 6 && hour < 12;
-            case "afternoon":
-                return hour >= 12 && hour < 18;
-            case "evening":
-                return hour >= 18 && hour < 24;
-            default:
-                return true;
-        }
-    }
-
-    function applyFilters() {
-        const checkedAirlines = new Set(
-            Array.from(airlineCheckboxes)
-                .filter((cb) => cb.checked)
-                .map((cb) => cb.value.trim().toLowerCase())
-        );
-
-        const requireDirect = directCheckbox ? directCheckbox.checked : false;
-
-        let visibleCount = 0;
-
-        cards.forEach((card) => {
-            const airline = (card.dataset.airline || "").trim().toLowerCase();
-            const hour = parseInt(card.dataset.depHour, 10);
-            const stops = card.dataset.stops || "direct";
-
-            // 1. Lọc theo hãng
-            const matchAirline = checkedAirlines.size === 0 || checkedAirlines.has(airline);
-
-            // 2. Lọc theo điểm dừng
-            const matchStops = !requireDirect || stops === "direct";
-
-            // 3. Lọc theo khung giờ
-            let matchTime = true;
-            if (activeTimeSlots.size > 0) {
-                matchTime = Array.from(activeTimeSlots).some((slot) => hourMatchesSlot(hour, slot));
-            }
-
-            const isVisible = matchAirline && matchStops && matchTime;
-            card.style.display = isVisible ? "" : "none";
-
-            if (isVisible) {
-                visibleCount++;
-            }
-        });
-
-        // Sắp xếp các card đang hiển thị
-        applySorting();
-
-        // Cập nhật số lượng đếm
-        if (countDisplay) {
-            countDisplay.textContent = visibleCount;
-        }
-
-        // Ẩn/hiện thông báo rỗng
-        if (emptyNotice) {
-            emptyNotice.style.display = visibleCount === 0 ? "block" : "none";
-        }
-    }
-
-    function applySorting() {
-        const visibleCards = cards.filter((c) => c.style.display !== "none");
-
-        visibleCards.sort((a, b) => {
-            if (currentSort === "price") {
-                const priceA = parseFloat(a.dataset.price) || 0;
-                const priceB = parseFloat(b.dataset.price) || 0;
-                return priceA - priceB;
-            } else if (currentSort === "time") {
-                const timeA = parseInt(a.dataset.depTime, 10) || 0;
-                const timeB = parseInt(b.dataset.depTime, 10) || 0;
-                return timeA - timeB;
-            }
-            return 0;
-        });
-
-        visibleCards.forEach((card) => {
-            flightContainer.appendChild(card);
-        });
-    }
-
-    // Sự kiện checkbox hãng bay
-    airlineCheckboxes.forEach((cb) => {
-        cb.addEventListener("change", applyFilters);
-    });
-
-    // Sự kiện checkbox bay thẳng
-    if (directCheckbox) {
-        directCheckbox.addEventListener("change", applyFilters);
-    }
-
-    // Sự kiện nút khung giờ
-    timeSlotButtons.forEach((btn) => {
-        btn.addEventListener("click", function () {
-            const slot = this.dataset.timeSlot;
-            if (!slot) return;
-
-            if (activeTimeSlots.has(slot)) {
-                activeTimeSlots.delete(slot);
-                this.classList.remove("active", "is-active");
-            } else {
-                activeTimeSlots.add(slot);
-                this.classList.add("active", "is-active");
-            }
-
-            applyFilters();
-        });
-
-        // Hỗ trợ phím Enter/Space khi focus
-        btn.addEventListener("keydown", function (e) {
-            if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                this.click();
-            }
+    autoSubmitElements.forEach((el) => {
+        el.addEventListener("change", function () {
+            filterForm.requestSubmit();
         });
     });
 
-    // Sự kiện sort pills
-    sortPills.forEach((pill) => {
-        pill.addEventListener("click", function () {
-            const sortMode = this.dataset.sort;
-            if (!sortMode) return;
+    /* ============================================================
+       2. DROPDOWN HÃNG HÀNG KHÔNG TÌM KIẾM & ĐA CHỌN (MULTI-SELECT)
+       ============================================================ */
+    const dropdownWrap = document.getElementById("bf-airline-dropdown");
+    const triggerBtn = document.getElementById("bf-airline-trigger");
+    const menuPopover = document.getElementById("bf-airline-menu");
+    const searchInput = document.getElementById("bf-airline-search-input");
+    const searchClear = document.getElementById("bf-airline-search-clear");
+    const selectAllBtn = document.getElementById("bf-airline-select-all");
+    const clearAllBtn = document.getElementById("bf-airline-clear-all");
+    const visibleCountEl = document.getElementById("bf-airline-visible-count");
+    const triggerTextEl = document.getElementById("bf-airline-trigger-text");
+    const noResultEl = document.getElementById("bf-airline-no-result");
+    const airlineOptions = document.querySelectorAll(".bf-airline-option");
 
-            currentSort = sortMode;
-            sortPills.forEach((p) => p.classList.remove("active"));
-            this.classList.add("active");
+    // Khôi phục trạng thái mở của dropdown sau khi submit tự động
+    if (sessionStorage.getItem("bf_airline_dropdown_open") === "1") {
+        sessionStorage.removeItem("bf_airline_dropdown_open");
+        if (dropdownWrap && triggerBtn) {
+            dropdownWrap.classList.add("is-open");
+            triggerBtn.setAttribute("aria-expanded", "true");
+        }
+    }
 
-            applySorting();
-        });
+    // Hàm xóa dấu tiếng Việt phục vụ tìm kiếm mềm
+    function removeVietnameseTones(str) {
+        if (!str) return "";
+        return str
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d")
+            .replace(/Đ/g, "D")
+            .toLowerCase()
+            .trim();
+    }
 
-        pill.addEventListener("keydown", function (e) {
-            if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                this.click();
-            }
-        });
-    });
-
-    // Sự kiện Đặt lại
-    resetButtons.forEach((btn) => {
-        btn.addEventListener("click", function (e) {
+    if (dropdownWrap && triggerBtn && menuPopover) {
+        // Mở/đóng dropdown
+        triggerBtn.addEventListener("click", function (e) {
             e.preventDefault();
+            e.stopPropagation();
+            const isOpen = dropdownWrap.classList.toggle("is-open");
+            triggerBtn.setAttribute("aria-expanded", String(isOpen));
 
-            // Khôi phục checkbox hãng
-            airlineCheckboxes.forEach((cb) => (cb.checked = true));
-
-            // Khôi phục bay thẳng
-            if (directCheckbox) {
-                directCheckbox.checked = true;
+            if (isOpen && searchInput) {
+                setTimeout(() => {
+                    searchInput.focus();
+                }, 100);
             }
+        });
 
-            // Xóa khung giờ
-            activeTimeSlots.clear();
-            timeSlotButtons.forEach((b) => b.classList.remove("active", "is-active"));
+        // Bấm ra ngoài thì đóng dropdown
+        document.addEventListener("click", function (e) {
+            if (!dropdownWrap.contains(e.target)) {
+                dropdownWrap.classList.remove("is-open");
+                triggerBtn.setAttribute("aria-expanded", "false");
+            }
+        });
 
-            // Đặt về giá thấp nhất
-            currentSort = "price";
-            sortPills.forEach((p) => {
-                p.classList.toggle("active", p.dataset.sort === "price");
+        // Phím Escape đóng dropdown
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && dropdownWrap.classList.contains("is-open")) {
+                dropdownWrap.classList.remove("is-open");
+                triggerBtn.setAttribute("aria-expanded", "false");
+                triggerBtn.focus();
+            }
+        });
+
+        // Tìm kiếm thời gian thực qua bàn phím
+        if (searchInput) {
+            searchInput.addEventListener("input", function () {
+                const keyword = removeVietnameseTones(this.value);
+                let visibleCount = 0;
+
+                if (searchClear) {
+                    searchClear.classList.toggle("d-none", keyword.length === 0);
+                }
+
+                airlineOptions.forEach((opt) => {
+                    const code = removeVietnameseTones(opt.getAttribute("data-airline-code") || "");
+                    const name = removeVietnameseTones(opt.getAttribute("data-airline-name") || "");
+                    const matches = code.includes(keyword) || name.includes(keyword);
+
+                    if (matches) {
+                        opt.classList.remove("d-none");
+                        visibleCount++;
+                    } else {
+                        opt.classList.add("d-none");
+                    }
+                });
+
+                if (visibleCountEl) {
+                    visibleCountEl.textContent = `${visibleCount} hãng`;
+                }
+
+                if (noResultEl) {
+                    noResultEl.classList.toggle("d-none", visibleCount > 0);
+                }
             });
 
-            applyFilters();
+            // Khi nhấn Enter trong ô tìm kiếm -> Áp dụng bộ lọc và giữ dropdown mở
+            searchInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    sessionStorage.setItem("bf_airline_dropdown_open", "1");
+                    filterForm.requestSubmit();
+                }
+            });
+        }
+
+        // Xóa từ khóa tìm kiếm
+        if (searchClear && searchInput) {
+            searchClear.addEventListener("click", function () {
+                searchInput.value = "";
+                searchInput.dispatchEvent(new Event("input"));
+                searchInput.focus();
+            });
+        }
+
+        // Tự động submit khi click chọn lần 1 và bỏ chọn lần 2
+        airlineOptions.forEach((opt) => {
+            const cb = opt.querySelector(".bf-airline-checkbox");
+            if (cb) {
+                cb.addEventListener("change", function () {
+                    sessionStorage.setItem("bf_airline_dropdown_open", "1");
+                    filterForm.requestSubmit();
+                });
+            }
+        });
+
+        // Chọn tất cả -> Tự động submit
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener("click", function (e) {
+                e.preventDefault();
+                let changed = false;
+                airlineOptions.forEach((opt) => {
+                    if (!opt.classList.contains("d-none")) {
+                        const cb = opt.querySelector(".bf-airline-checkbox");
+                        if (cb && !cb.checked) {
+                            cb.checked = true;
+                            changed = true;
+                        }
+                    }
+                });
+                if (changed) {
+                    sessionStorage.setItem("bf_airline_dropdown_open", "1");
+                    filterForm.requestSubmit();
+                }
+            });
+        }
+
+        // Bỏ chọn tất cả -> Tự động submit
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener("click", function (e) {
+                e.preventDefault();
+                let changed = false;
+                airlineOptions.forEach((opt) => {
+                    const cb = opt.querySelector(".bf-airline-checkbox");
+                    if (cb && cb.checked) {
+                        cb.checked = false;
+                        changed = true;
+                    }
+                });
+                if (changed) {
+                    sessionStorage.setItem("bf_airline_dropdown_open", "1");
+                    filterForm.requestSubmit();
+                }
+            });
+        }
+    }
+
+    /* ============================================================
+       3. LÀM SẠCH INPUT GIÁ TRỐNG TRƯỚC KHI SUBMIT
+       ============================================================ */
+    filterForm.addEventListener("submit", function () {
+        const priceInputs = filterForm.querySelectorAll('input[name="price_min"], input[name="price_max"]');
+        priceInputs.forEach((input) => {
+            if (!input.value || !input.value.trim()) {
+                input.removeAttribute("name");
+            }
         });
     });
-
-    // Khởi chạy ban đầu
-    applyFilters();
 });
+

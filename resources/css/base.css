@@ -156,6 +156,7 @@ img {
     height: 100%;
     align-items: center;
     gap: 32px;
+    position: relative;
 }
 .bf-brand {
     display: inline-flex;
@@ -195,15 +196,17 @@ img {
     height: 100%;
     align-items: center;
     gap: 30px;
-    margin-left: auto;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 .bf-navbar__nav a {
     position: relative;
     display: grid;
     height: 100%;
     place-items: center;
-    color: #3f5263;
-    font-size: 0.88rem;
+    color: #132434;
+    font-size: 0.9rem;
     font-weight: 600;
 }
 .bf-navbar__nav a::after {
@@ -231,6 +234,7 @@ img {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-left: auto;
 }
 .bf-button {
     display: inline-flex;
@@ -581,6 +585,225 @@ img {
         gap: 4px;
     }
 }
+
+/* ============================================================
+   FLOATING ACTION BUTTON (FAB) & QUICK SUPPORT
+   ============================================================ */
+.bf-fab-container {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    z-index: 1060;
+    font-family: inherit;
+}
+.bf-fab-btn {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1268b3 0%, #12365a 100%);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 8px 24px rgba(18, 104, 179, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bf-fab-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 30px rgba(18, 104, 179, 0.45);
+}
+.bf-fab-btn:focus-visible {
+    outline: 3px solid rgba(18, 104, 179, 0.4);
+    outline-offset: 3px;
+}
+.bf-fab-icon {
+    font-size: 1.45rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.bf-fab-icon--close {
+    display: none;
+}
+.bf-fab-container.is-open .bf-fab-icon--chat {
+    display: none;
+}
+.bf-fab-container.is-open .bf-fab-icon--close {
+    display: flex;
+    transform: rotate(90deg);
+}
+.bf-fab-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 13px;
+    height: 13px;
+    background-color: #22c55e;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    z-index: 2;
+}
+.bf-fab-container.is-open .bf-fab-badge {
+    display: none;
+}
+.bf-fab-pulse {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(18, 104, 179, 0.6);
+    animation: bfFabPulse 2.4s infinite;
+    pointer-events: none;
+}
+@keyframes bfFabPulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+.bf-fab-tooltip {
+    position: absolute;
+    right: 70px;
+    background: #12365a;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(18, 54, 90, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(8px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+}
+.bf-fab-btn:hover .bf-fab-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+.bf-fab-panel {
+    position: absolute;
+    right: 0;
+    bottom: 74px;
+    width: 320px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(18, 54, 90, 0.18), 0 0 0 1px rgba(18, 54, 90, 0.05);
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(16px) scale(0.96);
+    transform-origin: bottom right;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bf-fab-container.is-open .bf-fab-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+.bf-fab-panel__header {
+    background: linear-gradient(135deg, #12365a 0%, #1268b3 100%);
+    color: #ffffff;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.bf-fab-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+.bf-status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45);
+}
+.bf-fab-panel__body {
+    padding: 10px;
+}
+.bf-fab-action-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #1e293b;
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
+    cursor: pointer;
+}
+.bf-fab-action-item:last-child {
+    margin-bottom: 0;
+}
+.bf-fab-action-item:hover {
+    background: #f1f7fc;
+    color: var(--bf-blue);
+    transform: translateX(3px);
+}
+.bf-fab-action-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+.bf-fab-action-text {
+    flex-grow: 1;
+    line-height: 1.25;
+}
+.bf-fab-action-text .fw-bold {
+    font-size: 0.9rem;
+    color: #0f172a;
+    font-weight: 700;
+}
+.bf-fab-action-text small,
+.bf-fab-action-sub {
+    font-size: 0.76rem;
+    color: #475569;
+    font-weight: 500;
+}
+@media (max-width: 620px) {
+    .bf-fab-container {
+        right: 18px;
+        bottom: 18px;
+    }
+    .bf-fab-panel {
+        width: calc(100vw - 36px);
+        max-width: 320px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

@@ -1,233 +1,264 @@
-# Website đặt vé máy bay — sơ đồ và nội dung thuyết trình
+# BÁO CÁO THUYẾT TRÌNH: WEBSITE ĐẶT VÉ MÁY BAY
 
-Tài liệu này được đối chiếu với routes, migrations và nghiệp vụ trong source hiện tại. Ba sơ đồ Mermaid có thể xuất thành SVG/PNG từ Mermaid Live Editor để chèn vào slide. ERD dưới đây được dựng từ 15 bảng nghiệp vụ trong migrations; repo hiện không có `DB_IDEA_4.md`.
+Thời lượng gợi ý khoảng 18 phút, gồm 21 slide và phần demo 5 phút. Mỗi slide gồm: Nội dung (chữ trên slide), Chèn ảnh, Demo (nếu có)
 
-## Sơ đồ 1 — Use case
+---
 
-```mermaid
-flowchart LR
-    customer[Khách hàng]
-    admin[Quản trị viên]
-    subgraph system[Website đặt vé máy bay]
-        account((Quản lý tài khoản và hồ sơ))
-        search((Tìm và chọn chuyến bay))
-        booking((Nhập hành khách và đặt vé))
-        extras((Chọn ghế và hành lý))
-        payment((Thanh toán mô phỏng))
-        ticket((Xem lịch sử và tải vé PDF))
-        saved((Quản lý hành khách đã lưu))
-        catalog((Quản lý danh mục))
-        flights((Quản lý chuyến bay))
-        adminBooking((Tra cứu đơn đặt vé))
-        dashboard((Xem thống kê))
-        passport((Duyệt yêu cầu cập nhật hộ chiếu))
-    end
-    customer --- account
-    customer --- search
-    customer --- booking
-    customer --- extras
-    customer --- payment
-    customer --- ticket
-    customer --- saved
-    admin --- catalog
-    admin --- flights
-    admin --- adminBooking
-    admin --- dashboard
-    admin --- passport
-```
+## Slide 1: Trang bìa (0,5')
 
-## Sơ đồ 2 — Kiến trúc tổng quan
+**Nội dung**
+- Tiêu đề: **Website đặt vé máy bay**
+- Phụ đề: Đặt vé nhiều chặng, chọn ghế và giữ ghế an toàn
+- Môn học, giảng viên hướng dẫn, nhóm 4 thành viên, ngày báo cáo
 
-```mermaid
-flowchart LR
-    browser[Trình duyệt<br/>Blade + Bootstrap + JavaScript + Chart.js]
-    routes[Route + Middleware<br/>web.php, auth, admin]
-    request[Form Request<br/>validate input]
-    controller[Controller<br/>HTTP và phản hồi]
-    service[Service<br/>đặt vé, giữ ghế, hết hạn,<br/>kiểm tra hành trình và hộ chiếu]
-    models[Eloquent Models]
-    db[(MariaDB / MySQL)]
-    mail[Laravel Mail + Dompdf]
-    browser --> routes --> request --> controller
-    controller --> service --> models --> db
-    controller --> browser
-    controller --> mail --> inbox[Hộp thư khách hàng]
-```
+---
 
-## Sơ đồ 3 — Đặt vé và thanh toán
+## Slide 2: Nội dung trình bày (0,5')
 
-```mermaid
-sequenceDiagram
-    actor C as Khách hàng
-    participant B as Trình duyệt
-    participant R as Route / Middleware
-    participant S as BookingCreationService
-    participant DB as MariaDB
-    participant P as PaymentController
-    participant M as Mail + Dompdf
+**Nội dung**
+1. Giới thiệu đề tài và lý do chọn
+2. Phân tích và thiết kế hệ thống
+3. Giải pháp cho bài toán giữ ghế
+4. Chức năng chính và demo
+5. Kiểm thử, hạn chế, hướng phát triển
 
-    C->>B: Tìm chuyến, nhập hành khách, chọn ghế
-    B->>R: POST /booking/seats
-    R->>S: Dữ liệu đã validate + lựa chọn
-    S->>DB: BEGIN TRANSACTION
-    S->>DB: Xét chặng theo giờ bay, khóa ghế theo thứ tự chặng rồi ID
-    S->>DB: Kiểm tra ghế, tạo booking pending, vé và giá snapshot
-    S->>DB: Đổi ghế available → held, gắn held_by và held_until
-    S->>DB: COMMIT
-    S-->>B: Chuyển tới trang thanh toán
+---
 
-    C->>B: Xác nhận thanh toán mô phỏng
-    B->>R: POST /payment/{booking}
-    R->>P: Validate phương thức và xác nhận hộ chiếu nếu cần
-    P->>DB: BEGIN TRANSACTION, khóa booking trước
-    P->>DB: Kiểm tra pending, hạn giữ, rồi khóa ghế theo ID
-    alt Booking còn hạn và ghế vẫn held bởi chủ booking
-        P->>DB: Tạo payment success, booking → paid, ghế → booked
-        P->>DB: COMMIT
-        P->>M: Gửi email đồng bộ kèm vé PDF
-        M-->>C: Email xác nhận (lỗi SMTP được ghi log)
-    else Booking hết hạn hoặc ghế không còn được giữ
-        P->>DB: Không ghi payment success
-        P-->>B: Báo hết hạn hoặc yêu cầu đặt lại
-    end
-```
+## Slide 3: Giới thiệu đề tài và lý do chọn (1,5')
 
-## ERD — 15 bảng nghiệp vụ
+**Nội dung**
+Đề tài xây dựng website cho phép khách hàng tìm chuyến bay, đặt vé một chiều, khứ hồi hoặc nhiều chặng, chọn ghế, mua thêm hành lý, thanh toán và nhận vé điện tử. Quản trị viên quản lý dữ liệu khai thác và theo dõi doanh thu.
 
-```mermaid
-erDiagram
-    USERS ||--o{ BOOKINGS : owns
-    USERS ||--o{ SAVED_PASSENGERS : saves
-    USERS ||--o{ FLIGHT_SEATS : holds
-    USERS ||--o{ PASSPORT_UPDATE_REQUESTS : submits
-    USERS o|--o{ PASSPORT_UPDATE_REQUESTS : reviews
-    AIRLINES ||--o{ AIRCRAFTS : operates
-    AIRCRAFTS ||--o{ SEATS : contains
-    AIRCRAFTS ||--o{ FLIGHTS : assigned
-    AIRPORTS ||--o{ FLIGHTS : departure
-    AIRPORTS ||--o{ FLIGHTS : arrival
-    FLIGHTS ||--o{ FLIGHT_SEATS : offers
-    FARE_CLASSES ||--o{ FLIGHT_SEATS : prices
-    BOOKINGS ||--o{ BOOKING_FLIGHTS : includes
-    FLIGHTS ||--o{ BOOKING_FLIGHTS : selected
-    BOOKINGS ||--o{ PASSENGERS : names
-    BOOKING_FLIGHTS ||--o{ TICKETS : issues
-    PASSENGERS ||--o{ TICKETS : travels
-    FLIGHT_SEATS o|--o| TICKETS : assigned
-    BAGGAGE_ADDONS o|--o{ TICKETS : optional_addon
-    BOOKINGS ||--o| PAYMENTS : paid_by
-    BOOKINGS ||--o{ PASSPORT_UPDATE_REQUESTS : has
-    PASSENGERS ||--o{ PASSPORT_UPDATE_REQUESTS : updates
-    PASSENGERS o|--o{ TICKETS : infant_companion
+Nhóm chọn đề tài vì ba lý do. Thứ nhất, đây là bài toán thực tế mà người dùng nào cũng quen thuộc. Thứ hai, nó chứa những vấn đề kỹ thuật điển hình: nhiều người tranh cùng một ghế, giao dịch dữ liệu phải toàn vẹn, hành trình nhiều chặng. Thứ ba, đề tài bao phủ đủ các yêu cầu của môn học: phân quyền, CRUD, tìm kiếm, phân trang, thống kê, gửi email và xuất PDF.
 
-    USERS {
-        bigint id PK
-    }
-    AIRLINES {
-        bigint id PK
-    }
-    AIRPORTS {
-        bigint id PK
-    }
-    AIRCRAFTS {
-        bigint id PK
-        bigint airline_id FK
-    }
-    SEATS {
-        bigint id PK
-        bigint aircraft_id FK
-        string seat_number
-    }
-    FARE_CLASSES {
-        bigint id PK
-        decimal seat_selection_fee
-    }
-    BAGGAGE_ADDONS {
-        bigint id PK
-    }
-    FLIGHTS {
-        bigint id PK
-        bigint aircraft_id FK
-        bigint departure_airport_id FK
-        bigint arrival_airport_id FK
-    }
-    FLIGHT_SEATS {
-        bigint id PK
-        bigint flight_id FK
-        bigint seat_id FK
-        bigint fare_class_id FK
-        string status
-        datetime held_until
-    }
-    BOOKINGS {
-        bigint id PK
-        bigint user_id FK
-        string status
-        decimal total_amount
-    }
-    BOOKING_FLIGHTS {
-        bigint id PK
-        bigint booking_id FK
-        bigint flight_id FK
-    }
-    PASSENGERS {
-        bigint id PK
-        bigint booking_id FK
-        string passenger_type
-    }
-    SAVED_PASSENGERS {
-        bigint id PK
-        bigint user_id FK
-    }
-    TICKETS {
-        bigint id PK
-        bigint booking_flight_id FK
-        bigint passenger_id FK
-        bigint flight_seat_id FK
-        bigint baggage_addon_id FK
-        decimal price
-    }
-    PAYMENTS {
-        bigint id PK
-        bigint booking_id FK
-        string status
-        decimal amount
-    }
-    PASSPORT_UPDATE_REQUESTS {
-        bigint id PK
-        bigint booking_id FK
-        bigint passenger_id FK
-        bigint user_id FK
-        bigint admin_id FK
-    }
-```
+**Chèn ảnh:**
 
-## Nội dung PowerPoint — 18 slide
+---
 
-Mỗi slide giữ tối đa bốn ý chính. Slide 4, 5, 6 và 8 ưu tiên sơ đồ tương ứng ở trên.
+## Slide 4: Mục tiêu và phạm vi (1')
 
-1. **Tiêu đề** — Website đặt vé máy bay; tên môn; nhóm 4 thành viên; giảng viên.
-2. **Vấn đề và mục tiêu** — Đặt vé trực tuyến cần tránh giữ trùng ghế; hoàn tất hành trình từ tìm chuyến đến vé điện tử; vai trò khách hàng và quản trị viên.
-3. **Công nghệ** — Laravel 12, Blade, Bootstrap, JavaScript/fetch; MariaDB/MySQL và Eloquent; Breeze, Form Request, Dompdf, Laravel Mail, Chart.js; monolith giúp nhóm triển khai và vận hành gọn.
-4. **Use case** — Chèn sơ đồ 1; nhóm chức năng khách hàng và quản trị viên.
-5. **Kiến trúc** — Chèn sơ đồ 2; request qua route/middleware, controller và service đến database.
-6. **Thiết kế dữ liệu** — Chèn ERD; 15 bảng nghiệp vụ; ghế vật lý `seats` tách ghế từng chuyến `flight_seats`; `booking_flights` hỗ trợ nhiều chặng; giá vé lưu snapshot ở `tickets.price`.
-7. **Hành trình người dùng** — Tìm chuyến, chọn chuyến từng chặng, nhập hành khách, chọn ghế, thanh toán, xem lịch sử và tải PDF; một chiều, khứ hồi, đa chặng.
-8. **Sequence đặt vé và thanh toán** — Chèn sơ đồ 3; nhấn mạnh hai lần transaction: giữ ghế khi tạo booking và xác nhận ghế khi thanh toán.
-9. **Giữ ghế và chống đặt trùng** — Hold 20 phút; lazy expiry; transaction và `lockForUpdate`; thiếu ghế ở một chặng thì rollback toàn booking; trạng thái ghế `available → held → booked`.
-10. **Quy tắc giá** — Giá chỗ + phí chọn ghế tự chọn + hành lý; em bé 10% giá ghế gốc của người lớn đi kèm; hành lý tính theo từng chặng; tổng booking cộng mọi vé và chặng.
-11. **Ghế, hành lý, hộ chiếu** — Ghế riêng theo chặng, tự gán nếu bỏ qua; mỗi khách tối đa một gói hành lý, em bé không mua; chuyến quốc tế yêu cầu thông tin hộ chiếu và xác nhận cảnh báo còn hạn dưới sáu tháng.
-12. **Quản trị** — CRUD danh mục và chuyến bay; tìm kiếm, lọc, phân trang đơn; dashboard doanh thu theo tháng, chuyến theo hãng và tỷ lệ lấp đầy; duyệt yêu cầu cập nhật hộ chiếu.
-13. **Bảo mật và phân quyền** — Middleware `auth`/`admin`; booking tải theo chủ sở hữu; kiểm tra dữ liệu đầu vào; soft delete danh mục giữ liên kết lịch sử.
-14. **Kiểm thử** — Cập nhật số liệu sau khi chạy `php artisan test`, `vendor/bin/pint --test` và `npm run build`; nêu các luồng đã kiểm thử thủ công theo kết quả thực tế.
-15. **Demo 5 phút** — Đăng nhập; tìm khứ hồi; nhập 2 người lớn + 1 em bé; chọn ghế; thanh toán; mở lịch sử và PDF; xem đơn và dashboard admin.
-16. **Hạn chế** — Thanh toán mô phỏng; email gửi đồng bộ; phí chọn ghế theo hạng vé; một số kiểm tra nghiệp vụ còn inline trong controller.
-17. **Hướng phát triển** — Cổng thanh toán sandbox; queue email; phí ghế theo vị trí; đa ngôn ngữ; đổi hoặc hủy vé.
-18. **Phân công và Q&A** — Namv: lõi đặt vé, điều phối; Luân: admin, hành lý, sơ đồ ghế; Nguyên: hồ sơ hành khách, tiện ích; thành viên còn lại: giao diện.
+**Nội dung**
+Hệ thống hướng tới bốn mục tiêu: đặt được vé một chiều, khứ hồi và đa chặng; cho khách tự chọn ghế và mua thêm hành lý; giữ ghế tạm thời để tránh đặt trùng; và cho quản trị viên quản lý dữ liệu, xem thống kê.
 
-## Câu hỏi thường gặp
+Thanh toán được mô phỏng (thành công hoặc thất bại) vì đề bài không yêu cầu cổng thật. Hệ thống không làm thanh toán qua VNPay/Momo, chat real-time hay chatbot.
 
-- **Hai người cùng đặt một ghế?** Transaction khóa ghế bằng `lockForUpdate`; request sau kiểm tra trạng thái sau khi lấy được khóa. Ràng buộc duy nhất trên `tickets.flight_seat_id` là lớp bảo vệ bổ sung.
-- **Ghế giữ mãi nếu khách rời trang?** Sau 20 phút, sơ đồ ghế xem hold đã hết hạn như ghế trống; booking bị hủy khi hết hạn được xử lý qua luồng tìm chuyến hoặc trang thanh toán.
-- **Vì sao chưa dùng queue/scheduler?** Quy trình chạy được trong môi trường local mà không cần tiến trình nền; email hiện gửi đồng bộ.
-- **Vì sao thanh toán mô phỏng?** Phạm vi hiện tại chưa tích hợp cổng thanh toán thực; muốn nhận callback cần endpoint có thể truy cập công khai.
+---
+
+## Slide 5: Công nghệ và quyết định kiến trúc (1')
+
+**Nội dung**
+
+| Thành phần | Công nghệ |
+|---|---|
+| Backend | Laravel (monolith), Eloquent, Form Request |
+| Giao diện | Blade, Bootstrap 5, JavaScript thuần (fetch) |
+| Đăng nhập, phân quyền | Laravel Breeze, middleware `auth` và `admin` |
+| Cơ sở dữ liệu | MariaDB/MySQL (InnoDB) |
+| Tiện ích | Chart.js, dompdf, Laravel Mail |
+
+Nhóm giữ kiến trúc monolith Blade thay vì tách SPA và REST API. Cách này tránh các rủi ro về CORS, token và quản lý trạng thái phía client, phù hợp với năng lực và thời gian của nhóm.
+
+**Chèn ảnh:** logo công nghệ (Laravel, Bootstrap, MariaDB, Chart.js).
+
+---
+
+## Slide 6: Phân tích yêu cầu: tác nhân và use case (1,5')
+
+**Nội dung**
+Hệ thống có hai tác nhân. Khách hàng có 7 chức năng: đăng ký, đăng nhập, tìm chuyến, đặt vé, xem lịch sử đặt vé, quản lý hồ sơ hành khách đã lưu. Quản trị viên có 5 chức năng: quản lý danh mục, quản lý chuyến bay, quản lý gói hành lý, xem đơn đặt vé, xem thống kê doanh thu.
+
+Quan hệ giữa các use case: Chọn ghế, Mua gói hành lý và Điền nhanh từ hồ sơ là các mở rộng tùy chọn của Đặt vé (`«extend»`). Đặt vé bắt buộc có Thanh toán, và Thanh toán tự động gửi email xác nhận (`«include»`).
+
+**Chèn ảnh:** Sơ đồ use case, slide riêng.
+
+---
+
+## Slide 7: Kiến trúc hệ thống (1')
+
+**Nội dung**
+Một yêu cầu đi từ trình duyệt qua Route và Middleware, vào Controller. Controller dùng Form Request để kiểm tra dữ liệu, giao nghiệp vụ cho Service (đặt vé, hết hạn, tìm chuyến, rủi ro hộ chiếu), rồi đọc ghi dữ liệu qua Model Eloquent xuống MariaDB. Mail và dompdf tạo và gửi vé điện tử.
+
+Controller giữ mỏng, nghiệp vụ nằm ở Service nên dễ kiểm thử và dễ bảo trì.
+
+**Chèn ảnh:** Sơ đồ component.
+
+---
+
+## Slide 8: Thiết kế cơ sở dữ liệu (1,5')
+
+**Nội dung**
+Cơ sở dữ liệu gồm 16 bảng nghiệp vụ. Một số quyết định thiết kế chính:
+
+- Tách `seats` (ghế vật lý của máy bay) và `flight_seats` (ghế trên từng chuyến, mang giá và trạng thái), để cùng một máy bay khai thác nhiều chuyến.
+- Bảng `booking_flights` nối một booking với nhiều chuyến, nhờ đó hỗ trợ khứ hồi và đa chặng.
+- `tickets.price` lưu giá tại thời điểm đặt, nên đổi giá sau này không ảnh hưởng vé cũ.
+- 5 bảng danh mục (hãng bay, máy bay, sân bay, hạng vé, gói hành lý) dùng Soft Delete để giữ lịch sử.
+
+**Chèn ảnh:** ERD
+
+---
+
+## Slide 9: Quy tắc nghiệp vụ cốt lõi (1,5')
+
+**Nội dung**
+- **Giá vé** của mỗi người = giá ghế + phí chọn ghế (chỉ khi tự chọn ghế) + gói hành lý.
+- **Tổng đơn** = tổng giá vé của mọi chặng; gói hành lý áp dụng và tính tiền cho từng chặng.
+- **Em bé** không chiếm ghế, giá bằng 10% giá ghế gốc của người lớn đi kèm, không mua hành lý.
+- **Hạng vé** dùng chung cho mọi chặng; thứ tự chặng suy ra từ giờ khởi hành.
+- **Chuyến quốc tế** yêu cầu thông tin hộ chiếu. Nếu hộ chiếu còn dưới 6 tháng, hệ thống cảnh báo và bắt buộc khách tick xác nhận trước khi thanh toán (kiểm tra cả ở phía server).
+
+**Ví dụ minh họa** (khứ hồi, 1 người lớn + 1 em bé, giá ghế 1.000.000đ mỗi chặng, gói hành lý 150.000đ, phí chọn ghế 60.000đ):
+- Người lớn: (1.000.000 + 150.000 + 60.000) × 2 = 2.420.000đ
+- Em bé: 10% × 1.000.000 × 2 = 200.000đ
+- Tổng đơn: 2.620.000đ
+
+**Chèn ảnh:** bảng ví dụ trên dưới dạng bảng tính nhỏ.
+
+---
+
+## Slide 10: Luồng đặt vé tổng thể (1')
+
+**Nội dung**
+Khách thực hiện năm bước: (1) tìm chuyến ngay ở trang chủ; (2) chọn chuyến cho từng chặng; (3) nhập thông tin hành khách, có thể điền nhanh từ hồ sơ đã lưu và chọn gói hành lý; (4) chọn ghế cho từng chặng hoặc để hệ thống tự gán; (5) thanh toán, sau đó nhận vé PDF và email xác nhận.
+
+Khi tìm theo ngày, hệ thống đổi sang khoảng giờ UTC theo múi giờ của sân bay đi từng chặng, nên kết quả đúng với giờ địa phương.
+
+**Chèn ảnh:**
+
+---
+
+## Slide 11: Bài toán giữ ghế và chống đặt trùng (2')
+
+**Nội dung**
+**Vấn đề:** hai người có thể cùng bấm đặt một ghế, và một khách bỏ dở thanh toán có thể giữ ghế mãi.
+
+**Giải pháp của nhóm:**
+- Ghế được giữ 20 phút. Hết hạn, ghế được coi là trống ngay khi truy vấn (lazy expiry), nên không cần queue hay scheduler trên XAMPP/Windows.
+- Tạo đơn trong một `DB::transaction` kèm `lockForUpdate`. Ghế được khóa theo thứ tự cố định để tránh deadlock.
+- Nếu một chặng thiếu ghế, toàn bộ đơn bị rollback, khách không bao giờ có vé đi mà thiếu vé về.
+- Ràng buộc UNIQUE trên `tickets.flight_seat_id` là lớp bảo vệ cuối cùng ở tầng cơ sở dữ liệu.
+
+**Chèn ảnh:** hai sơ đồ trạng thái đặt cạnh nhau:
+- Ghế: `available → held → booked`, và `held → available` khi hết hạn hoặc hủy.
+- Booking: `pending → paid` hoặc `pending → cancelled`.
+
+---
+
+## Slide 12: Luồng tạo booking khi chọn ghế (1')
+
+**Nội dung**
+Khi khách xác nhận ghế, Controller gọi service tạo đơn. Service khóa các ghế liên quan, kiểm tra ghế đúng chuyến, đúng hạng vé và còn trống, rồi đánh dấu `held`, tạo booking pending cùng các vé trong cùng một giao dịch. Nếu đủ ghế thì COMMIT và chuyển khách sang trang thanh toán. Nếu thiếu ghế thì ROLLBACK và báo khách chọn lại.
+
+**Chèn ảnh:** Sơ đồ sequence "tạo booking".
+
+---
+
+## Slide 13: Luồng thanh toán an toàn (1')
+
+**Nội dung**
+Khi khách bấm thanh toán, hệ thống khóa booking trước, kiểm tra còn ở trạng thái pending và chưa hết hạn, sau đó khóa các ghế và xác nhận ghế vẫn đang được giữ đúng chủ. Chỉ khi đó booking mới chuyển sang paid và ghế sang booked. Nếu hết hạn hoặc mất ghế, giao dịch bị hủy và khách được báo đặt lại.
+
+Việc gửi email xác nhận được bọc để nếu lỗi SMTP chỉ ghi log, không làm hỏng một thanh toán đã thành công.
+
+**Chèn ảnh:** Sơ đồ sequence "thanh toán".
+
+---
+
+## Slide 14: Tính năng nổi bật phía khách hàng (1')
+
+**Nội dung**
+- Tìm chuyến một chiều, khứ hồi, đa chặng ngay tại trang chủ.
+- Sơ đồ ghế riêng cho từng chặng; nếu khách không chọn, hệ thống tự gán ghế.
+- Gói hành lý: mỗi người chọn tối đa một gói, áp dụng cho mọi chặng.
+- Hồ sơ hành khách đã lưu giúp điền nhanh form nhập thông tin.
+- Chuyến quốc tế có nhập hộ chiếu, cảnh báo hộ chiếu sắp hết hạn, và cho phép gửi yêu cầu chỉnh sửa hộ chiếu sau khi đặt vé.
+- Lịch sử đặt vé, tải vé PDF và nhận email xác nhận.
+
+**Chèn ảnh:** 4 ảnh chụp màn hình: kết quả tìm kiếm khứ hồi; sơ đồ chọn ghế; trang thanh toán có đồng hồ đếm ngược; vé PDF.
+
+---
+
+## Slide 15: Phân hệ quản trị (1')
+
+**Nội dung**
+Quản trị viên quản lý hãng bay, máy bay, sân bay, hạng vé, chuyến bay và gói hành lý với đầy đủ tìm kiếm và phân trang. Trang đơn đặt vé cho phép tìm theo mã đơn, tên, email, mã vé và lọc theo trạng thái; trang này chỉ xem, không sửa hay hủy. Bảng điều khiển dùng Chart.js hiển thị doanh thu theo tháng, số chuyến theo hãng và tỷ lệ lấp đầy ghế. Admin cũng duyệt hoặc từ chối các yêu cầu cập nhật hộ chiếu của khách.
+
+**Chèn ảnh:** ảnh chụp dashboard admin và trang danh sách đơn đặt vé.
+
+---
+
+## Slide 16: Bảo mật, phân quyền và chất lượng mã (1')
+
+**Nội dung**
+Phân quyền hai vai trò bằng middleware `auth` và `admin`. Mọi thao tác trên booking, hành khách đã lưu đều kiểm tra người dùng là chủ sở hữu. Dữ liệu đầu vào chính đi qua Form Request. Soft Delete giữ lại dữ liệu danh mục cũ để lịch sử đặt vé vẫn hiển thị đúng. Mã nguồn được tổ chức thành các tầng Controller, Service, Model và thống nhất định dạng bằng Pint.
+
+---
+
+## Slide 17: Kiểm thử (1')
+
+**Nội dung**
+
+| Hạng mục | Kết quả |
+|---|---|
+| Kiểm thử tự động (`php artisan test`) | 399 test đạt |
+| Định dạng mã (Pint) | 195 file đạt |
+| Build giao diện (`npm run build`) | Thành công |
+| Số route | 89 |
+
+Các kịch bản đã kiểm thử gồm: đặt vé một chiều, khứ hồi, đa chặng; rollback khi một chặng hết ghế; hết hạn booking nhả ghế mọi chặng; giá em bé tính theo từng chặng; hành lý; quyền truy cập lịch sử đặt vé. Ngoài ra nhóm kiểm thử thủ công trên máy tính và điện thoại.
+
+**Chèn ảnh:** ảnh chụp kết quả `php artisan test`.
+
+---
+
+## Slide 18: Demo (5')
+
+**Chuẩn bị:** chạy `migrate:fresh --seed`; có 1 tài khoản khách đã xác thực email có sẵn hồ sơ hành khách, 1 tài khoản admin; chuyến đi và chuyến về còn đủ ghế; có ít nhất một chuyến quốc tế; SMTP đã cấu hình.
+
+| Bước | Trang | Thao tác |
+|---|---|---|
+| 1 | Trang chủ `/` | Chọn khứ hồi, sân bay, ngày, 2 người lớn + 1 em bé, bấm tìm |
+| 2 | Kết quả tìm chuyến `/flights/results` và `/booking/leg/{n}` | Chọn chuyến đi, rồi chuyến về |
+| 3 | Nhập hành khách `/booking/passengers` | Điền nhanh từ hồ sơ đã lưu, chọn gói hành lý, gắn em bé vào người lớn |
+| 4 | Chọn ghế `/booking/seats` | Chọn ghế từng chặng, xem phí chọn ghế |
+| 5 | Thanh toán `/payment/{id}` | Xem đồng hồ đếm ngược, thanh toán thành công |
+| 6 | Chi tiết đơn `/booking-history/{id}` | Xem đủ hai chặng, tải vé PDF |
+| 7 | Hộp thư email | Mở email xác nhận kèm vé PDF |
+| 8 | Admin `/admin/dashboard`, `/admin/bookings` | Thấy đơn vừa đặt và biểu đồ doanh thu |
+
+---
+
+## Slide 19: Hạn chế và hướng phát triển (1')
+
+**Nội dung**
+
+| Hạn chế hiện tại | Hướng phát triển |
+|---|---|
+| Thanh toán mới mô phỏng | Tích hợp cổng thanh toán sandbox |
+| Email gửi đồng bộ | Dùng hàng đợi (Queue) |
+| Phí ghế theo hạng vé | Phí theo vị trí ghế (cửa sổ, lối đi) |
+| Một số validation còn viết inline | Chuyển sang Form Request |
+| Chưa có đổi, hủy vé | Quy trình hoàn, đổi vé |
+| Chỉ có tiếng Việt | Đa ngôn ngữ |
+
+---
+
+## Slide 20: Phân công và đóng góp (0,5')
+
+**Nội dung**
+
+| Thành viên | Phụ trách |
+|---|---|
+| Namv | Lõi đặt vé nhiều chặng, giữ ghế, seat map phía server, điều phối và quản lý nhánh |
+| Luân | Quản lý đơn đặt vé và menu admin, hành lý trong luồng đặt vé, giao diện sơ đồ ghế |
+| Nguyên | Quản lý gói hành lý, hồ sơ hành khách và điền nhanh, nối các liên kết giao diện |
+| Tuyết | Thiết kế giao diện Blade + Bootstrap + Soạn PowerPoint |
+
+---
+
+## Slide 21: Kết luận và hỏi đáp (1')
+
+**Nội dung**
+Hệ thống đã đạt mục tiêu: luồng đặt vé nhiều chặng hoàn chỉnh, giữ ghế an toàn trước tranh chấp, phân hệ quản trị đầy đủ và được kiểm thử tự động. Bài học chính của nhóm là thiết kế dữ liệu và giao dịch quan trọng hơn giao diện, và kiểm thử sớm giúp phát hiện lỗi tranh chấp dữ liệu mà bằng mắt khó thấy.
+
+---

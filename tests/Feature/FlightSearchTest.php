@@ -497,15 +497,13 @@ class FlightSearchTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('id="bf-flight-list"', false);
-        $response->assertSee('id="bf-count-display"', false);
-        $response->assertSee('id="bf-no-matching-flights"', false);
-        $response->assertSee('id="bf-filter-reset"', false);
-        $response->assertSee('id="bf-filter-direct"', false);
-        $response->assertSee('bf-airline-checkbox', false);
-        $response->assertSee('data-time-slot="morning"', false);
+        $response->assertSee('id="bf-filter-form"', false);
+        $response->assertSee('name="airlines[]"', false);
+        $response->assertSee('name="price_min"', false);
+        $response->assertSee('name="price_max"', false);
+        $response->assertSee('name="dep_time[]"', false);
+        $response->assertSee('name="arr_time[]"', false);
+        $response->assertSee('name="sort"', false);
         $response->assertSee('data-flight-id="'.$flight->id.'"', false);
-        $response->assertSee('data-airline="', false);
-        $response->assertSee('data-price="1500000"', false);
-        $response->assertSee('data-stops="direct"', false);
     }
 }

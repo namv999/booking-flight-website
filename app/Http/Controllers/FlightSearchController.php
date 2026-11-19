@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FlightFilterRequest;
 use App\Http\Requests\FlightSearchRequest;
 use App\Models\Airport;
 use App\Models\FareClass;
@@ -45,11 +46,11 @@ class FlightSearchController extends Controller
     }
 
     // GET /booking/leg/{leg}: chọn chuyến cho chặng thứ $leg (đếm từ 0, chặng 0 đi qua results())
-    public function leg(int $leg)
+    public function leg(FlightFilterRequest $request, int $leg)
     {
         $pending = session('pending_selection');
 
-        if (! $pending || $leg < 1 || ! isset($pending['legs'][$leg])) {
+        if (! $pending || $leg < 0 || ! isset($pending['legs'][$leg])) {
             return redirect()->route('home')
                 ->with('error', 'Phiên tìm kiếm đã hết hạn, vui lòng tìm chuyến bay lại.');
         }
@@ -61,24 +62,39 @@ class FlightSearchController extends Controller
             return redirect($this->journey->legUrl($pending, $limit));
         }
 
-        $previous = Flight::find($pending['legs'][$leg - 1]['flight_id']);
+        $afterUtc = null;
+        if ($leg > 0) {
+            $previous = Flight::find($pending['legs'][$leg - 1]['flight_id']);
 
-        if (! $previous) {
-            return redirect($this->journey->legUrl($pending, 0));
+            if (! $previous) {
+                return redirect($this->journey->legUrl($pending, 0));
+            }
+
+            $afterUtc = $previous->getRawOriginal('arrival_time');
         }
 
-        return $this->renderLeg($pending, $leg, $previous->getRawOriginal('arrival_time'));
+        return $this->renderLeg($pending, $leg, $afterUtc, $request->validated());
     }
 
-    private function renderLeg(array $pending, int $legIndex, ?string $afterUtc)
+    private function renderLeg(array $pending, int $legIndex, ?string $afterUtc, array $rawFilters = [])
     {
         $leg = $pending['legs'][$legIndex];
 
         $departureAirport = Airport::findOrFail($leg['from']);
         $arrivalAirport = Airport::findOrFail($leg['to']);
         $fareClass = FareClass::findOrFail($pending['fare_class_id']);
+        $filters = $this->searchService->normalizeFilters($rawFilters);
 
         $flights = $this->searchService->searchLeg(
+            $departureAirport,
+            $arrivalAirport,
+            $leg['date'],
+            (int) $pending['fare_class_id'],
+            $afterUtc,
+            $filters
+        );
+
+        $facets = $this->searchService->legFacets(
             $departureAirport,
             $arrivalAirport,
             $leg['date'],
@@ -107,6 +123,12 @@ class FlightSearchController extends Controller
             'tripType' => $pending['trip_type'],
             'chosenFlights' => $chosenFlights,
             'backUrl' => $legIndex > 0 ? $this->journey->legUrl($pending, $legIndex - 1) : null, // chọn lại chặng trước
+            'filters' => $filters,
+            'facets' => $facets,
+            'hasActiveFilters' => $this->searchService->hasActiveFilters($filters),
+            'timeSlotOptions' => FlightSearchService::TIME_SLOTS,
+            'sortOptions' => FlightSearchService::SORTS,
+            'filterAction' => route('booking.leg', $legIndex),
         ]);
     }
 }
