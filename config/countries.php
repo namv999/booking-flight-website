@@ -1,7 +1,11 @@
 <?php
 
-// Mã ISO 3166-1 alpha-3 => tên tiếng Anh không dấu. Lưu mã, hiển thị "Tên (MÃ)"
-return [
+// Mã ISO 3166-1 alpha-3 => tên tiếng Anh; giữ tên hiện có để không đổi nhãn trong hồ sơ đã lưu.
+$countries = collect(json_decode(file_get_contents(database_path('data/countries.json')), true))
+    ->pluck('name_en', 'alpha3')
+    ->all();
+
+return array_replace($countries, [
     'VNM' => 'Vietnam',
     'THA' => 'Thailand',
     'SGP' => 'Singapore',
@@ -31,4 +35,4 @@ return [
     'ARE' => 'United Arab Emirates',
     'QAT' => 'Qatar',
     'TUR' => 'Turkey',
-];
+]);

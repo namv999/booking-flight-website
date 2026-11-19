@@ -134,7 +134,10 @@
         <div class="alert alert-light border mb-4">
             <div class="fw-bold small text-muted text-uppercase mb-2">Chuyến bạn đã chọn</div>
             @foreach ($chosenFlights as $i => $cf)
-            @php $cfDep = \Carbon\Carbon::parse($cf->departure_time); @endphp
+            @php
+                $cfDep = \Carbon\Carbon::parse($cf->getRawOriginal('departure_time'), 'UTC')
+                    ->setTimezone($cf->departureAirport->timezone);
+            @endphp
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 {{ ! $loop->last ? 'mb-2' : '' }}">
                 <div>
                     <span class="badge bg-primary text-white me-1">Chặng {{ $i + 1 }}</span>
@@ -560,8 +563,10 @@
                 <div id="bf-flight-list">
                     @forelse ($flights as $flight)
                     @php
-                    $depTime = \Carbon\Carbon::parse($flight->departure_time);
-                    $arrTime = \Carbon\Carbon::parse($flight->arrival_time);
+                    $depTime = \Carbon\Carbon::parse($flight->getRawOriginal('departure_time'), 'UTC')
+                        ->setTimezone($flight->departureAirport->timezone);
+                    $arrTime = \Carbon\Carbon::parse($flight->getRawOriginal('arrival_time'), 'UTC')
+                        ->setTimezone($flight->arrivalAirport->timezone);
                     $diffMinutes = $depTime->diffInMinutes($arrTime);
                     $hours = intdiv($diffMinutes, 60);
                     $mins = $diffMinutes % 60;
