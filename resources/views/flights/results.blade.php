@@ -7,6 +7,21 @@
 @endsection
 
 @section('content')
+@php
+    // Trạng thái bộ lọc / sắp xếp đọc từ query string
+    $sort = request('sort', 'price');
+    $airlineOptions = ['VN' => 'Vietnam Airlines', 'VJ' => 'VietJet Air', 'QH' => 'Bamboo Airways'];
+    $selectedAirlines = (array) request('airlines', array_keys($airlineOptions));
+    $selectedSlots = (array) request('time_slots', []);
+    $slotOptions = [
+        'early' => ['Sáng sớm', '00:00 - 06:00'],
+        'morning' => ['Buổi sáng', '06:00 - 12:00'],
+        'afternoon' => ['Buổi chiều', '12:00 - 18:00'],
+        'evening' => ['Buổi tối', '18:00 - 24:00'],
+    ];
+    $hasFilters = request()->hasAny(['airlines', 'time_slots']);
+    $resetUrl = request()->fullUrlWithoutQuery(['airlines', 'time_slots', 'sort', 'page']);
+@endphp
 <div class="bf-results-page">
     {{-- 1. THANH TIẾN TRÌNH 5 BƯỚC (BOOKING PROGRESS WIZARD) --}}
     <div class="bf-step-wizard">
@@ -74,13 +89,13 @@
         @php
         $depDate = \Carbon\Carbon::parse($departureDate);
         $dayOfWeekNames = [
-        0 => 'Chủ Nhật',
-        1 => 'Thứ Hai',
-        2 => 'Thứ Ba',
-        3 => 'Thứ Tư',
-        4 => 'Thứ Năm',
-        5 => 'Thứ Sáu',
-        6 => 'Thứ Bảy',
+            0 => 'Chủ Nhật',
+            1 => 'Thứ Hai',
+            2 => 'Thứ Ba',
+            3 => 'Thứ Tư',
+            4 => 'Thứ Năm',
+            5 => 'Thứ Sáu',
+            6 => 'Thứ Bảy',
         ];
         $dayName = $dayOfWeekNames[$depDate->dayOfWeek] ?? '';
         @endphp
@@ -134,7 +149,11 @@
         <div class="alert alert-light border mb-4">
             <div class="fw-bold small text-muted text-uppercase mb-2">Chuyến bạn đã chọn</div>
             @foreach ($chosenFlights as $i => $cf)
-            @php $cfDep = \Carbon\Carbon::parse($cf->departure_time); @endphp
+            {{-- Đổi giờ UTC trong DB sang giờ địa phương của sân bay đi --}}
+            @php
+            $cfDep = \Carbon\Carbon::parse($cf->getRawOriginal('departure_time'), 'UTC')
+                ->setTimezone($cf->departureAirport->timezone);
+            @endphp
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 {{ ! $loop->last ? 'mb-2' : '' }}">
                 <div>
                     <span class="badge bg-secondary me-1">Chặng {{ $i + 1 }}</span>
@@ -151,14 +170,14 @@
 
         {{-- 3. KHU VỰC NỘI DUNG CHÍNH (SIDEBAR FILTER + FLIGHT LIST) --}}
         <div class="row g-4">
-            {{-- SIDEBAR FILTER (BỘ LỌC GIAO DIỆN TRỰC QUAN) --}}
+            {{-- SIDEBAR FILTER --}}
             <aside class="col-lg-3 col-md-4">
                 <div class="bf-filter-card">
                     <div class="bf-filter-card__header">
                         <h2 class="bf-filter-card__title">
                             <i class="bi bi-funnel-fill text-primary" aria-hidden="true"></i> Bộ lọc
                         </h2>
-                        <a href="javascript:void(0)" class="bf-filter-card__reset" onclick="location.reload()">Đặt lại</a>
+                        <a href="{{ $resetUrl }}" class="bf-filter-card__reset">Đặt lại</a>
                     </div>
 
                     {{-- Lọc Hãng hàng không --}}
@@ -167,66 +186,54 @@
                             <span>Hãng hàng không</span>
                             <i class="bi bi-airplane" aria-hidden="true"></i>
                         </div>
-                        <label class="bf-filter-option">
-                            <span class="d-flex align-items-center">
-                                <input type="checkbox" checked>
-                                <span>Vietnam Airlines</span>
-                            </span>
-                            <span class="bf-filter-badge">VN</span>
-                        </label>
-                        <label class="bf-filter-option">
-                            <span class="d-flex align-items-center">
-                                <input type="checkbox" checked>
-                                <span>VietJet Air</span>
-                            </span>
-                            <span class="bf-filter-badge">VJ</span>
-                        </label>
-                        <label class="bf-filter-option">
-                            <span class="d-flex align-items-center">
-                                <input type="checkbox" checked>
-                                <span>Bamboo Airways</span>
-                            </span>
-                            <span class="bf-filter-badge">QH</span>
-                        </label>
+
+                        {{-- Ô tìm hãng: chỉ ẩn/hiện dòng ở trình duyệt, KHÔNG có data-filter nên không kích hoạt tải lại trang --}}
+                        <input type="text" id="airlineSearch" class="form-control form-control-sm mb-3"
+                               placeholder="Tìm hãng bay..." autocomplete="off" aria-label="Tìm hãng hàng không">
+
+                        {{-- Danh sách hãng: tối đa ~6 dòng, dài hơn thì cuộn --}}
+                        <div id="airlineList" class="pe-1" style="max-height: 220px; overflow-y: auto;">
+                            @foreach ($airlineOptions as $code => $name)
+                            <label class="bf-filter-option">
+                                <span class="d-flex align-items-center">
+                                    <input type="checkbox" data-filter="airlines" value="{{ $code }}" @checked(in_array($code, $selectedAirlines))>
+                                    <span>{{ $name }}</span>
+                                </span>
+                                <span class="bf-filter-badge">{{ $code }}</span>
+                            </label>
+                            @endforeach
+                        </div>
+                        <div id="airlineEmpty" class="small text-muted fst-italic d-none">Không tìm thấy hãng phù hợp.</div>
                     </div>
 
-                    {{-- Lọc Điểm dừng --}}
+                    {{-- Lọc Điểm dừng (hệ thống chỉ có chuyến bay thẳng nên khóa lại) --}}
                     <div class="bf-filter-section">
                         <div class="bf-filter-label">
                             <span>Số điểm dừng</span>
                         </div>
                         <label class="bf-filter-option">
                             <span class="d-flex align-items-center">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" checked disabled>
                                 <span>Bay thẳng</span>
                             </span>
                             <span class="bf-filter-badge text-success">Ưu tiên</span>
                         </label>
                     </div>
 
-                    {{-- Lọc Khung giờ cất cánh --}}
+                    {{-- Lọc Khung giờ cất cánh (giờ địa phương sân bay đi) --}}
                     <div class="bf-filter-section">
                         <div class="bf-filter-label">
                             <span>Giờ cất cánh</span>
                             <i class="bi bi-clock" aria-hidden="true"></i>
                         </div>
                         <div class="bf-time-slots">
-                            <div class="bf-time-slot-btn">
-                                <strong>Sáng sớm</strong>
-                                <span>00:00 - 06:00</span>
-                            </div>
-                            <div class="bf-time-slot-btn">
-                                <strong>Buổi sáng</strong>
-                                <span>06:00 - 12:00</span>
-                            </div>
-                            <div class="bf-time-slot-btn">
-                                <strong>Buổi chiều</strong>
-                                <span>12:00 - 18:00</span>
-                            </div>
-                            <div class="bf-time-slot-btn">
-                                <strong>Buổi tối</strong>
-                                <span>18:00 - 24:00</span>
-                            </div>
+                            @foreach ($slotOptions as $key => [$label, $range])
+                            <label class="bf-time-slot-btn">
+                                <input type="checkbox" class="d-none" data-filter="time_slots" value="{{ $key }}" @checked(in_array($key, $selectedSlots))>
+                                <strong>{{ $label }}</strong>
+                                <span>{{ $range }}</span>
+                            </label>
+                            @endforeach
                         </div>
                     </div>
 
@@ -248,21 +255,27 @@
                     </div>
                     <div class="bf-sort-group d-none d-sm-flex">
                         <span class="text-muted small">Sắp xếp:</span>
-                        <span class="bf-sort-pill active">
+                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'price', 'page' => null]) }}"
+                           class="bf-sort-pill text-decoration-none {{ $sort === 'price' ? 'active' : '' }}">
                             <i class="bi bi-sort-numeric-down me-1"></i>Giá thấp nhất
-                        </span>
-                        <span class="bf-sort-pill">
+                        </a>
+                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'time', 'page' => null]) }}"
+                           class="bf-sort-pill text-decoration-none {{ $sort === 'time' ? 'active' : '' }}">
                             <i class="bi bi-clock-history me-1"></i>Giờ cất cánh
-                        </span>
+                        </a>
                     </div>
                 </div>
 
                 {{-- VÒNG LẶP RENDER CÁC CHUYẾN BAY --}}
                 @forelse ($flights as $flight)
                 @php
-                $depTime = \Carbon\Carbon::parse($flight->departure_time);
-                $arrTime = \Carbon\Carbon::parse($flight->arrival_time);
-                $diffMinutes = $depTime->diffInMinutes($arrTime);
+                // Giờ trong DB là UTC: đổi sang giờ địa phương của từng sân bay để hiển thị.
+                // Thời lượng bay tính trên UTC nên không bị lệch múi giờ.
+                $depUtc = \Carbon\Carbon::parse($flight->getRawOriginal('departure_time'), 'UTC');
+                $arrUtc = \Carbon\Carbon::parse($flight->getRawOriginal('arrival_time'), 'UTC');
+                $depTime = $depUtc->copy()->setTimezone($flight->departureAirport->timezone);
+                $arrTime = $arrUtc->copy()->setTimezone($flight->arrivalAirport->timezone);
+                $diffMinutes = $depUtc->diffInMinutes($arrUtc);
                 $hours = intdiv($diffMinutes, 60);
                 $mins = $diffMinutes % 60;
                 $durationText = ($hours > 0 ? "{$hours}h " : "") . ($mins > 0 ? "{$mins}m" : "00m");
@@ -338,73 +351,133 @@
                                 </div>
 
                                 @if ($flight->available_seats <= 5)
-                                    <div class="bf-seats-indicator bf-seats-indicator--urgent">
+                                <div class="bf-seats-indicator bf-seats-indicator--urgent">
                                     <i class="bi bi-fire text-danger" aria-hidden="true"></i>
                                     <span>Chỉ còn {{ $flight->available_seats }} ghế!</span>
-                            </div>
-                            @else
-                            <div class="bf-seats-indicator">
-                                <i class="bi bi-check2 text-success" aria-hidden="true"></i>
-                                <span>Còn {{ $flight->available_seats }} ghế trống</span>
-                            </div>
-                            @endif
+                                </div>
+                                @else
+                                <div class="bf-seats-indicator">
+                                    <i class="bi bi-check2 text-success" aria-hidden="true"></i>
+                                    <span>Còn {{ $flight->available_seats }} ghế trống</span>
+                                </div>
+                                @endif
 
-                            <form action="{{ route('booking.precheck') }}" method="POST" class="w-100">
-                                @csrf
-                                <input type="hidden" name="flight_id" value="{{ $flight->id }}">
-                                <input type="hidden" name="leg" value="{{ $legIndex }}">
+                                <form action="{{ route('booking.precheck') }}" method="POST" class="w-100">
+                                    @csrf
+                                    <input type="hidden" name="flight_id" value="{{ $flight->id }}">
+                                    <input type="hidden" name="leg" value="{{ $legIndex }}">
 
-                                <button type="submit" class="bf-btn-select">
-                                    <span>Chọn chuyến</span>
-                                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                                </button>
-                            </form>
+                                    <button type="submit" class="bf-btn-select">
+                                        <span>Chọn chuyến</span>
+                                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-        </div>
-        </article>
-        @empty
-        {{-- 4. TRẠNG THÁI KHÔNG TÌM THẤY KẾT QUẢ (EMPTY STATE) --}}
-        <div class="bf-empty-card">
-            <div class="bf-empty-icon-box">
-                <i class="bi bi-airplane" aria-hidden="true"></i>
-            </div>
-            <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp</h3>
-            @if ($legIndex > 0)
-            <p class="bf-empty-desc">
-                Không có chuyến bay nào từ <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
-                đến <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
-                trong ngày {{ $depDate->format('d/m/Y') }} khởi hành sau khi chặng trước hạ cánh,
-                với hạng vé <strong>{{ $fareClass->name }}</strong>.
-            </p>
-            <a href="{{ $backUrl }}" class="bf-btn-empty-search text-light">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i> Chọn lại chuyến của chặng trước
-            </a>
-            @else
-            <p class="bf-empty-desc">
-                Rất tiếc, hiện tại không có chuyến bay nào từ
-                <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
-                đến
-                <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
-                trong ngày {{ $depDate->format('d/m/Y') }} với hạng vé
-                <strong>{{ $fareClass->name }}</strong>.
-                Bạn vui lòng thử chọn ngày bay khác hoặc thay đổi tiêu chí tìm kiếm.
-            </p>
-            <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search text-light">
-                <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm ngày khác
-            </a>
-            @endif
-        </div>
-        @endforelse
+                </article>
+                @empty
+                {{-- 4. TRẠNG THÁI KHÔNG TÌM THẤY KẾT QUẢ (EMPTY STATE) --}}
+                <div class="bf-empty-card">
+                    <div class="bf-empty-icon-box">
+                        <i class="bi bi-airplane" aria-hidden="true"></i>
+                    </div>
+                    <h3 class="bf-empty-title">Không tìm thấy chuyến bay phù hợp</h3>
+                    @if ($hasFilters)
+                    <p class="bf-empty-desc">
+                        Không có chuyến bay nào khớp với bộ lọc hiện tại. Bạn hãy bỏ bớt điều kiện lọc để xem thêm kết quả.
+                    </p>
+                    <a href="{{ $resetUrl }}" class="bf-btn-empty-search text-light">
+                        <i class="bi bi-x-circle" aria-hidden="true"></i> Xóa bộ lọc
+                    </a>
+                    @elseif ($legIndex > 0)
+                    <p class="bf-empty-desc">
+                        Không có chuyến bay nào từ <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
+                        đến <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
+                        trong ngày {{ $depDate->format('d/m/Y') }} khởi hành sau khi chặng trước hạ cánh,
+                        với hạng vé <strong>{{ $fareClass->name }}</strong>.
+                    </p>
+                    <a href="{{ $backUrl }}" class="bf-btn-empty-search text-light">
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i> Chọn lại chuyến của chặng trước
+                    </a>
+                    @else
+                    <p class="bf-empty-desc">
+                        Rất tiếc, hiện tại không có chuyến bay nào từ
+                        <strong>{{ $departureAirport->city }} ({{ $departureAirport->iata_code }})</strong>
+                        đến
+                        <strong>{{ $arrivalAirport->city }} ({{ $arrivalAirport->iata_code }})</strong>
+                        trong ngày {{ $depDate->format('d/m/Y') }} với hạng vé
+                        <strong>{{ $fareClass->name }}</strong>.
+                        Bạn vui lòng thử chọn ngày bay khác hoặc thay đổi tiêu chí tìm kiếm.
+                    </p>
+                    <a href="{{ url('/') }}#search-box" class="bf-btn-empty-search text-light">
+                        <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm ngày khác
+                    </a>
+                    @endif
+                </div>
+                @endforelse
 
-        {{-- 5. PHÂN TRANG (PAGINATION) --}}
-        @if ($flights->hasPages())
-        <nav class="bf-pagination-wrap" aria-label="Phân trang danh sách chuyến bay">
-            {{ $flights->links('pagination::bootstrap-5') }}
-        </nav>
-        @endif
-        </main>
+                {{-- 5. PHÂN TRANG (PAGINATION) --}}
+                @if ($flights->hasPages())
+                <nav class="bf-pagination-wrap" aria-label="Phân trang danh sách chuyến bay">
+                    {{ $flights->links('pagination::bootstrap-5') }}
+                </nav>
+                @endif
+            </main>
+        </div>
     </div>
 </div>
-</div>
+
+{{-- JS: (1) gom trạng thái ô lọc thành query string rồi tải lại trang, giữ nguyên các tham số khác (tuyến, ngày, sort...)
+         (2) ô tìm hãng: ẩn/hiện dòng hãng theo chữ gõ, không đổi trạng thái tick --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const applyFilters = function () {
+        const params = new URLSearchParams(window.location.search);
+        ['airlines[]', 'time_slots[]', 'page'].forEach(function (k) { params.delete(k); });
+
+        // Hãng bay: chỉ gửi khi đang bỏ bớt ít nhất 1 hãng (chọn đủ tất cả = không lọc).
+        // Đếm cả dòng đang bị ẩn bởi ô tìm kiếm, vì ẩn không làm đổi trạng thái tick.
+        const airlines = Array.from(document.querySelectorAll('[data-filter="airlines"]'));
+        const checked = airlines.filter(function (i) { return i.checked; });
+        if (checked.length > 0 && checked.length < airlines.length) {
+            checked.forEach(function (i) { params.append('airlines[]', i.value); });
+        }
+
+        document.querySelectorAll('[data-filter="time_slots"]:checked').forEach(function (i) {
+            params.append('time_slots[]', i.value);
+        });
+
+        window.location.search = params.toString();
+    };
+
+    document.querySelectorAll('[data-filter]').forEach(function (i) {
+        i.addEventListener('change', applyFilters);
+    });
+
+    // Ô tìm hãng: bỏ dấu + không phân biệt hoa thường, khớp theo tên hoặc mã (VN, VJ, QH...)
+    const searchInput = document.getElementById('airlineSearch');
+    if (searchInput) {
+        const normalize = function (s) {
+            return s.toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd');
+        };
+        const rows = Array.from(document.querySelectorAll('#airlineList .bf-filter-option'));
+        const emptyMsg = document.getElementById('airlineEmpty');
+
+        searchInput.addEventListener('input', function () {
+            const keyword = normalize(searchInput.value.trim());
+            let visible = 0;
+            rows.forEach(function (row) {
+                const match = normalize(row.textContent).indexOf(keyword) !== -1;
+                row.classList.toggle('d-none', !match);
+                if (match) { visible++; }
+            });
+            emptyMsg.classList.toggle('d-none', visible > 0);
+        });
+    }
+});
+</script>
 @endsection

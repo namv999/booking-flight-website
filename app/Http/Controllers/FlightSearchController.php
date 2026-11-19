@@ -83,7 +83,12 @@ class FlightSearchController extends Controller
             $arrivalAirport,
             $leg['date'],
             (int) $pending['fare_class_id'],
-            $afterUtc
+            $afterUtc,
+            [
+                'airlines' => (array) request()->input('airlines', []),
+                'time_slots' => (array) request()->input('time_slots', []),
+                'sort' => request()->input('sort', 'price'),
+            ]
         );
 
         // Các chuyến đã chọn ở những chặng trước, theo thứ tự chặng, để hiển thị tóm tắt

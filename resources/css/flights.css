@@ -229,6 +229,10 @@
     margin-right: 10px;
     cursor: pointer;
 }
+.bf-filter-option input[type="checkbox"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 .bf-filter-badge {
     font-size: 0.72rem;
     color: var(--bf-muted);
@@ -261,6 +265,15 @@
 .bf-time-slot-btn:hover {
     border-color: var(--bf-blue);
     background: var(--bf-sky);
+    color: var(--bf-blue);
+}
+.bf-time-slot-btn:has(input:checked) {
+    border-color: var(--bf-blue);
+    background: var(--bf-sky);
+    color: var(--bf-blue);
+    box-shadow: 0 0 0 1px var(--bf-blue);
+}
+.bf-time-slot-btn:has(input:checked) strong {
     color: var(--bf-blue);
 }
 
