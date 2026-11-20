@@ -106,6 +106,24 @@ img {
 .badge.bg-dark {
     color: #fff !important;
 }
+.text-navy {
+    color: var(--bf-navy) !important;
+}
+.text-blue {
+    color: var(--bf-blue) !important;
+}
+.bg-navy {
+    background-color: var(--bf-navy) !important;
+}
+.badge.text-navy,
+.badge.bg-light.text-navy {
+    color: var(--bf-navy) !important;
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+.badge.bg-light:not([class*="text-"]) {
+    color: var(--bf-navy) !important;
+}
 .bf-main {
     min-height: 58vh;
 }

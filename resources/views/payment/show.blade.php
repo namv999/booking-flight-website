@@ -325,7 +325,7 @@
                                 <i class="bi bi-credit-card-2-front-fill text-primary" aria-hidden="true"></i>
                                 <span>Chọn phương thức thanh toán</span>
                             </h2>
-                            <span class="badge bg-light text-secondary border">Mã hóa an toàn</span>
+                            <span class="badge bg-light text-navy border fw-semibold">Mã hóa an toàn</span>
                         </div>
 
                         {{-- Danh sách phương thức thanh toán --}}

@@ -8,19 +8,26 @@ use App\Models\FlightSeat;
 use App\Models\Payment;
 use App\Models\Ticket;
 use App\Services\BookingExpiryService;
+use App\Services\NotificationService;
 use App\Services\PassportRiskService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Throwable;
 
 class PaymentController extends Controller
 {
     // const PAYMENT_EXPIRE_MINUTES = 15;
-    public function __construct(
-        private BookingExpiryService $expiryService,
-        private PassportRiskService $passportRisk,
-    ) {}
+    private BookingExpiryService $expiryService;
+
+    private PassportRiskService $passportRisk;
+
+    public function __construct(BookingExpiryService $expiryService, PassportRiskService $passportRisk)
+    {
+        $this->expiryService = $expiryService;
+        $this->passportRisk = $passportRisk;
+    }
 
     public function show(Booking $booking)
     {
@@ -169,9 +176,11 @@ class PaymentController extends Controller
         }
 
         if ($outcome === 'paid') {
+            app(NotificationService::class)->bookingPaid($booking);
+
             try {
                 Mail::to(auth()->user())->send(new BookingPaidMail($booking->id));
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 report($e);
             }
 

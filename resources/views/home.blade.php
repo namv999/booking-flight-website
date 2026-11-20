@@ -6,7 +6,7 @@
 @section('title', 'Jet Charter Flights - Đặt vé máy bay')
 
 @section('styles')
-@vite(['resources/css/home.css'])
+@vite(['resources/css/home.css', 'resources/css/news.css'])
 @endsection
 
 @section('content')
@@ -379,33 +379,55 @@
     </div>
 </section>
 
-<section class="bf-section bf-stories">
+@if ($homeArticles->isNotEmpty())
+<section class="bf-section bf-stories bf-news-section" data-news-section>
     <div class="bf-container">
         <div class="bf-section-heading">
-            <div><span class="bf-eyebrow">Cẩm nang hành trình</span>
+            <div>
+                <span class="bf-eyebrow">Cẩm nang hành trình</span>
                 <h2>Bay thông minh, trải nghiệm nhiều hơn</h2>
             </div>
+            <a class="bf-text-link" href="{{ route('news.index') }}">Xem tất cả <span aria-hidden="true">→</span></a>
         </div>
-        <div class="bf-story-grid">
-            <article class="bf-story-card">
-                <img src="{{ asset('images/article-charter-flight.avif') }}" alt="Máy bay trên bầu trời">
-                <div><small>Kinh nghiệm bay</small>
-                    <h3>Chuẩn bị gì cho một chuyến bay thật nhẹ nhàng?</h3>
-                    <p class="text-muted small mt-1 mb-0">Kiểm tra kỹ giấy tờ tùy thân, hoàn thành thủ tục check-in sớm và tự chọn chỗ ngồi ưng ý để khởi đầu hành trình thoải mái nhất.</p>
-                </div>
-            </article>
-            <article class="bf-story-card">
-                <img src="{{ asset('images/article-travel-guide.png') }}" alt="Hành trình khám phá điểm đến mới">
-                <div><small>Gợi ý điểm đến</small>
-                    <h3>5 hành trình đáng để lên kế hoạch trong mùa hè này</h3>
-                    <p class="text-muted small mt-1 mb-0">Từ những bãi biển thơ mộng đến các đô thị sôi động, hãy cùng Jet Charter lên lịch trình cho kỳ nghỉ tuyệt vời cùng gia đình.</p>
-                </div>
-            </article>
+
+        <div class="bf-news-tabs" role="tablist" aria-label="Lọc bài viết theo chuyên mục">
+            <button class="bf-news-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="home-news-panel" data-news-tab="all">Tất cả</button>
+            @foreach ($homeCategories as $key => $label)
+                <button class="bf-news-tab" type="button" role="tab" aria-selected="false" aria-controls="home-news-panel" data-news-tab="{{ $key }}">{{ $label }}</button>
+            @endforeach
+        </div>
+
+        <div class="bf-news-carousel" id="home-news-panel" tabindex="0" role="region" aria-label="Bài viết mới nhất">
+            <div class="bf-news-track">
+                @foreach ($homeArticles as $article)
+                    <div class="bf-news-slide" data-category="{{ $article->category }}">
+                        <a class="bf-news-card" data-category="{{ $article->category }}" href="{{ route('news.show', $article->slug) }}">
+                            <span class="bf-news-card__image-wrap">
+                                <img src="{{ $article->thumbnail_url }}" alt="{{ $article->title }}" loading="lazy">
+                                @if ($article->is_featured)
+                                    <span class="bf-news-featured"><i class="bi bi-star-fill" aria-hidden="true"></i> Nổi bật</span>
+                                @endif
+                            </span>
+                            <span class="bf-news-card__body">
+                                <span class="bf-news-category">{{ $article->category_label }}</span>
+                                <strong>{{ $article->title }}</strong>
+                                <span class="bf-news-excerpt">{{ $article->excerpt }}</span>
+                            </span>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+            <div class="bf-news-controls">
+                <button class="bf-news-prev" type="button" aria-label="Bài viết trước" disabled><i class="bi bi-arrow-left" aria-hidden="true"></i></button>
+                <div class="bf-news-dots" aria-label="Chọn bài viết"></div>
+                <button class="bf-news-next" type="button" aria-label="Bài viết tiếp theo"><i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+            </div>
         </div>
     </div>
 </section>
+@endif
 @endsection
 
 @section('scripts')
-@vite(['resources/js/home.js'])
+@vite(['resources/js/home.js', 'resources/js/news.js'])
 @endsection

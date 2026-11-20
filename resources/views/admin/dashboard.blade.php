@@ -119,7 +119,7 @@
                 <span class="bf-eyebrow">Xu hướng tài chính</span>
                 <h2 class="h5 mb-0">Doanh thu vé máy bay theo tháng</h2>
             </div>
-            <span class="badge bg-light text-muted border">Năm {{ date('Y') }}</span>
+            <span class="badge bg-light text-dark border">Năm {{ date('Y') }}</span>
         </div>
         <div style="position: relative; height: 260px;">
             <canvas id="revenueChart"></canvas>

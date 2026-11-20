@@ -3,18 +3,22 @@
 use App\Http\Controllers\Admin\AircraftController;
 use App\Http\Controllers\Admin\AirlineController;
 use App\Http\Controllers\Admin\AirportController;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\BaggageAddonController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FareClassController;
 use App\Http\Controllers\Admin\FlightController;
+use App\Http\Controllers\Admin\NotificationBroadcastController;
 use App\Http\Controllers\Admin\PassportUpdateRequestController as AdminPassportUpdateRequestController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingHistoryController;
 use App\Http\Controllers\BookingPassportUpdateController;
 use App\Http\Controllers\FlightSearchController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SavedPassengerController;
@@ -27,10 +31,17 @@ use Illuminate\Support\Facades\Route;
 // });
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
+Route::get('/news', [NewsController::class, 'index'])->name('news.index');
+Route::get('/news/{slug}', [NewsController::class, 'show'])->where('slug', '[a-z0-9\-]+')->name('news.show');
 
 Route::get('/dashboard', [UserDashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/feed', [NotificationController::class, 'feed'])->name('notifications.feed');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->whereUuid('id')->name('notifications.read');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -48,6 +59,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('fare-classes', FareClassController::class);
     Route::resource('baggage-addons', BaggageAddonController::class)->except('show');
     Route::resource('flights', FlightController::class);
+    Route::resource('articles', AdminArticleController::class)->except('show');
+    Route::resource('notification-broadcasts', NotificationBroadcastController::class)->only(['index', 'create', 'store']);
     Route::resource('bookings', AdminBookingController::class)->only(['index', 'show']);
     // Thao tác ghi duy nhất của phần quản lý đơn: duyệt hoặc từ chối yêu cầu cập nhật hộ chiếu
     Route::post('passport-update-requests/{passportUpdateRequest}/approve', [AdminPassportUpdateRequestController::class, 'approve'])->name('passport-update-requests.approve');

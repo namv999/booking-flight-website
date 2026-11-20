@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
+            ArticleSeeder::class, // cần UserSeeder chạy trước để có tác giả
             AirlineSeeder::class,
             AirportSeeder::class,
             FareClassSeeder::class,
@@ -24,6 +25,7 @@ class DatabaseSeeder extends Seeder
             TicketSeeder::class,
             BookingTotalSeeder::class,
             PaymentSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

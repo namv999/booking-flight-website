@@ -20,6 +20,9 @@
     <!-- @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/app.css') }}"> -->
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/css/admin.css'])
+    @auth
+        @vite(['resources/css/notifications.css'])
+    @endauth
 </head>
 <body class="bf-body bf-admin-body">
     <div class="bf-admin-shell">
@@ -37,6 +40,8 @@
                 <a class="{{ request()->routeIs('admin.airports.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.airports.index') }}"><span aria-hidden="true">06</span>Sân bay</a>
                 <a class="{{ request()->routeIs('admin.fare-classes.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.fare-classes.index') }}"><span aria-hidden="true">07</span>Hạng vé</a>
                 <a class="{{ request()->routeIs('admin.baggage-addons.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.baggage-addons.index') }}"><span aria-hidden="true">08</span>Gói hành lý</a>
+                <a class="{{ request()->routeIs('admin.articles.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.articles.index') }}"><span aria-hidden="true">09</span>Tin tức</a>
+                <a class="{{ request()->routeIs('admin.notification-broadcasts.*') ? 'bf-admin-nav__link--active' : '' }}" href="{{ route('admin.notification-broadcasts.index') }}"><span aria-hidden="true">10</span>Gửi thông báo</a>
             </nav>
             <div class="bf-admin-sidebar__support">
                 <strong>Cần hỗ trợ?</strong>
@@ -59,16 +64,7 @@
                     <a href="{{ route('home') }}" target="_blank" class="btn btn-sm btn-outline-primary d-none d-sm-inline-flex align-items-center me-1" title="Mở trang chủ đặt vé">
                         <i class="bi bi-box-arrow-up-right me-1"></i>Xem website
                     </a>
-                    @php
-                        $pendingNoticeCount = class_exists(\App\Models\PassportUpdateRequest::class) ? \App\Models\PassportUpdateRequest::where('status', 'pending')->count() : 0;
-                    @endphp
-                    <a href="{{ route('admin.bookings.index') }}" class="bf-icon-button bf-notification-button text-decoration-none position-relative" title="{{ $pendingNoticeCount > 0 ? $pendingNoticeCount . ' yêu cầu hộ chiếu chờ duyệt' : 'Hệ thống vận hành bình thường' }}" aria-label="Thông báo">
-                        @if($pendingNoticeCount > 0)
-                            <span aria-hidden="true">{{ $pendingNoticeCount }}</span>
-                        @else
-                            <i class="bi bi-bell text-secondary"></i>
-                        @endif
-                    </a>
+                    @include('partials.notification-bell')
                     <a class="bf-avatar" href="{{ route('profile.edit') }}" aria-label="Tài khoản quản trị">{{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}</a>
                 </div>
             </header>
@@ -80,6 +76,9 @@
     <!-- <script src="{{ asset('js/layout.js') }}"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @vite(['resources/js/layout.js'])
+    @auth
+        @vite(['resources/js/notifications.js'])
+    @endauth
     @yield('scripts')
 </body>
 </html>

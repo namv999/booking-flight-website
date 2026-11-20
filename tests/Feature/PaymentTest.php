@@ -71,6 +71,7 @@ class PaymentTest extends TestCase
         $data['seat']->refresh();
 
         $this->assertSame('paid', $data['booking']->status);
+        $this->assertSame(1, $user->notifications()->count());
 
         $this->assertDatabaseCount('payments', 1);
         $payment = Payment::first();

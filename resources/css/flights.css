@@ -1322,6 +1322,13 @@
     margin-bottom: 20px;
     border-bottom: 1px solid #edf2f7;
 }
+.bf-payment-card__header .badge.bg-light,
+.bf-payment-card__header .badge.text-navy {
+    color: var(--bf-navy) !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    font-weight: 700;
+}
 .bf-payment-card__title {
     font-size: 1.1rem;
     font-weight: 800;

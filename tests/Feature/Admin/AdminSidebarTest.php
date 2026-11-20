@@ -50,7 +50,7 @@ class AdminSidebarTest extends TestCase
         $links = $this->sidebarLinks($html);
 
         $this->assertSame(
-            ['Tổng quan', 'Chuyến bay', 'Đặt vé', 'Hãng bay', 'Máy bay', 'Sân bay', 'Hạng vé', 'Gói hành lý'],
+            ['Tổng quan', 'Chuyến bay', 'Đặt vé', 'Hãng bay', 'Máy bay', 'Sân bay', 'Hạng vé', 'Gói hành lý', 'Tin tức', 'Gửi thông báo'],
             array_column($links, 'label')
         );
         $this->assertSame([
@@ -62,6 +62,8 @@ class AdminSidebarTest extends TestCase
             route('admin.airports.index'),
             route('admin.fare-classes.index'),
             route('admin.baggage-addons.index'),
+            route('admin.articles.index'),
+            route('admin.notification-broadcasts.index'),
         ], array_column($links, 'href'));
     }
 
@@ -72,7 +74,7 @@ class AdminSidebarTest extends TestCase
         preg_match('/<nav class="bf-admin-nav".*?<\/nav>/s', $html, $nav);
         preg_match_all('/<span aria-hidden="true">(\d+)<\/span>/', $nav[0], $m);
 
-        $this->assertSame(['01', '02', '03', '04', '05', '06', '07', '08'], $m[1]);
+        $this->assertSame(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'], $m[1]);
     }
 
     public function test_every_sidebar_link_and_avatar_opens_a_real_page(): void
@@ -116,6 +118,8 @@ class AdminSidebarTest extends TestCase
             'Sân bay' => route('admin.airports.index'),
             'Hạng vé' => route('admin.fare-classes.index'),
             'Gói hành lý' => route('admin.baggage-addons.index'),
+            'Tin tức' => route('admin.articles.index'),
+            'Gửi thông báo' => route('admin.notification-broadcasts.index'),
             // trang con (show / edit) vẫn đánh dấu đúng mục cha
             'Hãng bay ' => route('admin.airlines.edit', $airline),
             'Máy bay ' => route('admin.aircrafts.show', $aircraft),

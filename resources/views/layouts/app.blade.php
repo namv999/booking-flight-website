@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Jet Charter Flights')</title>
-    <meta name="description" content="Đặt vé máy bay nội địa và quốc tế thuận tiện cùng Jet Charter Flights.">
+    <meta name="description" content="@yield('meta_description', 'Đặt vé máy bay nội địa và quốc tế thuận tiện cùng Jet Charter Flights.')">
     <!-- CSS Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -21,6 +21,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @auth
+        @vite(['resources/css/notifications.css'])
+    @endauth
     <!-- <link rel="stylesheet" href="{{ asset('css/app.css') }}"> -->
     @yield('styles')
 </head>
@@ -45,6 +48,7 @@
                 <a class="{{ request()->is('/') ? 'bf-navbar__link--active' : '' }}" href="{{ route('home') }}">Trang chủ</a>
                 <a href="{{ route('home') }}#search-box">Tìm chuyến bay</a>
                 <a href="{{ route('home') }}#offers">Ưu đãi</a>
+                <a class="{{ request()->routeIs('news.*') ? 'bf-navbar__link--active' : '' }}" href="{{ route('news.index') }}">Tin tức</a>
                 <a href="tel:19001234">Hỗ trợ</a>
             </nav>
 
@@ -53,6 +57,7 @@
                 <a class="bf-button bf-button--ghost d-none d-lg-inline-flex" href="{{ route('dashboard') }}">
                     Chuyến đi của tôi
                 </a>
+                @include('partials.notification-bell')
                 <div class="dropdown">
                     <button class="bf-avatar border-0" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Menu tài khoản">
                         {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
@@ -131,6 +136,7 @@
                 <a href="{{ route('home') }}#search-box">Vé máy bay</a>
                 <a href="{{ route('home') }}#destinations">Điểm đến</a>
                 <a href="{{ route('home') }}#offers">Ưu đãi mới</a>
+                <a href="{{ route('news.index') }}">Tin tức & cẩm nang</a>
             </div>
             <div>
                 <h2>Dịch vụ & Hỗ trợ</h2>
@@ -265,6 +271,9 @@
     <!-- <script src="{{ asset('js/layout.js') }}"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     @vite(['resources/js/layout.js'])
+    @auth
+        @vite(['resources/js/notifications.js'])
+    @endauth
     @yield('scripts')
 </body>
 

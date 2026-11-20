@@ -65,7 +65,7 @@ class PassportUpdateService
     // Khách gửi yêu cầu. $data là dữ liệu đã validate và chuẩn hóa (8 trường hộ chiếu).
     public function submit(Booking $booking, Passenger $passenger, User $user, array $data, string $reason): PassportUpdateRequest
     {
-        return DB::transaction(function () use ($booking, $passenger, $user, $data, $reason) {
+        $created = DB::transaction(function () use ($booking, $passenger, $user, $data, $reason) {
             // Khóa hàng hành khách để hai yêu cầu gửi cùng lúc không cùng vượt qua kiểm tra "chưa có yêu cầu chờ"
             Passenger::whereKey($passenger->id)->lockForUpdate()->first();
 
@@ -82,13 +82,17 @@ class PassportUpdateService
                 'status' => 'pending',
             ]);
         });
+
+        app(NotificationService::class)->passportSubmitted($created);
+
+        return $created;
     }
 
     // Admin duyệt: trong MỘT transaction chụp dữ liệu cũ vào old_data rồi cập nhật bảng passengers.
     // passengers dùng chung cho mọi chặng nên vé của mọi chặng tự cập nhật theo.
     public function approve(PassportUpdateRequest $request, User $admin, ?string $note = null): void
     {
-        DB::transaction(function () use ($request, $admin, $note) {
+        $resolved = DB::transaction(function () use ($request, $admin, $note) {
             $locked = $this->lockPending($request);
 
             if (Booking::whereKey($locked->booking_id)->value('status') !== 'paid') {
@@ -107,20 +111,30 @@ class PassportUpdateService
                 'admin_note' => $note,
                 'resolved_at' => now(),
             ]);
+
+            return $locked;
         });
+
+        app(NotificationService::class)->passportResolved($resolved);
     }
 
     // Admin từ chối: không đụng tới bảng passengers
     public function reject(PassportUpdateRequest $request, User $admin, string $note): void
     {
-        DB::transaction(function () use ($request, $admin, $note) {
-            $this->lockPending($request)->update([
+        $resolved = DB::transaction(function () use ($request, $admin, $note) {
+            $locked = $this->lockPending($request);
+
+            $locked->update([
                 'status' => 'rejected',
                 'admin_id' => $admin->id,
                 'admin_note' => $note,
                 'resolved_at' => now(),
             ]);
+
+            return $locked;
         });
+
+        app(NotificationService::class)->passportResolved($resolved);
     }
 
     // Khóa và đọc lại yêu cầu từ DB: hai admin bấm cùng lúc thì chỉ một người xử lý được

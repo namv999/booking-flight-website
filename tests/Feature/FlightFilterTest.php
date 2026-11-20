@@ -26,6 +26,10 @@ class FlightFilterTest extends TestCase
 
     private Aircraft $vjJet;
 
+    private string $vnCode;
+
+    private string $vjCode;
+
     private string $date;
 
     protected function setUp(): void
@@ -36,8 +40,12 @@ class FlightFilterTest extends TestCase
         $this->sgn = Airport::factory()->create($vn + ['iata_code' => 'SGN']);
         $this->han = Airport::factory()->create($vn + ['iata_code' => 'HAN']);
         $this->fare = FareClass::factory()->create();
-        $this->vnJet = Aircraft::factory()->create(['airline_id' => Airline::factory()->create(['code' => 'VN'])->id]);
-        $this->vjJet = Aircraft::factory()->create(['airline_id' => Airline::factory()->create(['code' => 'VJ'])->id]);
+        $vnAirline = Airline::factory()->create();
+        $vjAirline = Airline::factory()->create();
+        $this->vnCode = $vnAirline->code;
+        $this->vjCode = $vjAirline->code;
+        $this->vnJet = Aircraft::factory()->create(['airline_id' => $vnAirline->id]);
+        $this->vjJet = Aircraft::factory()->create(['airline_id' => $vjAirline->id]);
         $this->date = now('Asia/Ho_Chi_Minh')->addDays(3)->toDateString();
     }
 
@@ -94,7 +102,7 @@ class FlightFilterTest extends TestCase
         $vn = $this->makeFlight($this->vnJet, '08:00', 1000000);
         $this->makeFlight($this->vjJet, '09:00', 1000000);
 
-        $this->assertSame([$vn->id], $this->ids($this->filter(['airlines' => ['VN']])));
+        $this->assertSame([$vn->id], $this->ids($this->filter(['airlines' => [$this->vnCode]])));
     }
 
     public function test_filter_by_price_range(): void
@@ -136,7 +144,7 @@ class FlightFilterTest extends TestCase
         $this->makeFlight($this->vnJet, '07:30', 3000000); // over price limit
 
         $response = $this->filter([
-            'airlines' => ['VN'],
+            'airlines' => [$this->vnCode],
             'dep_time' => ['morning'],
             'price_max' => 2000000,
         ]);
@@ -181,7 +189,7 @@ class FlightFilterTest extends TestCase
         $this->startSearch();
         $before = session('pending_selection');
 
-        $this->get(route('booking.leg', ['leg' => 0, 'airlines' => ['VN']]))->assertOk();
+        $this->get(route('booking.leg', ['leg' => 0, 'airlines' => [$this->vnCode]]))->assertOk();
 
         $this->assertSame($before, session('pending_selection'));
     }
@@ -192,11 +200,11 @@ class FlightFilterTest extends TestCase
             $this->makeFlight($this->vnJet, sprintf('%02d:00', 6 + $i), 1000000 + $i);
         }
 
-        $response = $this->filter(['airlines' => ['VN'], 'sort' => 'price_desc']);
+        $response = $this->filter(['airlines' => [$this->vnCode], 'sort' => 'price_desc']);
         $next = $response->viewData('flights')->nextPageUrl();
 
         $this->assertStringContainsString('sort=price_desc', $next);
-        $this->assertStringContainsString('airlines%5B0%5D=VN', $next);
+        $this->assertStringContainsString('airlines%5B0%5D='.$this->vnCode, $next);
     }
 
     public function test_facets_ignore_active_filters(): void
@@ -204,10 +212,10 @@ class FlightFilterTest extends TestCase
         $this->makeFlight($this->vnJet, '08:00', 1000000);
         $this->makeFlight($this->vjJet, '09:00', 2000000);
 
-        $response = $this->filter(['airlines' => ['VN']]);
+        $response = $this->filter(['airlines' => [$this->vnCode]]);
         $facets = $response->viewData('facets');
 
-        $this->assertEqualsCanonicalizing(['VN', 'VJ'], $facets['airlines']->pluck('code')->all());
+        $this->assertEqualsCanonicalizing([$this->vnCode, $this->vjCode], $facets['airlines']->pluck('code')->all());
         $this->assertSame(2, $facets['total']);
         $this->assertSame(1000000, $facets['price_min']);
         $this->assertSame(2000000, $facets['price_max']);

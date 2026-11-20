@@ -154,7 +154,7 @@
                                 @if ($legLabel) <span class="badge bg-primary me-2">{{ $legLabel }}</span> @endif
                                 <span>Thông tin hành trình</span>
                             </h2>
-                            <span class="badge bg-light text-navy border">
+                            <span class="badge bg-light text-navy border font-monospace px-2 py-1">
                                 Chuyến bay: #FL-{{ str_pad($flight->id ?? 0, 4, '0', STR_PAD_LEFT) }}
                             </span>
                         </div>
@@ -174,7 +174,7 @@
                                     <hr class="my-0">
                                     <i class="bi bi-airplane position-absolute top-50 start-50 translate-middle text-primary bg-white px-2 fs-5"></i>
                                 </div>
-                                <div class="small fw-bold text-muted">{{ $airlineName }} ({{ $aircraftModel }})</div>
+                                <div class="small fw-bold text-secondary">{{ $airlineName }} ({{ $aircraftModel }})</div>
                             </div>
 
                             <div class="col-12 col-sm-4 text-center text-sm-end">
@@ -195,7 +195,7 @@
                                 @if ($legLabel) <span class="badge bg-primary me-2">{{ $legLabel }}</span> @endif
                                 <span>Vé điện tử hành khách ({{ $bf->tickets->count() }} vé)</span>
                             </h2>
-                            <span class="text-muted small">Xuất trình mã vé khi làm thủ tục check-in</span>
+                            <span class="text-secondary small fw-medium">Xuất trình mã vé khi làm thủ tục check-in</span>
                         </div>
 
                         <div class="bf-etickets-container">

@@ -86,7 +86,7 @@
                             </td>
                             <td>{{ $item->country }}</td>
                             <td>
-                                <span class="badge bg-light text-muted border font-monospace">
+                                <span class="badge bg-light text-dark border font-monospace">
                                     {{ $item->timezone }}
                                 </span>
                             </td>
