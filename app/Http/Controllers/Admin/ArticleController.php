@@ -15,6 +15,8 @@ class ArticleController extends Controller
         $search = $request->input('search');
         $status = $request->input('status');
         $category = $request->input('category');
+        $authorId = $request->input('author_id');
+        $sort = $request->input('sort', 'latest');
 
         $articles = Article::with('author')
             ->when($search, fn ($q, $s) => $q->where(
@@ -22,16 +24,25 @@ class ArticleController extends Controller
             ))
             ->when(in_array($status, ['draft', 'published'], true), fn ($q) => $q->where('status', $status))
             ->when(array_key_exists((string) $category, Article::CATEGORIES), fn ($q) => $q->where('category', $category))
-            ->latest()
+            ->when($authorId, fn ($q) => $q->where('user_id', $authorId))
+            ->when($sort === 'title_asc', fn ($q) => $q->orderBy('title', 'asc'))
+            ->when($sort === 'title_desc', fn ($q) => $q->orderBy('title', 'desc'))
+            ->when($sort === 'oldest', fn ($q) => $q->oldest('id'))
+            ->when(! in_array($sort, ['title_asc', 'title_desc', 'oldest'], true), fn ($q) => $q->latest('id'))
             ->paginate(10)
             ->withQueryString();
+
+        $authors = \App\Models\User::whereHas('articles')->orderBy('name')->get();
 
         return view('admin.articles.index', [
             'articles' => $articles,
             'search' => $search,
             'status' => $status,
             'category' => $category,
+            'authorId' => $authorId,
+            'sort' => $sort,
             'categories' => Article::CATEGORIES,
+            'authors' => $authors,
         ]);
     }
 

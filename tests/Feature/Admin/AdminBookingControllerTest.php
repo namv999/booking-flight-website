@@ -11,6 +11,7 @@ use App\Models\BookingFlight;
 use App\Models\Flight;
 use App\Models\FlightSeat;
 use App\Models\Passenger;
+use App\Models\PassportUpdateRequest;
 use App\Models\Payment;
 use App\Models\Seat;
 use App\Models\Ticket;
@@ -171,6 +172,39 @@ class AdminBookingControllerTest extends TestCase
         $this->assertCount(1, $this->actingAs($admin)->get(route('admin.bookings.index', ['status' => 'pending']))->viewData('bookings'));
         // status lạ bị bỏ qua, không lỗi và không lọc
         $this->assertCount(6, $this->actingAs($admin)->get(route('admin.bookings.index', ['status' => 'hack']))->viewData('bookings'));
+    }
+
+    public function test_filter_by_passport_status_and_displays_pending_request_indicators(): void
+    {
+        $admin = $this->admin();
+        $b1 = Booking::factory()->paid()->create();
+        $b2 = Booking::factory()->paid()->create();
+        $p1 = Passenger::factory()->create(['booking_id' => $b1->id]);
+
+        PassportUpdateRequest::create([
+            'booking_id' => $b1->id,
+            'passenger_id' => $p1->id,
+            'user_id' => $b1->user_id,
+            'reason' => 'Doi so ho chieu',
+            'old_data' => ['document_type' => 'passport', 'passport_number' => 'B1234567'],
+            'new_data' => ['document_type' => 'passport', 'passport_number' => 'B7654321'],
+            'status' => 'pending',
+        ]);
+
+        // Filter pending shows only b1
+        $res = $this->actingAs($admin)->get(route('admin.bookings.index', ['passport_status' => 'pending']));
+        $res->assertOk();
+        $bookings = $res->viewData('bookings');
+        $this->assertCount(1, $bookings);
+        $this->assertSame($b1->id, $bookings->first()->id);
+        $res->assertSee('Cần sửa hồ sơ');
+        $res->assertSee('Xử lý ngay');
+
+        // All bookings view still shows indicator for b1
+        $allRes = $this->actingAs($admin)->get(route('admin.bookings.index'));
+        $allRes->assertOk();
+        $this->assertCount(2, $allRes->viewData('bookings'));
+        $allRes->assertSee('Cần sửa hồ sơ');
     }
 
     public function test_search_does_not_leak_past_status_filter(): void

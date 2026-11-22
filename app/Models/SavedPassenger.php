@@ -48,28 +48,28 @@ class SavedPassenger extends Model
     {
         static::saving(function (SavedPassenger $p) {
             // Tương thích ngược: Đồng bộ giữa các trường chuyên biệt mới và trường cũ
-            if (!empty($p->cccd_number) && empty($p->document_number)) {
+            if (! empty($p->cccd_number) && empty($p->document_number)) {
                 $p->document_number = $p->cccd_number;
                 $p->document_type = $p->document_type ?: 'national_id';
-                if (!empty($p->cccd_issue_date) && empty($p->document_issue_date)) {
+                if (! empty($p->cccd_issue_date) && empty($p->document_issue_date)) {
                     $p->document_issue_date = $p->cccd_issue_date;
                 }
-            } elseif (!empty($p->passport_number) && empty($p->document_number)) {
+            } elseif (! empty($p->passport_number) && empty($p->document_number)) {
                 $p->document_number = $p->passport_number;
                 $p->document_type = $p->document_type ?: 'passport';
-                if (!empty($p->passport_issued_country) && empty($p->document_issued_country)) {
+                if (! empty($p->passport_issued_country) && empty($p->document_issued_country)) {
                     $p->document_issued_country = $p->passport_issued_country;
                 }
-                if (!empty($p->passport_issue_date) && empty($p->document_issue_date)) {
+                if (! empty($p->passport_issue_date) && empty($p->document_issue_date)) {
                     $p->document_issue_date = $p->passport_issue_date;
                 }
-                if (!empty($p->passport_expiry_date) && empty($p->document_expiry_date)) {
+                if (! empty($p->passport_expiry_date) && empty($p->document_expiry_date)) {
                     $p->document_expiry_date = $p->passport_expiry_date;
                 }
             }
 
             // Nếu code cũ truyền document_number nhưng chưa điền cccd_number hoặc passport_number
-            if (!empty($p->document_number)) {
+            if (! empty($p->document_number)) {
                 if ($p->document_type === 'passport') {
                     if (empty($p->passport_number)) {
                         $p->passport_number = $p->document_number;

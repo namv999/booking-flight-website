@@ -21,6 +21,13 @@ class StorePassportUpdateRequest extends FormRequest
         return true;
     }
 
+    public function isInternational(): bool
+    {
+        $booking = $this->user()->bookings()->find($this->route('id'));
+
+        return $booking ? app(PassportService::class)->isInternationalBooking($booking) : false;
+    }
+
     protected function prepareForValidation(): void
     {
         $service = app(PassportService::class);
@@ -38,8 +45,29 @@ class StorePassportUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        // Không có document_type: yêu cầu này luôn là hộ chiếu
-        return app(PassportService::class)->rules('', false) + [
+        $countries = array_keys(config('countries'));
+        $isDocPassport = $this->input('document_type') === 'passport'
+            || ($this->isInternational())
+            || ($this->filled('document_expiry_date') && ! $this->filled('document_type'));
+
+        if ($this->isInternational() || $isDocPassport) {
+            return app(PassportService::class)->rules('', false) + [
+                'document_type' => ['nullable', 'in:national_id,passport'],
+                'reason' => ['required', 'string', 'max:500'],
+            ];
+        }
+
+        // Chuyến bay nội địa sử dụng CCCD / CMND
+        return [
+            'full_name' => ['required', 'string', 'max:150', 'regex:/^[A-Z][A-Z \'\-]*$/'],
+            'document_type' => ['nullable', 'in:national_id,passport'],
+            'document_number' => ['required', 'string', 'max:30', 'regex:/^[A-Z0-9]{6,20}$/'],
+            'date_of_birth' => ['required', 'date', 'before_or_equal:today'],
+            'gender' => ['required', 'in:male,female'],
+            'nationality' => ['nullable', \Illuminate\Validation\Rule::in($countries)],
+            'document_issued_country' => ['nullable', \Illuminate\Validation\Rule::in($countries)],
+            'document_issue_date' => ['required', 'date', 'before_or_equal:today'],
+            'document_expiry_date' => ['nullable', 'date'],
             'reason' => ['required', 'string', 'max:500'],
         ];
     }
@@ -51,8 +79,10 @@ class StorePassportUpdateRequest extends FormRequest
                 return;
             }
 
-            if (! app(PassportService::class)->isExpiryAfterIssue($this->input('document_issue_date'), $this->input('document_expiry_date'))) {
-                $validator->errors()->add('document_expiry_date', 'Ngày hết hạn phải sau ngày cấp hộ chiếu.');
+            if ($this->filled('document_issue_date') && $this->filled('document_expiry_date')) {
+                if (! app(PassportService::class)->isExpiryAfterIssue($this->input('document_issue_date'), $this->input('document_expiry_date'))) {
+                    $validator->errors()->add('document_expiry_date', 'Ngày hết hạn phải sau ngày cấp hộ chiếu.');
+                }
             }
         }];
     }

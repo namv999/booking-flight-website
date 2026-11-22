@@ -24,10 +24,6 @@ class PassportUpdateService
             return 'Chỉ đơn đã thanh toán mới có thể gửi yêu cầu cập nhật hộ chiếu.';
         }
 
-        if (! $this->passport->isInternationalBooking($booking)) {
-            return 'Đơn nội địa không yêu cầu hộ chiếu nên không có gì để cập nhật.';
-        }
-
         if ($this->firstFlightDeparted($booking)) {
             return 'Chuyến bay đầu tiên đã cất cánh, không thể gửi yêu cầu cập nhật hộ chiếu.';
         }
@@ -102,7 +98,15 @@ class PassportUpdateService
             $passenger = Passenger::whereKey($locked->passenger_id)->lockForUpdate()->firstOrFail();
             $old = $this->snapshot($passenger);
 
-            $passenger->update($locked->new_data + ['document_type' => 'passport']);
+            $booking = Booking::find($locked->booking_id);
+            $isInternational = $booking ? $this->passport->isInternationalBooking($booking) : false;
+            $documentType = $locked->new_data['document_type']
+                ?? ($isInternational ? 'passport' : ($passenger->document_type ?: 'national_id'));
+
+            $updateData = $locked->new_data;
+            $updateData['document_type'] = $documentType;
+
+            $passenger->update($updateData);
 
             $locked->update([
                 'status' => 'approved',

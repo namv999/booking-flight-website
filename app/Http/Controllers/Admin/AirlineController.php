@@ -12,19 +12,30 @@ class AirlineController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search = trim((string) $request->input('search'));
+        $country = $request->input('country');
+        $sort = $request->input('sort', 'latest');
 
-        $airlines = Airline::when($search, function ($query, $search) {
+        $airlines = Airline::when($search !== '', function ($query) use ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%");
             });
         })
-            ->latest()
+            ->when($country, fn ($q) => $q->where('country', $country))
+            ->when($sort === 'name_asc', fn ($q) => $q->orderBy('name', 'asc'))
+            ->when($sort === 'name_desc', fn ($q) => $q->orderBy('name', 'desc'))
+            ->when($sort === 'code_asc', fn ($q) => $q->orderBy('code', 'asc'))
+            ->when($sort === 'code_desc', fn ($q) => $q->orderBy('code', 'desc'))
+            ->when($sort === 'oldest', fn ($q) => $q->oldest('id'))
+            ->when(! in_array($sort, ['name_asc', 'name_desc', 'code_asc', 'code_desc', 'oldest'], true), fn ($q) => $q->latest('id'))
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.airlines.index', compact('airlines', 'search'));
+        $countries = Airline::select('country')->whereNotNull('country')->distinct()->orderBy('country')->pluck('country');
+
+        return view('admin.airlines.index', compact('airlines', 'search', 'country', 'sort', 'countries'));
     }
 
     public function create()

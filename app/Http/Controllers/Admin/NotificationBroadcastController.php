@@ -14,16 +14,25 @@ class NotificationBroadcastController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search = trim((string) $request->input('search'));
         $type = $request->input('type');
+        $fromDate = $request->input('from_date');
+        $toDate = $request->input('to_date');
+        $sort = $request->input('sort', 'latest');
 
         $broadcasts = NotificationBroadcast::with('admin')
-            ->when($search, fn ($q, $s) => $q->where(
-                fn ($w) => $w->where('title', 'like', "%{$s}%")->orWhere('message', 'like', "%{$s}%")
+            ->when($search !== '', fn ($q) => $q->where(
+                fn ($w) => $w->where('title', 'like', "%{$search}%")->orWhere('message', 'like', "%{$search}%")
             ))
             ->when(array_key_exists((string) $type, AppNotification::BROADCAST_TYPES), fn ($q) => $q->where('type', $type))
-            ->latest()
-            ->latest('id')
+            ->when($fromDate, fn ($q) => $q->whereDate('created_at', '>=', $fromDate))
+            ->when($toDate, fn ($q) => $q->whereDate('created_at', '<=', $toDate))
+            ->when($sort === 'oldest', fn ($q) => $q->oldest('created_at')->oldest('id'))
+            ->when($sort === 'recipients_desc', fn ($q) => $q->orderBy('recipient_count', 'desc')->latest('id'))
+            ->when($sort === 'recipients_asc', fn ($q) => $q->orderBy('recipient_count', 'asc')->latest('id'))
+            ->when($sort === 'title_asc', fn ($q) => $q->orderBy('title', 'asc'))
+            ->when($sort === 'title_desc', fn ($q) => $q->orderBy('title', 'desc'))
+            ->when(! in_array($sort, ['oldest', 'recipients_desc', 'recipients_asc', 'title_asc', 'title_desc'], true), fn ($q) => $q->latest()->latest('id'))
             ->paginate(10)
             ->withQueryString();
 
@@ -31,6 +40,9 @@ class NotificationBroadcastController extends Controller
             'broadcasts' => $broadcasts,
             'search' => $search,
             'type' => $type,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'sort' => $sort,
             'types' => AppNotification::BROADCAST_TYPES,
         ]);
     }

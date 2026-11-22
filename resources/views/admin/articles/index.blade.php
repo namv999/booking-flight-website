@@ -24,11 +24,11 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('admin.articles.index') }}" class="row g-2 align-items-end">
-                <div class="col-12 col-lg-6">
+                <div class="col-12 col-lg-4">
                     <label class="form-label small fw-semibold" for="article-search">Tìm bài viết</label>
                     <input id="article-search" class="form-control" type="search" name="search" value="{{ $search ?? '' }}" placeholder="Tìm theo tiêu đề hoặc mô tả">
                 </div>
-                <div class="col-6 col-lg-2">
+                <div class="col-6 col-md-3 col-lg-2">
                     <label class="form-label small fw-semibold" for="article-status">Trạng thái</label>
                     <select id="article-status" class="form-select" name="status">
                         <option value="">Tất cả</option>
@@ -36,7 +36,7 @@
                         <option value="published" @selected(($status ?? '') === 'published')>Đã xuất bản</option>
                     </select>
                 </div>
-                <div class="col-6 col-lg-2">
+                <div class="col-6 col-md-3 col-lg-2">
                     <label class="form-label small fw-semibold" for="article-category">Chuyên mục</label>
                     <select id="article-category" class="form-select" name="category">
                         <option value="">Tất cả</option>
@@ -45,9 +45,20 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-12 col-lg-2 d-flex gap-2">
-                    <button class="btn btn-primary flex-grow-1" type="submit">Lọc</button>
-                    @if (($search ?? '') !== '' || ($status ?? '') !== '' || ($category ?? '') !== '')
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label small fw-semibold" for="article-sort">Sắp xếp</label>
+                    <select id="article-sort" class="form-select" name="sort">
+                        <option value="latest" @selected(($sort ?? '') === 'latest')>Mới nhất</option>
+                        <option value="oldest" @selected(($sort ?? '') === 'oldest')>Cũ nhất</option>
+                        <option value="title_asc" @selected(($sort ?? '') === 'title_asc')>Tiêu đề A &rarr; Z</option>
+                        <option value="title_desc" @selected(($sort ?? '') === 'title_desc')>Tiêu đề Z &rarr; A</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2 d-flex gap-2">
+                    <button class="btn btn-primary flex-grow-1" type="submit">
+                        <i class="bi bi-funnel me-1"></i>Lọc
+                    </button>
+                    @if (($search ?? '') !== '' || ($status ?? '') !== '' || ($category ?? '') !== '' || !empty($authorId) || (($sort ?? 'latest') !== 'latest'))
                         <a class="btn btn-outline-secondary" href="{{ route('admin.articles.index') }}" title="Xóa bộ lọc" aria-label="Xóa bộ lọc"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
                     @endif
                 </div>

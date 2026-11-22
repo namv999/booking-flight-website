@@ -44,4 +44,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(FlightSeat::class, 'held_by');
     }
+
+    public function articles()
+    {
+        return $this->hasMany(Article::class);
+    }
 }

@@ -23,21 +23,49 @@
         </div>
     @endif
 
-    {{-- Form tìm kiếm --}}
+    {{-- Form tìm kiếm, bộ lọc & sắp xếp --}}
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3">
             <form method="GET" action="{{ route('admin.fare-classes.index') }}" class="row g-2 align-items-center">
-                <div class="col-md-9 col-lg-10">
+                <div class="col-12 col-md-4 col-lg-4">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted">
                             <i class="bi bi-search"></i>
                         </span>
-                        <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Tìm kiếm theo tên hạng vé hoặc mô tả..." value="{{ $search ?? '' }}">
+                        <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Tìm theo tên hạng vé hoặc mô tả..." value="{{ $search ?? '' }}">
                     </div>
                 </div>
-                <div class="col-md-3 col-lg-2 d-flex gap-2">
-                    <button class="btn btn-primary flex-grow-1" type="submit">Tìm kiếm</button>
-                    @if(!empty($search))
+                <div class="col-6 col-md-2 col-lg-2">
+                    <select name="baggage" class="form-select" aria-label="Lọc hành lý ký gửi">
+                        <option value="">Tất cả hành lý</option>
+                        <option value="has_baggage" @selected(($baggage ?? '') === 'has_baggage')>Có ký gửi (>0kg)</option>
+                        <option value="no_baggage" @selected(($baggage ?? '') === 'no_baggage')>Không ký gửi (0kg)</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-2">
+                    <select name="seat_fee" class="form-select" aria-label="Lọc phí chọn chỗ">
+                        <option value="">Tất cả phí chọn ghế</option>
+                        <option value="free" @selected(($seatFee ?? '') === 'free')>Miễn phí chọn ghế</option>
+                        <option value="has_fee" @selected(($seatFee ?? '') === 'has_fee')>Có phí chọn ghế</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-2">
+                    <select name="sort" class="form-select" aria-label="Sắp xếp hạng vé">
+                        <option value="latest" @selected(($sort ?? '') === 'latest')>Mới nhất</option>
+                        <option value="oldest" @selected(($sort ?? '') === 'oldest')>Cũ nhất</option>
+                        <option value="price_asc" @selected(($sort ?? '') === 'price_asc')>Giá: Thấp &rarr; Cao</option>
+                        <option value="price_desc" @selected(($sort ?? '') === 'price_desc')>Giá: Cao &rarr; Thấp</option>
+                        <option value="name_asc" @selected(($sort ?? '') === 'name_asc')>Tên A &rarr; Z</option>
+                        <option value="name_desc" @selected(($sort ?? '') === 'name_desc')>Tên Z &rarr; A</option>
+                        <option value="baggage_desc" @selected(($sort ?? '') === 'baggage_desc')>Hành lý: Nhiều nhất</option>
+                        <option value="baggage_asc" @selected(($sort ?? '') === 'baggage_asc')>Hành lý: Ít nhất</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-2 d-flex gap-2">
+                    <button class="btn btn-primary flex-grow-1" type="submit">
+                        <i class="bi bi-funnel me-1"></i>Lọc
+                    </button>
+                    @if(!empty($search) || !empty($baggage) || !empty($seatFee) || (($sort ?? 'latest') !== 'latest'))
                         <a href="{{ route('admin.fare-classes.index') }}" class="btn btn-outline-secondary" title="Đặt lại bộ lọc">
                             <i class="bi bi-x-lg"></i>
                         </a>

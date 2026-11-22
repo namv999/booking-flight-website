@@ -31,25 +31,82 @@
         </div>
     @endif
 
-    {{-- Form tìm kiếm --}}
+    {{-- Form tìm kiếm, bộ lọc & sắp xếp --}}
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3">
-            <form method="GET" action="{{ route('admin.flights.index') }}" class="row g-2 align-items-center">
-                <div class="col-md-9 col-lg-10">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0 text-muted">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Tìm theo tên sân bay, mã IATA (SGN, HAN...) hoặc thành phố..." value="{{ $search ?? '' }}">
+            <form method="GET" action="{{ route('admin.flights.index') }}">
+                <div class="row g-2 mb-2">
+                    <div class="col-12 col-lg-7">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-muted">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Tìm theo mã (#FL-0001), sân bay, thành phố, máy bay hoặc hãng bay..." value="{{ $search ?? '' }}">
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-3">
+                        <select name="sort" class="form-select" aria-label="Sắp xếp danh sách">
+                            <option value="latest" @selected(($sort ?? '') === 'latest')>Sắp xếp: Mới tạo gần nhất</option>
+                            <option value="oldest" @selected(($sort ?? '') === 'oldest')>Sắp xếp: Cũ nhất</option>
+                            <option value="departure_asc" @selected(($sort ?? '') === 'departure_asc')>Khởi hành: Sớm nhất trước</option>
+                            <option value="departure_desc" @selected(($sort ?? '') === 'departure_desc')>Khởi hành: Muộn nhất trước</option>
+                            <option value="id_asc" @selected(($sort ?? '') === 'id_asc')>Mã chuyến: Tăng dần (A-Z)</option>
+                            <option value="id_desc" @selected(($sort ?? '') === 'id_desc')>Mã chuyến: Giảm dần (Z-A)</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2 d-flex gap-2">
+                        <button class="btn btn-primary flex-grow-1" type="submit">
+                            <i class="bi bi-funnel me-1"></i>Lọc
+                        </button>
+                        @if(!empty($search) || !empty($status) || !empty($departureAirportId) || !empty($arrivalAirportId) || !empty($airlineId) || !empty($departureDate) || (($sort ?? 'latest') !== 'latest'))
+                            <a href="{{ route('admin.flights.index') }}" class="btn btn-outline-secondary" title="Đặt lại bộ lọc">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        @endif
                     </div>
                 </div>
-                <div class="col-md-3 col-lg-2 d-flex gap-2">
-                    <button class="btn btn-primary flex-grow-1" type="submit">Tìm kiếm</button>
-                    @if(!empty($search))
-                        <a href="{{ route('admin.flights.index') }}" class="btn btn-outline-secondary" title="Đặt lại bộ lọc">
-                            <i class="bi bi-x-lg"></i>
-                        </a>
-                    @endif
+
+                <div class="row g-2 pt-2 border-top">
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label class="form-label small fw-semibold text-muted mb-1">Trạng thái</label>
+                        <select name="status" class="form-select form-select-sm" aria-label="Trạng thái chuyến bay">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="scheduled" @selected(($status ?? '') === 'scheduled')>Đúng lịch</option>
+                            <option value="delayed" @selected(($status ?? '') === 'delayed')>Hoãn / trễ</option>
+                            <option value="cancelled" @selected(($status ?? '') === 'cancelled')>Đã hủy</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-3">
+                        <label class="form-label small fw-semibold text-muted mb-1">Hãng bay</label>
+                        <select name="airline_id" class="form-select form-select-sm" aria-label="Hãng hàng không">
+                            <option value="">Tất cả hãng bay</option>
+                            @foreach($airlines as $airline)
+                                <option value="{{ $airline->id }}" @selected(($airlineId ?? '') == $airline->id)>{{ $airline->name }} ({{ $airline->code }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label class="form-label small fw-semibold text-muted mb-1">Sân bay đi</label>
+                        <select name="departure_airport_id" class="form-select form-select-sm" aria-label="Sân bay khởi hành">
+                            <option value="">Tất cả sân bay đi</option>
+                            @foreach($airports as $airport)
+                                <option value="{{ $airport->id }}" @selected(($departureAirportId ?? '') == $airport->id)>{{ $airport->iata_code }} - {{ $airport->city }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <label class="form-label small fw-semibold text-muted mb-1">Sân bay đến</label>
+                        <select name="arrival_airport_id" class="form-select form-select-sm" aria-label="Sân bay đến">
+                            <option value="">Tất cả sân bay đến</option>
+                            @foreach($airports as $airport)
+                                <option value="{{ $airport->id }}" @selected(($arrivalAirportId ?? '') == $airport->id)>{{ $airport->iata_code }} - {{ $airport->city }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4 col-lg-3">
+                        <label class="form-label small fw-semibold text-muted mb-1">Ngày khởi hành</label>
+                        <input type="date" name="departure_date" class="form-control form-control-sm" value="{{ $departureDate ?? '' }}">
+                    </div>
                 </div>
             </form>
         </div>

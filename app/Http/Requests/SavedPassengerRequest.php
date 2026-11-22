@@ -15,16 +15,16 @@ class SavedPassengerRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Tương thích 2 chiều: nếu gửi cccd_number hoặc passport_number mà chưa có document_number
-        if ($this->filled('cccd_number') && !$this->filled('document_number')) {
+        if ($this->filled('cccd_number') && ! $this->filled('document_number')) {
             $this->merge(['document_number' => $this->input('cccd_number')]);
-        } elseif ($this->filled('passport_number') && !$this->filled('document_number')) {
+        } elseif ($this->filled('passport_number') && ! $this->filled('document_number')) {
             $this->merge(['document_number' => $this->input('passport_number')]);
         }
 
         if ($this->filled('document_number')) {
-            if ($this->input('document_type') === 'passport' && !$this->filled('passport_number')) {
+            if ($this->input('document_type') === 'passport' && ! $this->filled('passport_number')) {
                 $this->merge(['passport_number' => $this->input('document_number')]);
-            } elseif (!$this->filled('cccd_number')) {
+            } elseif (! $this->filled('cccd_number')) {
                 $this->merge(['cccd_number' => $this->input('document_number')]);
             }
         }

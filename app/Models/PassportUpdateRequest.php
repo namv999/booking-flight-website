@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class PassportUpdateRequest extends Model
 {
-    // Các trường hộ chiếu nằm trong new_data / old_data (cũng là các cột của bảng passengers)
+    // Các trường hồ sơ/hộ chiếu nằm trong new_data / old_data (cũng là các cột của bảng passengers)
     public const FIELDS = [
         'full_name',
+        'document_type',
         'document_number',
         'date_of_birth',
         'gender',

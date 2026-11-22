@@ -1,7 +1,8 @@
-{{-- Khách gửi yêu cầu cập nhật hộ chiếu cho từng hành khách của đơn quốc tế đã thanh toán --}}
+{{-- Khách gửi yêu cầu cập nhật hồ sơ/hộ chiếu cho từng hành khách của đơn đã thanh toán --}}
 {{-- Biến: $booking (đã load passengers.passportUpdateRequests, mới nhất trước), $passportUpdateError (null = được phép gửi) --}}
 @php
     $countries = config('countries');
+    $isInternational = app(\App\Services\PassportService::class)->isInternationalBooking($booking);
     $statusMeta = [
         'pending' => ['bg-warning text-dark', 'bi-clock', 'Đang chờ duyệt'],
         'approved' => ['bg-success text-white', 'bi-check-circle', 'Đã duyệt'],
@@ -13,9 +14,11 @@
     <div class="bf-payment-card__header">
         <h2 class="bf-payment-card__title">
             <i class="bi bi-person-vcard text-primary" aria-hidden="true"></i>
-            <span>Cập nhật hộ chiếu</span>
+            <span>{{ $isInternational ? 'Cập nhật hộ chiếu' : 'Cập nhật hộ chiếu & hồ sơ hành khách' }}</span>
         </h2>
-        <span class="text-muted small">Dùng khi nhập sai hoặc vừa được cấp hộ chiếu mới</span>
+        <span class="text-muted small">
+            {{ $isInternational ? 'Dùng khi nhập sai hoặc vừa được cấp hộ chiếu mới' : 'Dùng khi nhập sai thông tin hoặc vừa được cấp mới CCCD / Hộ chiếu' }}
+        </span>
     </div>
 
     @if (session('passport_status'))
@@ -43,6 +46,7 @@
             $val = fn (string $field, $current) => $formFailed ? old($field, $current) : $current;
             $err = fn (string $field) => $formFailed ? $errors->first($field) : null;
             $key = 'passport-form-'.$passenger->id;
+            $currentDocType = $val('document_type', $passenger->document_type ?: ($isInternational ? 'passport' : 'national_id'));
         @endphp
 
         <div class="border rounded p-3 mb-3">
@@ -50,9 +54,16 @@
                 <div>
                     <strong class="text-navy">{{ $passenger->full_name }}</strong>
                     <div class="small text-muted">
-                        Hộ chiếu {{ $passenger->document_number ?: '-' }}
-                        &bull; {{ $passenger->nationality_label ?? '-' }}
-                        &bull; Hết hạn {{ $passenger->document_expiry_date?->format('d/m/Y') ?? '-' }}
+                        @if ($passenger->document_type === 'passport' || $isInternational)
+                            Hộ chiếu {{ $passenger->document_number ?: '-' }}
+                            &bull; {{ $passenger->nationality_label ?? '-' }}
+                            &bull; Hết hạn {{ $passenger->document_expiry_date?->format('d/m/Y') ?? '-' }}
+                        @else
+                            CCCD / CMND: {{ $passenger->document_number ?: '-' }}
+                            @if ($passenger->document_issue_date)
+                                &bull; Ngày cấp: {{ $passenger->document_issue_date->format('d/m/Y') }}
+                            @endif
+                        @endif
                     </div>
                 </div>
                 @if ($canSubmit)
@@ -84,22 +95,44 @@
                         <input type="hidden" name="passenger_id" value="{{ $passenger->id }}">
 
                         <div class="row g-3">
-                            <div class="col-12 col-md-6">
+                            @if (! $isInternational)
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-bold small text-navy" for="{{ $key }}_type">Loại giấy tờ <span class="text-danger">*</span></label>
+                                    <select class="form-select bf-input @if ($err('document_type')) is-invalid @endif" id="{{ $key }}_type" name="document_type"
+                                            onchange="
+                                                const wrap = document.getElementById('{{ $key }}_passport_fields');
+                                                const docLabel = document.getElementById('{{ $key }}_doc_label');
+                                                if (wrap) { wrap.style.display = (this.value === 'passport') ? 'flex' : 'none'; }
+                                                if (docLabel) { docLabel.textContent = (this.value === 'passport') ? 'Số hộ chiếu' : 'Số CCCD / CMND'; }
+                                            ">
+                                        <option value="national_id" {{ $currentDocType === 'national_id' ? 'selected' : '' }}>Căn cước công dân (CCCD / CMND)</option>
+                                        <option value="passport" {{ $currentDocType === 'passport' ? 'selected' : '' }}>Hộ chiếu (Passport)</option>
+                                    </select>
+                                    @if ($err('document_type')) <div class="invalid-feedback d-block">{{ $err('document_type') }}</div> @endif
+                                </div>
+                            @else
+                                <input type="hidden" name="document_type" value="passport">
+                            @endif
+
+                            <div class="col-12 {{ $isInternational ? 'col-md-6' : 'col-md-8' }}">
                                 <label class="form-label fw-bold small text-navy" for="{{ $key }}_name">Họ và tên <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control bf-input @if ($err('full_name')) is-invalid @endif" id="{{ $key }}_name"
                                        name="full_name" value="{{ $val('full_name', $passenger->full_name) }}" required>
                                 @if ($err('full_name')) <div class="invalid-feedback d-block">{{ $err('full_name') }}</div> @endif
-                                <div class="form-text small text-muted">Như trên hộ chiếu, viết không dấu, ví dụ NGUYEN VAN A</div>
+                                <div class="form-text small text-muted">Viết hoa không dấu theo giấy tờ, ví dụ: NGUYEN VAN A</div>
                             </div>
 
-                            <div class="col-12 col-md-3">
-                                <label class="form-label fw-bold small text-navy" for="{{ $key }}_doc">Số hộ chiếu <span class="text-danger">*</span></label>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-bold small text-navy" for="{{ $key }}_doc">
+                                    <span id="{{ $key }}_doc_label">{{ ($isInternational || $currentDocType === 'passport') ? 'Số hộ chiếu' : 'Số CCCD / CMND' }}</span>
+                                    <span class="text-danger">*</span>
+                                </label>
                                 <input type="text" class="form-control bf-input @if ($err('document_number')) is-invalid @endif" id="{{ $key }}_doc"
                                        name="document_number" value="{{ $val('document_number', $passenger->document_number) }}" required>
                                 @if ($err('document_number')) <div class="invalid-feedback d-block">{{ $err('document_number') }}</div> @endif
                             </div>
 
-                            <div class="col-12 col-md-3">
+                            <div class="col-12 col-md-4">
                                 <label class="form-label fw-bold small text-navy" for="{{ $key }}_dob">Ngày sinh <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control bf-input @if ($err('date_of_birth')) is-invalid @endif" id="{{ $key }}_dob"
                                        name="date_of_birth" max="{{ date('Y-m-d') }}"
@@ -123,28 +156,6 @@
                                 @if ($err('gender')) <div class="invalid-feedback d-block">{{ $err('gender') }}</div> @endif
                             </div>
 
-                            <div class="col-12 col-md-4">
-                                <label class="form-label fw-bold small text-navy" for="{{ $key }}_nat">Quốc tịch <span class="text-danger">*</span></label>
-                                <select class="form-select bf-input @if ($err('nationality')) is-invalid @endif" id="{{ $key }}_nat" name="nationality" required>
-                                    <option value="">-- Chọn quốc gia --</option>
-                                    @foreach ($countries as $code => $name)
-                                        <option value="{{ $code }}" {{ $val('nationality', $passenger->nationality) === $code ? 'selected' : '' }}>{{ $name }} ({{ $code }})</option>
-                                    @endforeach
-                                </select>
-                                @if ($err('nationality')) <div class="invalid-feedback d-block">{{ $err('nationality') }}</div> @endif
-                            </div>
-
-                            <div class="col-12 col-md-4">
-                                <label class="form-label fw-bold small text-navy" for="{{ $key }}_issued">Quốc gia cấp <span class="text-danger">*</span></label>
-                                <select class="form-select bf-input @if ($err('document_issued_country')) is-invalid @endif" id="{{ $key }}_issued" name="document_issued_country" required>
-                                    <option value="">-- Chọn quốc gia --</option>
-                                    @foreach ($countries as $code => $name)
-                                        <option value="{{ $code }}" {{ $val('document_issued_country', $passenger->document_issued_country) === $code ? 'selected' : '' }}>{{ $name }} ({{ $code }})</option>
-                                    @endforeach
-                                </select>
-                                @if ($err('document_issued_country')) <div class="invalid-feedback d-block">{{ $err('document_issued_country') }}</div> @endif
-                            </div>
-
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-bold small text-navy" for="{{ $key }}_issue">Ngày cấp <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control bf-input @if ($err('document_issue_date')) is-invalid @endif" id="{{ $key }}_issue"
@@ -153,18 +164,45 @@
                                 @if ($err('document_issue_date')) <div class="invalid-feedback d-block">{{ $err('document_issue_date') }}</div> @endif
                             </div>
 
-                            <div class="col-12 col-md-6">
-                                <label class="form-label fw-bold small text-navy" for="{{ $key }}_expiry">Ngày hết hạn <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control bf-input @if ($err('document_expiry_date')) is-invalid @endif" id="{{ $key }}_expiry"
-                                       name="document_expiry_date"
-                                       value="{{ $val('document_expiry_date', $passenger->document_expiry_date?->format('Y-m-d')) }}" required>
-                                @if ($err('document_expiry_date')) <div class="invalid-feedback d-block">{{ $err('document_expiry_date') }}</div> @endif
+                            {{-- Các trường nâng cao dành cho hộ chiếu (quốc tế bắt buộc, nội địa hiển thị khi chọn Hộ chiếu) --}}
+                            <div class="col-12" id="{{ $key }}_passport_fields" style="{{ ($isInternational || $currentDocType === 'passport') ? '' : 'display: none;' }}">
+                                <div class="row g-3 w-100 m-0 p-0">
+                                    <div class="col-12 col-md-4 ps-0">
+                                        <label class="form-label fw-bold small text-navy" for="{{ $key }}_nat">Quốc tịch</label>
+                                        <select class="form-select bf-input @if ($err('nationality')) is-invalid @endif" id="{{ $key }}_nat" name="nationality">
+                                            <option value="">-- Chọn quốc gia --</option>
+                                            @foreach ($countries as $code => $name)
+                                                <option value="{{ $code }}" {{ $val('nationality', $passenger->nationality) === $code ? 'selected' : '' }}>{{ $name }} ({{ $code }})</option>
+                                            @endforeach
+                                        </select>
+                                        @if ($err('nationality')) <div class="invalid-feedback d-block">{{ $err('nationality') }}</div> @endif
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label fw-bold small text-navy" for="{{ $key }}_issued">Quốc gia cấp</label>
+                                        <select class="form-select bf-input @if ($err('document_issued_country')) is-invalid @endif" id="{{ $key }}_issued" name="document_issued_country">
+                                            <option value="">-- Chọn quốc gia --</option>
+                                            @foreach ($countries as $code => $name)
+                                                <option value="{{ $code }}" {{ $val('document_issued_country', $passenger->document_issued_country) === $code ? 'selected' : '' }}>{{ $name }} ({{ $code }})</option>
+                                            @endforeach
+                                        </select>
+                                        @if ($err('document_issued_country')) <div class="invalid-feedback d-block">{{ $err('document_issued_country') }}</div> @endif
+                                    </div>
+
+                                    <div class="col-12 col-md-4 pe-0">
+                                        <label class="form-label fw-bold small text-navy" for="{{ $key }}_expiry">Ngày hết hạn</label>
+                                        <input type="date" class="form-control bf-input @if ($err('document_expiry_date')) is-invalid @endif" id="{{ $key }}_expiry"
+                                               name="document_expiry_date"
+                                               value="{{ $val('document_expiry_date', $passenger->document_expiry_date?->format('Y-m-d')) }}">
+                                        @if ($err('document_expiry_date')) <div class="invalid-feedback d-block">{{ $err('document_expiry_date') }}</div> @endif
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-12">
                                 <label class="form-label fw-bold small text-navy" for="{{ $key }}_reason">Lý do cập nhật <span class="text-danger">*</span></label>
                                 <textarea class="form-control bf-input @if ($err('reason')) is-invalid @endif" id="{{ $key }}_reason" name="reason" rows="2" maxlength="500"
-                                          placeholder="Ví dụ: nhập sai số hộ chiếu / vừa được cấp hộ chiếu mới" required>{{ $val('reason', '') }}</textarea>
+                                          placeholder="Ví dụ: nhập sai thông tin / vừa được cấp mới CCCD hoặc Hộ chiếu" required>{{ $val('reason', '') }}</textarea>
                                 @if ($err('reason')) <div class="invalid-feedback d-block">{{ $err('reason') }}</div> @endif
                             </div>
                         </div>

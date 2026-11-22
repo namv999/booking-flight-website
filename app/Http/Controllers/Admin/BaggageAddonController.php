@@ -13,13 +13,27 @@ class BaggageAddonController extends Controller
 {
     public function index(Request $request): View
     {
+        $search = trim((string) $request->input('search'));
+        $weightRange = $request->input('weight_range');
+        $sort = $request->input('sort', 'latest');
+
         $baggageAddons = BaggageAddon::query()
-            ->when($request->filled('search'), fn ($q) => $q->where('name', 'like', '%'.$request->search.'%'))
-            ->latest()
+            ->when($search !== '', fn ($q) => $q->where('name', 'like', '%'.$search.'%'))
+            ->when($weightRange === 'under_15', fn ($q) => $q->where('weight_kg', '<', 15))
+            ->when($weightRange === '15_25', fn ($q) => $q->whereBetween('weight_kg', [15, 25]))
+            ->when($weightRange === 'above_25', fn ($q) => $q->where('weight_kg', '>', 25))
+            ->when($sort === 'weight_asc', fn ($q) => $q->orderBy('weight_kg', 'asc'))
+            ->when($sort === 'weight_desc', fn ($q) => $q->orderBy('weight_kg', 'desc'))
+            ->when($sort === 'price_asc', fn ($q) => $q->orderBy('price', 'asc'))
+            ->when($sort === 'price_desc', fn ($q) => $q->orderBy('price', 'desc'))
+            ->when($sort === 'name_asc', fn ($q) => $q->orderBy('name', 'asc'))
+            ->when($sort === 'name_desc', fn ($q) => $q->orderBy('name', 'desc'))
+            ->when($sort === 'oldest', fn ($q) => $q->oldest('id'))
+            ->when(! in_array($sort, ['weight_asc', 'weight_desc', 'price_asc', 'price_desc', 'name_asc', 'name_desc', 'oldest'], true), fn ($q) => $q->latest('id'))
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.baggage-addons.index', compact('baggageAddons'));
+        return view('admin.baggage-addons.index', compact('baggageAddons', 'search', 'weightRange', 'sort'));
     }
 
     public function create(): View

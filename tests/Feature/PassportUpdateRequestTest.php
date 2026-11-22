@@ -153,16 +153,29 @@ class PassportUpdateRequestTest extends TestCase
         $this->assertDatabaseCount('passport_update_requests', 1);
     }
 
-    public function test_domestic_booking_has_nothing_to_update(): void
+    public function test_domestic_booking_can_submit_profile_update(): void
     {
         $owner = User::factory()->create();
         $booking = $this->bookingWithLegs($owner, [10], false);
-        $passenger = $this->addPassenger($booking, ['document_type' => 'national_id', 'document_number' => '001234567890', 'gender' => null, 'nationality' => null]);
+        $passenger = $this->addPassenger($booking, ['document_type' => 'national_id', 'document_number' => '001234567890', 'gender' => 'male', 'nationality' => null]);
 
-        $this->actingAs($owner)->post($this->url($booking, $passenger), $this->validPassportPayload())
-            ->assertSessionHas('passport_error');
+        $this->actingAs($owner)->post($this->url($booking, $passenger), [
+            'full_name' => 'nguyen van c',
+            'document_type' => 'national_id',
+            'document_number' => '001987654321',
+            'date_of_birth' => '1992-05-10',
+            'gender' => 'male',
+            'document_issue_date' => '2023-01-01',
+            'reason' => 'Doi sang the can cuoc moi',
+        ])
+            ->assertRedirect(route('booking-history.show', $booking->id))
+            ->assertSessionHas('passport_status');
 
-        $this->assertDatabaseCount('passport_update_requests', 0);
+        $this->assertDatabaseCount('passport_update_requests', 1);
+        $req = PassportUpdateRequest::first();
+        $this->assertSame('NGUYEN VAN C', $req->new_data['full_name']);
+        $this->assertSame('001987654321', $req->new_data['document_number']);
+        $this->assertSame('national_id', $req->new_data['document_type']);
     }
 
     public function test_only_one_pending_request_per_passenger(): void
@@ -264,13 +277,13 @@ class PassportUpdateRequestTest extends TestCase
             ->assertSee('value="C1234567"', false);
     }
 
-    public function test_history_page_has_no_passport_section_for_domestic_or_unpaid_bookings(): void
+    public function test_history_page_has_section_for_domestic_paid_and_none_for_unpaid_bookings(): void
     {
         $owner = User::factory()->create();
 
         $domestic = $this->bookingWithLegs($owner, [10], false);
         $this->addPassenger($domestic, ['document_type' => 'national_id']);
-        $this->actingAs($owner)->get(route('booking-history.show', $domestic->id))->assertOk()->assertDontSee('id="passport-update"', false);
+        $this->actingAs($owner)->get(route('booking-history.show', $domestic->id))->assertOk()->assertSee('id="passport-update"', false);
 
         $unpaid = $this->bookingWithLegs($owner, [10], true, ['status' => 'pending']);
         $this->addPassenger($unpaid);

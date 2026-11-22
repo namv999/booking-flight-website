@@ -23,23 +23,52 @@
     @endif
 
     <form method="GET" action="{{ route('admin.notification-broadcasts.index') }}" class="card border-0 shadow-sm mb-4">
-        <div class="card-body row g-2 align-items-center">
-            <div class="col-12 col-lg-6">
-                <label class="visually-hidden" for="broadcast-search">Tìm kiếm thông báo</label>
-                <input id="broadcast-search" type="search" name="search" class="form-control" placeholder="Tìm tiêu đề hoặc nội dung" value="{{ $search ?? '' }}">
+        <div class="card-body">
+            <div class="row g-2 mb-2">
+                <div class="col-12 col-lg-7">
+                    <label class="visually-hidden" for="broadcast-search">Tìm kiếm thông báo</label>
+                    <input id="broadcast-search" type="search" name="search" class="form-control" placeholder="Tìm tiêu đề hoặc nội dung thông báo..." value="{{ $search ?? '' }}">
+                </div>
+                <div class="col-6 col-md-3 col-lg-3">
+                    <select id="broadcast-sort" name="sort" class="form-select" aria-label="Sắp xếp thông báo">
+                        <option value="latest" @selected(($sort ?? '') === 'latest')>Mới nhất trước</option>
+                        <option value="oldest" @selected(($sort ?? '') === 'oldest')>Cũ nhất trước</option>
+                        <option value="recipients_desc" @selected(($sort ?? '') === 'recipients_desc')>Người nhận: Nhiều nhất</option>
+                        <option value="recipients_asc" @selected(($sort ?? '') === 'recipients_asc')>Người nhận: Ít nhất</option>
+                        <option value="title_asc" @selected(($sort ?? '') === 'title_asc')>Tiêu đề A &rarr; Z</option>
+                        <option value="title_desc" @selected(($sort ?? '') === 'title_desc')>Tiêu đề Z &rarr; A</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-funnel me-1"></i>Lọc
+                    </button>
+                    @if(!empty($search) || !empty($type) || !empty($fromDate) || !empty($toDate) || (($sort ?? 'latest') !== 'latest'))
+                        <a href="{{ route('admin.notification-broadcasts.index') }}" class="btn btn-outline-secondary" aria-label="Đặt lại bộ lọc" title="Đặt lại bộ lọc">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    @endif
+                </div>
             </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-                <label class="visually-hidden" for="broadcast-type">Loại thông báo</label>
-                <select id="broadcast-type" name="type" class="form-select">
-                    <option value="">Tất cả loại</option>
-                    @foreach ($types as $key => $label)
-                        <option value="{{ $key }}" @selected($type === $key)>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-12 col-sm-6 col-lg-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1">Lọc</button>
-                <a href="{{ route('admin.notification-broadcasts.index') }}" class="btn btn-outline-secondary" aria-label="Đặt lại bộ lọc"><i class="bi bi-arrow-counterclockwise"></i></a>
+
+            <div class="row g-2 pt-2 border-top">
+                <div class="col-12 col-md-4 col-lg-4">
+                    <label class="form-label small fw-semibold text-muted mb-1" for="broadcast-type">Loại thông báo</label>
+                    <select id="broadcast-type" name="type" class="form-select form-select-sm">
+                        <option value="">Tất cả loại thông báo</option>
+                        @foreach ($types as $key => $label)
+                            <option value="{{ $key }}" @selected($type === $key)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 col-md-4 col-lg-4">
+                    <label class="form-label small fw-semibold text-muted mb-1">Từ ngày</label>
+                    <input type="date" name="from_date" class="form-control form-control-sm" value="{{ $fromDate ?? '' }}">
+                </div>
+                <div class="col-6 col-md-4 col-lg-4">
+                    <label class="form-label small fw-semibold text-muted mb-1">Đến ngày</label>
+                    <input type="date" name="to_date" class="form-control form-control-sm" value="{{ $toDate ?? '' }}">
+                </div>
             </div>
         </div>
     </form>

@@ -31,7 +31,7 @@
             <small class="text-secondary">Hành khách đã gửi thông tin hộ chiếu cập nhật trước giờ bay. Quản trị viên cần kiểm tra và xử lý sớm.</small>
         </div>
     </div>
-    <a href="{{ route('admin.bookings.index') }}" class="btn btn-warning btn-sm fw-semibold text-dark text-nowrap px-3 py-2 ms-3">
+    <a href="{{ route('admin.bookings.index', ['passport_status' => 'pending']) }}" class="btn btn-warning btn-sm fw-semibold text-dark text-nowrap px-3 py-2 ms-3">
         <i class="bi bi-check2-circle me-1"></i> Xử lý ngay
     </a>
 </div>

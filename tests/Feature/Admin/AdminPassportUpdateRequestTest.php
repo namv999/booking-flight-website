@@ -108,6 +108,44 @@ class AdminPassportUpdateRequestTest extends TestCase
         $this->assertSame('approved', $request->fresh()->status);
     }
 
+    public function test_approve_updates_domestic_passenger_with_national_id(): void
+    {
+        $admin = $this->admin();
+        $booking = $this->bookingWithLegs(User::factory()->create(), [10], false);
+        $passenger = $this->addPassenger($booking, [
+            'document_type' => 'national_id',
+            'document_number' => '001234567890',
+            'nationality' => null,
+            'document_issued_country' => null,
+            'document_expiry_date' => null,
+        ]);
+        $request = PassportUpdateRequest::create([
+            'booking_id' => $booking->id,
+            'passenger_id' => $passenger->id,
+            'user_id' => $booking->user_id,
+            'new_data' => [
+                'full_name' => 'NGUYEN VAN MOI',
+                'document_type' => 'national_id',
+                'document_number' => '001999888777',
+                'date_of_birth' => '1995-10-20',
+                'gender' => 'male',
+                'document_issue_date' => '2024-01-01',
+            ],
+            'reason' => 'Cap lai CCCD bi mat',
+            'status' => 'pending',
+        ]);
+
+        $this->approve($admin, $request, ['admin_note' => 'Xac nhan hop le'])
+            ->assertRedirect(route('admin.bookings.show', $booking->id))
+            ->assertSessionHas('passport_status');
+
+        $passenger->refresh();
+        $this->assertSame('NGUYEN VAN MOI', $passenger->full_name);
+        $this->assertSame('001999888777', $passenger->document_number);
+        $this->assertSame('national_id', $passenger->document_type);
+        $this->assertSame('1995-10-20', $passenger->date_of_birth->toDateString());
+    }
+
     public function test_approving_updates_the_tickets_of_every_leg_because_passengers_are_shared(): void
     {
         $booking = $this->bookingWithLegs(User::factory()->create(), [10, 20, 30]);

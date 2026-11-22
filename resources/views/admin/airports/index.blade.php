@@ -24,10 +24,11 @@
     @endif
 
     <!-- Form tìm kiếm -->
+    <!-- Form tìm kiếm, bộ lọc & sắp xếp -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3">
             <form action="{{ route('admin.airports.index') }}" method="GET" class="row g-2 align-items-center">
-                <div class="col-md-9 col-lg-10">
+                <div class="col-12 col-md-5 col-lg-5">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted">
                             <i class="bi bi-search"></i>
@@ -36,13 +37,35 @@
                             type="text"
                             name="search"
                             class="form-control border-start-0 ps-0"
-                            placeholder="Tìm kiếm tên sân bay, thành phố hoặc mã IATA (SGN, HAN, DAD...)..."
+                            placeholder="Tìm kiếm tên sân bay, thành phố, quốc gia hoặc mã IATA (SGN, HAN...)..."
                             value="{{ $search }}">
                     </div>
                 </div>
-                <div class="col-md-3 col-lg-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1">Tìm kiếm</button>
-                    @if(!empty($search))
+                <div class="col-6 col-md-3 col-lg-3">
+                    <select name="country" class="form-select" aria-label="Lọc theo quốc gia">
+                        <option value="">Tất cả quốc gia</option>
+                        @foreach($countries as $c)
+                            <option value="{{ $c }}" @selected(($country ?? '') === $c)>{{ $c }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-2">
+                    <select name="sort" class="form-select" aria-label="Sắp xếp sân bay">
+                        <option value="latest" @selected(($sort ?? '') === 'latest')>Mới nhất</option>
+                        <option value="oldest" @selected(($sort ?? '') === 'oldest')>Cũ nhất</option>
+                        <option value="iata_asc" @selected(($sort ?? '') === 'iata_asc')>IATA A &rarr; Z</option>
+                        <option value="iata_desc" @selected(($sort ?? '') === 'iata_desc')>IATA Z &rarr; A</option>
+                        <option value="name_asc" @selected(($sort ?? '') === 'name_asc')>Tên sân bay A &rarr; Z</option>
+                        <option value="name_desc" @selected(($sort ?? '') === 'name_desc')>Tên sân bay Z &rarr; A</option>
+                        <option value="city_asc" @selected(($sort ?? '') === 'city_asc')>Thành phố A &rarr; Z</option>
+                        <option value="city_desc" @selected(($sort ?? '') === 'city_desc')>Thành phố Z &rarr; A</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 col-lg-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-funnel me-1"></i>Lọc
+                    </button>
+                    @if(!empty($search) || !empty($country) || (($sort ?? 'latest') !== 'latest'))
                         <a href="{{ route('admin.airports.index') }}" class="btn btn-outline-secondary" title="Đặt lại bộ lọc">
                             <i class="bi bi-x-lg"></i>
                         </a>

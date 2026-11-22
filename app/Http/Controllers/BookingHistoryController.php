@@ -37,8 +37,8 @@ class BookingHistoryController extends Controller
             ])
             ->findOrFail($id);
 
-        // Cập nhật hộ chiếu chỉ áp dụng cho đơn quốc tế đã thanh toán; $passportUpdateError null = được phép gửi
-        $showPassportUpdate = $booking->status === 'paid' && app(PassportService::class)->isInternationalBooking($booking);
+        // Cập nhật hồ sơ/hộ chiếu áp dụng cho đơn đã thanh toán (cả nội địa lẫn quốc tế); $passportUpdateError null = được phép gửi
+        $showPassportUpdate = $booking->status === 'paid';
         $passportUpdateError = $showPassportUpdate ? app(PassportUpdateService::class)->bookingError($booking) : null;
 
         return view('booking-history.show', compact('booking', 'showPassportUpdate', 'passportUpdateError'));

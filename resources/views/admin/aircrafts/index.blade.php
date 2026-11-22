@@ -23,21 +23,41 @@
         </div>
     @endif
 
-    <!-- Form tìm kiếm -->
+    <!-- Form tìm kiếm, bộ lọc & sắp xếp -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-3">
             <form method="GET" action="{{ route('admin.aircrafts.index') }}" class="row g-2 align-items-center">
-                <div class="col-md-9 col-lg-10">
+                <div class="col-12 col-md-5 col-lg-5">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0 text-muted">
                             <i class="bi bi-search"></i>
                         </span>
-                        <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Tìm kiếm theo dòng máy bay (Airbus A321, Boeing 787...)..." value="{{ $search ?? '' }}">
+                        <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Tìm theo dòng máy bay (A321...), số hiệu (VN-A601) hoặc hãng bay..." value="{{ $search ?? '' }}">
                     </div>
                 </div>
-                <div class="col-md-3 col-lg-2 d-flex gap-2">
-                    <button class="btn btn-primary flex-grow-1" type="submit">Tìm kiếm</button>
-                    @if(!empty($search))
+                <div class="col-6 col-md-3 col-lg-3">
+                    <select name="airline_id" class="form-select" aria-label="Lọc theo hãng hàng không">
+                        <option value="">Tất cả hãng hàng không</option>
+                        @foreach($airlines as $airline)
+                            <option value="{{ $airline->id }}" @selected(($airlineId ?? '') == $airline->id)>{{ $airline->name }} ({{ $airline->code }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-2">
+                    <select name="sort" class="form-select" aria-label="Sắp xếp máy bay">
+                        <option value="latest" @selected(($sort ?? '') === 'latest')>Mới nhất</option>
+                        <option value="oldest" @selected(($sort ?? '') === 'oldest')>Cũ nhất</option>
+                        <option value="model_asc" @selected(($sort ?? '') === 'model_asc')>Model A &rarr; Z</option>
+                        <option value="model_desc" @selected(($sort ?? '') === 'model_desc')>Model Z &rarr; A</option>
+                        <option value="seats_desc" @selected(($sort ?? '') === 'seats_desc')>Sức chứa: Nhiều nhất</option>
+                        <option value="seats_asc" @selected(($sort ?? '') === 'seats_asc')>Sức chứa: Ít nhất</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 col-lg-2 d-flex gap-2">
+                    <button class="btn btn-primary flex-grow-1" type="submit">
+                        <i class="bi bi-funnel me-1"></i>Lọc
+                    </button>
+                    @if(!empty($search) || !empty($airlineId) || (($sort ?? 'latest') !== 'latest'))
                         <a href="{{ route('admin.aircrafts.index') }}" class="btn btn-outline-secondary" title="Đặt lại bộ lọc">
                             <i class="bi bi-x-lg"></i>
                         </a>
