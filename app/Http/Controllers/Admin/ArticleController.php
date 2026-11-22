@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreArticleRequest;
 use App\Http\Requests\Admin\UpdateArticleRequest;
 use App\Models\Article;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ArticleController extends Controller
@@ -32,7 +33,7 @@ class ArticleController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $authors = \App\Models\User::whereHas('articles')->orderBy('name')->get();
+        $authors = User::whereHas('articles')->orderBy('name')->get();
 
         return view('admin.articles.index', [
             'articles' => $articles,

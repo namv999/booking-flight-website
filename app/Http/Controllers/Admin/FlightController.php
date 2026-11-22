@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreFlightRequest;
 use App\Http\Requests\Admin\UpdateFlightRequest;
 use App\Models\Aircraft;
+use App\Models\Airline;
 use App\Models\Airport;
 use App\Models\Flight;
 use Illuminate\Database\QueryException;
@@ -63,7 +64,7 @@ class FlightController extends Controller
             ->withQueryString();
 
         $airports = Airport::orderBy('iata_code')->get();
-        $airlines = \App\Models\Airline::orderBy('name')->get();
+        $airlines = Airline::orderBy('name')->get();
 
         return view('admin.flights.index', compact(
             'flights',

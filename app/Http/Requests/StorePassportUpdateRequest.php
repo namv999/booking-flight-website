@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Services\PassportService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 // Form khách gửi yêu cầu cập nhật hộ chiếu: dùng ĐÚNG bộ rule và chuẩn hóa của form đặt vé (PassportService)
@@ -64,8 +65,8 @@ class StorePassportUpdateRequest extends FormRequest
             'document_number' => ['required', 'string', 'max:30', 'regex:/^[A-Z0-9]{6,20}$/'],
             'date_of_birth' => ['required', 'date', 'before_or_equal:today'],
             'gender' => ['required', 'in:male,female'],
-            'nationality' => ['nullable', \Illuminate\Validation\Rule::in($countries)],
-            'document_issued_country' => ['nullable', \Illuminate\Validation\Rule::in($countries)],
+            'nationality' => ['nullable', Rule::in($countries)],
+            'document_issued_country' => ['nullable', Rule::in($countries)],
             'document_issue_date' => ['required', 'date', 'before_or_equal:today'],
             'document_expiry_date' => ['nullable', 'date'],
             'reason' => ['required', 'string', 'max:500'],

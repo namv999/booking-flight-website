@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\PassportService;
 use App\Services\PassportUpdateService;
 use Barryvdh\DomPDF\Facade\Pdf;
 
